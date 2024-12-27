@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+    <title>App Demo</title>
+
+    <style type="text/css">
+        body, div { padding:1em }
+    </style>
+
+    <script src="dist/app.js"></script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- script src="dist/alpine.js" defer></script -->
+
+    <script>
+
+    app.templates.example = `<div>HTML only template inside <span x-text="$app.base + $name"></span> showing template <span x-text=template></span></div>`
+
+    app.components.hello = class extends app.AlpineComponent {
+        toggle() {
+            this.template = !this.template ? "example" : "";
+        }
+    }
+
+    app.templates.example2 = `<div>Another template inside <span x-text="$app.base + $name"></span> showing template <span x-text=template></span></div>`
+    app.templates.hello2 = "#hello"
+
+    app.components.hello2 = class extends app.components.hello {
+        onCreate() {
+            this.params.reason = "Hello2 World"
+            this._timer = setInterval(() => { this.params.param = Date() }, 1000);
+        }
+
+        onDelete() {
+            clearInterval(this._timer)
+        }
+
+        onToggle(data) {
+            console.log("received toggle event:", data)
+        }
+
+        toggle() {
+            this.template = !this.template ? "example2" : "";
+            app.emit(app.event, "toggle", this.template)
+        }
+    }
+
+    app.$ready(app.restorePath);
+
+    app.debug=1
+    </script>
+
+</head>
+
+<body>
+    <div id="app-main"></div>
+</body>
+
+<template id="index">
+    <h5>This is the index component</h5>
+    <button x-render="'hello/123?reason=World'">Say Hello</button>
+    <button x-render="'hello2'">Say Hello2</button>
+</template>
+
+<template id="hello">
+    <h5>This is the <span x-text=$name></span> component</h5>
+    Param: <span x-text="params.param"></span><br>
+    Reason: <span x-text="params.reason"></span><br>
+
+    <div x-template></div>
+
+    <button @click="toggle">Toggle</button>
+    <button x-render="'index'">Back</button>
+</template>
+
+</html>
