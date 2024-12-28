@@ -2,31 +2,21 @@
 
 ## A Simple Single Page Application (SPA) library for Alpine.js.
 
-### Why?
+### The Motivation
 
-I still prefer to develop HTML markup part and Javascript part in separate files, to keep presentation and logic separately and
-lie to use two-way bindings, used Knockoutjs for a long time but now use Alpinejs which covers bindings and reactivity perfectly
-with less code.
+The rationale behind `alpinejs-app` is the preference to maintain a clear separation between HTML and JavaScript logic. This separation keeps presentation distinct from logic, a methodology introduced a long time ago. With Alpine.js, we now get efficient two-way data bindings and reactivity using even less code.
 
-This also makes bundling more flexible: can store everything in one bundle by converting HTML files into strings, store HTML templates in
-downloadable JSON files to be imported from the app, keep files on the server and load individually...
+This structure also offers flexible bundling options: bundle everything into a single file by converting HTML to strings, keep HTML templates in JSON files to load separately, or maintain them on the server to load individually.
 
-### Main highlights:
+### Key Features
 
-Components are main UI elements.
+- **Components**: These are the primary building blocks of the UI. They can be either standalone HTML templates or HTML backed by JavaScript logic, capable of nesting other components.
 
-A component is an HTML template or HTML template backed by a JavaScript class.
+- **Main Component**: Displays the current main page within the `#app-main` HTML element. It manages the navigation and saves the view to the browser history using `savePath` when it's the main view.
 
-Components may contain other components and so forth.
+- **History Navigation**: Supports browser back/forward navigation by rendering the appropriate component on window `popstate` events, achieved using `restorePath`.
 
-There is a notion of a main component which is rendered inside the `#app-main` HTML element. It shows the current main page in the browser window.
-
-Navigating is implemented by telling which component to show and automatically saved in the browser history by `savePath` if rendered as the main component.
-
-The browser Window `popstate` event is handled when the Back button is hit and renders a component automatically using `restorePath`.
-
-To be able navigate to the app in browser directly the server must redirect such links to the main app HTML page,
-the default endpoint is set in `app.base` as '/app/'.
+- **Direct Deep-Linking**: For direct access, server-side routes must redirect to the main app HTML page, with the base path set as '/app/' by default.
 
 ## Installation
 
@@ -46,7 +36,7 @@ npm install @vseryakov/alpinejs-app
 
 ## Getting Started
 
-Below is a hello world style silly example.
+Here's a simple introductory example featuring a hello world scenario.
 
 ```html
 <head>
@@ -83,28 +73,27 @@ Below is a hello world style silly example.
     <button x-render="'index'">Back</button>
 </template>
 ```
-Explanation:
 
-- the script defines a template and a component, then calls `restorePath` once the body is ready, it will render the `index` by default b/c the static path is not our app endpoint
-- the body contains our main app placeholder
-- the `index` template is our default main page, `x-render` directive points to our `hello` component with some parameters
-- clicking on the 'Say Hello' link will render the `hello` component instead of the index inside the main container
-- the hello component is more complicated but it is a typical Alpinejs template with `x-text` referring to the internal component properties
-- the hello component extends `app.AlpineComponent` class to add our toggle function
-- a new `x-template` directive renders nothing b/c the property it uses (template) is empty initially
-- clicking on the button 'Toggle' calls hello component toggle method which changes the `template` property used by the x-template directive. It is rendered inside the x-template div.
+**Explanation:**
+
+- The script defines a template and a component, initializing `restorePath` when the page is ready, defaulting to render `index` since the static path doesn’t match.
+- The body includes a placeholder for the main app.
+- The `index` template is the default starting page, with a `x-render` directive for displaying the `hello` component with parameters.
+- Clicking 'Say Hello' switches the display to the `hello` component.
+- The `hello` component is a typical Alpine.js setup involving `x-text` for displaying component properties.
+- The component extends `app.AlpineComponent` to include a toggle function.
+- A `x-template` directive remains empty until the template variable is populated by clicking the 'Toggle' button, which triggers the component's toggle method to render the `example` template in the contained div.
 
 Nothing much, all the work is done by Alpinejs actually.
 
 ## Render directive
 
-A click event handler to show a component with parameters. It is a Alpinejs JavaScript expression so to show a static name it must be surrounded by quotes.
-The component is a name or path or url to provide additional parameters to a component, see `parsePath` below.
+Binds to click events to display components. Can set components via a syntax supporting names, paths, or URLs with parameters through `parsePath`.
 
-Special parameters:
+Special options include:
 
-- `$target` - render a component inside a specific container.
-- `$history` - ask to explicitly save in browser history.
+- `$target` - to define a specific container for rendering.
+- `$history` - to explicitly manage browser history.
 
 ```html
 <a x-render="'hello/1/2?reason=World'">Say Hello</a>
@@ -117,7 +106,7 @@ Special parameters:
 Render a template or component inside the container, by default the expression is to use variable `template`,
 it is defined in every `app.AlpineComponent` class.
 
-On change a template or component is shown, this can be an alternative to the `x-if` Alpine directive.
+This can be an alternative to the `x-if` Alpine directive.
 
 ```html
 <div x-template></div>
@@ -127,7 +116,7 @@ On change a template or component is shown, this can be an alternative to the `x
 
 ## Magic $app
 
-It references the app object so any method or property can be accessed directly. Programmatic rendering is the most useful feature.
+The `$app` object opens access to app-wide methods and properties, enabling features such as programmatic rendering.
 
 ```html
 <a @click="$app.render('page/1/2?$target=#section')">Render Magic</a>
@@ -135,15 +124,14 @@ It references the app object so any method or property can be accessed directly.
 <a @click="$app.render({ name: 'page', params: { $target: '#section' }})">Render Magic</a>
 ```
 
-## Component classes
+### Component Lifecycle and Event Handling
 
 While Alpinejs has several ways how to reuse the data this app makes it more unified, this is opinionated of course.
 
 Here is the life-cycle of a component:
 
 - on creation a component calls `onCreate` method if exists. it can be created in derived class to implement custom initialization logic and create properties.
-  At this time the context is already initialized, the `params` property is set with parameters passed in the render call.
-  an event handler for `component:event` is registered on the app.
+  At this time the context is already initialized, the `params` property is set with parameters passed in the render call and event handler for `component:event` is registered on the app.
 
 - The `component:create` event is broadcasted with an object { name, element, params, component }
 
@@ -153,15 +141,15 @@ Here is the life-cycle of a component:
   each component will decide what to do with it. This is uses app event emitter instead of DOM events to keep it separate and not overload
   browser with app specific messages.
 
-### Now let's extend our example
+In extending the example:
 
-Add a new button to the index template
+Add a new button to the index template:
 
 ```html
 <button x-render="'hello2'">Say Hello2</button>
 ```
 
-Create another component:
+Introduce another component:
 
 ```javascript
     app.templates.example2 = `<div>Another template inside <span x-text="$app.base + $name"></span> showing template <span x-text=template></span></div>`
@@ -189,19 +177,18 @@ Create another component:
     }
 ````
 
-New things:
+Key additions include:
 
-- an HTML template `example2` which is almost the same as previous example
-- a new template `hello2` which points to `hello` element, reusing existing markup
-- a new component class `hello2` which extends the existing hello component, this is basic JavaScript class usage
+- An additional HTML template `example2` paralleling the previous example structure.
+- A `hello2` template referencing `hello` for shared markup.
+- A new `hello2` component extending from `hello`, showcasing class inheritance.
 
-The new `hello2` component now uses provided life-cycle feature:
- - `onCreate` method overrides the reason and starts a timer
- - `onDelete` method deletes the timer
- - the toggle method is overridden to show new `example2` template and broadcast an event about it
- - `onToggle` method is an event handler only showing the "toggle" event
+The `hello2` component utilizes lifecycle methods:
+- `onCreate` sets up initialization like overriding reasons and running a timer.
+- `onDelete` manages cleanup by stopping timers.
+- `toggle` method now highlights template toggling and broadcasts changes via events.
 
-The "index.html" with this demo is included, try `open index.html` to see it in action.
+For complete interaction, access the "index.html" included, and experiment by opening it.
 
 ## API
 
@@ -209,26 +196,26 @@ The "index.html" with this demo is included, try `open index.html` to see it in 
 
 - `base: "/app/"`
 
-  App base path, must start & end with /
+  Defines the root path for the application, must be framed with slashes.
 
 - `main: "#app-main"`
 
-  Main app element for main components
+  Central app container for rendering main components.
 
 - `index: "index"`
 
-  Default component to render when called `restorePath` on first load and the path is not recognized
+  Specifies a fallback component for unrecognized paths on initial load.
 
 - `templates: {}`
 
-  HTML templates, this is local registry of HTML pieces to be rendered on demand,
-  this is an alternative to using <template> tags which kept in the DOM all the time even if not used.
+  HTML templates, this is the central registry of HTML templates to be rendered on demand,
+  this is an alternative to using <template> tags which are kept in the DOM all the time even if not used.
 
   This object can be populated in the bundle or loaded later as JSON, this all depends on the application environment.
 
 - `components: {}`
 
-  Component classes, this is registry of all components logic to be used with corresponding templates.
+  Component classes, this is the registry of all components logic to be used with corresponding templates.
   Only classed derived from `app.AlpineComponent` will be used, internally they are registered with `Alpine.data()` to be reused by name.
 
 ### Rendering
@@ -355,7 +342,7 @@ Methods:
 
 - `app.trace(...)`
 
-  if `app.debug` is set then trace will log in the console
+  if `app.debug` is set then it will log arguments in the console
 
 ### Advanced
 
@@ -377,3 +364,6 @@ Methods:
 ## License
 
 Licensed under [MIT](https://github.com/vseryakov/alpinejs-app/blob/master/LICENSE)
+
+Some parts of the documentation are produced by ChatGPT.
+
