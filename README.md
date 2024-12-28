@@ -218,6 +218,7 @@ For complete interaction, access the "index.html" included, and experiment by op
   Component classes, this is the registry of all components logic to be used with corresponding templates.
   Only classed derived from `app.AlpineComponent` will be used, internally they are registered with `Alpine.data()` to be reused by name.
 
+
 ### Rendering
 
 - `app.render(options, dflt)`
@@ -248,6 +249,7 @@ For complete interaction, access the "index.html" included, and experiment by op
 
   if the `component` property is empty then this component is HTML template.
 
+
 ### Router
 
 - `app.restorePath(path, dflt)`
@@ -272,6 +274,7 @@ For complete interaction, access the "index.html" included, and experiment by op
    - URL: https://host/app/name/param/...
 
    All parts from the path and query parameters will be placed in the `params` object.
+
 
 ### DOM utilities
 
@@ -344,6 +347,7 @@ Methods:
 
   if `app.debug` is set then it will log arguments in the console
 
+
 ### Advanced
 
 - `app.plugin(name, options)`
@@ -357,6 +361,7 @@ Methods:
 
   The reason for plugins is that while this is designed for Alpinejs, the idea originated by using Knockoutjs with this system,
   the plugin can be found at [app.ko.js](https://github.com/vseryakov/backendjs/blob/master/web/js/app.ko.js).
+
 
 ## Author
   Vlad Seryakov
