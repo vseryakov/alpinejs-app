@@ -27,11 +27,15 @@
     app.components.hello2 = class extends app.components.hello {
         onCreate() {
             this.params.reason = "Hello2 World"
-            this._timer = setInterval(() => { this.params.param = Date() }, 1000);
+            this._timer = setInterval(() => { this.params.param1 = Date() }, 1000);
         }
 
         onDelete() {
             clearInterval(this._timer)
+        }
+
+        onPrepareDelete(event) {
+            // Setting event.stop=1 will prevent rendering
         }
 
         onToggle(data) {
@@ -63,7 +67,7 @@
 
 <template id="hello">
     <h5>This is the <span x-text=$name></span> component</h5>
-    Param: <span x-text="params.param"></span><br>
+    Param: <span x-text="params.param1"></span><br>
     Reason: <span x-text="params.reason"></span><br>
 
     <div x-template></div>

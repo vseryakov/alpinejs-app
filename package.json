@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "alpinejs-app",
   "description": "Simple SPA plugin for Alpinejs",
   "repository": {
@@ -13,12 +13,13 @@
   "module": "dist/app.mjs",
   "unpkg": "dist/app.min.js",  
   "scripts": {
-    "watch": "esbuild builds/cdn.js --platform=browser --bundle --outfile=dist/app.js --watch",
+    "watch": "npm run cdn -- --watch",
     "cdn": "esbuild builds/cdn.js --platform=browser --bundle --outfile=dist/app.js",
     "esm": "esbuild builds/module.js --platform=neutral --bundle --outfile=dist/app.mjs",
     "cdn-min": "esbuild builds/cdn.js --platform=browser --bundle --minify --outfile=dist/app.min.js",
     "esm-min": "esbuild builds/module.js --platform=neutral --bundle --minify --outfile=dist/app.min.mjs",
-    "all": "npm run cdn;npm run esm;npm run cdn-min;npm run esm-min"
+    "all": "npm run cdn;npm run esm;npm run cdn-min;npm run esm-min",
+    "devbuild": "npm run cdn"
   },
   "devDependencies": {
     "esbuild": "^0.24.0"

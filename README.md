@@ -64,7 +64,7 @@ Here's a simple introductory example featuring a hello world scenario.
 
 <template id="hello">
     <h5>This is the <span x-text=$name></span> component</h5>
-    Param: <span x-text="params.param"></span><br>
+    Param: <span x-text="params.param1"></span><br>
     Reason: <span x-text="params.reason"></span><br>
 
     <div x-template></div>
@@ -159,7 +159,7 @@ Introduce another component:
     app.components.hello2 = class extends app.components.hello {
         onCreate() {
             this.params.reason = "Hello2 World"
-            this._timer = setInterval(() => { this.params.param = Date() }, 1000);
+            this._timer = setInterval(() => { this.params.param1 = Date() }, 1000);
         }
 
         onDelete() {
@@ -226,8 +226,12 @@ For complete interaction, access the "index.html" included, and experiment by op
   Show a component, `options` can be a string to be parsed by `parsePath` or an object `{ name, params }`.
   if no `params.$target` provided a component will be shown inside the main element defined by `app.main`.
 
-  When showing main app the current component is asked to be deleted first via `beforeDelete` method.
-  If it returns `false` the render is cancelled immediately.
+  It returns the resolved component as described in `resolve` method after rendering or nothing if nothing was shown.
+
+  When showing main app the current component is asked to be deleted first by sending an event `prepare:delete`, a component that is not ready to be deleted yet
+  must set the property `event.stop` in the event handler `onPrepareDelete(event)` in order to prevent rendering new component.
+
+  To explicitly disable history pass `options.nohistory` or `params.$nohistory` otherwise main components are saved automatically.
 
 - `app.resolve(path, dflt)`
 
@@ -260,8 +264,10 @@ For complete interaction, access the "index.html" included, and experiment by op
 
 - `app.savePath(options)`
 
-  Saves the given component in the history as `/name/param/param2/param3/...`, this is called on every
-  `component:create` event for main components.
+  Saves the given component in the history as `/name/param1/param2/param3/...`.
+
+  It is called on every `component:create` event for main components as a microtask,
+  meaning immediate callbacks have a chance to modify the behaviour.
 
 - `app.parsePath(path, dflt)`
 
@@ -269,9 +275,9 @@ For complete interaction, access the "index.html" included, and experiment by op
 
   The path can be:
    - component name
-   - relative path: name/param/param2/param3/....
-   - absolute path: /app/name/param/paarm2/...
-   - URL: https://host/app/name/param/...
+   - relative path: name/param1/param2/param3/....
+   - absolute path: /app/name/param1/param2/...
+   - URL: https://host/app/name/param1/...
 
    All parts from the path and query parameters will be placed in the `params` object.
 

@@ -23,7 +23,7 @@ app.parsePath = (path) => {
         rc.name = path.shift();
         for (let i = 0; i < path.length; i++) {
             if (!path[i]) continue;
-            rc.params[`param${i ? i + 1 : ""}`] = path[i];
+            rc.params[`param${i + 1}`] = path[i];
         }
     } else {
         rc.name = path || "";
@@ -41,7 +41,7 @@ app.savePath = (options) => {
     if (!options?.name) return;
     var path = [options.name];
     if (options?.params) {
-        for (let i = 0; i < 5; i++) path.push(options.params[`param${i ? i + 1 : ""}`] || "");
+        for (let i = 1; i < 5; i++) path.push(options.params[`param${i}`] || "");
     }
     while (!path.at(-1)) path.length--;
     path = path.join("/");
@@ -59,9 +59,8 @@ app.$on(window, "popstate", () => app.restorePath());
 
 app.on("component:create", (event) => {
     app.trace("component:create", event);
-
-    if (event.params?.$history) {
-        app.savePath(event);
-    }
+    queueMicrotask(() => {
+        if (event?.params?.$history) app.savePath(event);
+    });
 });
 

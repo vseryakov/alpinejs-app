@@ -90,12 +90,7 @@ function render(element, options)
     }
 }
 
-function context(element)
-{
-    return element?.firstElementChild && Alpine.closestDataStack(element.firstElementChild)[0];
-}
-
-app.plugin(_alpine, { render, context, Component, default: 1 });
+app.plugin(_alpine, { render, Component, default: 1 });
 
 app.$on(document, "alpine:init", () => {
 

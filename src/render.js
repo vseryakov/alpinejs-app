@@ -6,7 +6,7 @@ var _default_plugin;
 app.plugin = (name, options) => {
     if (!name || typeof name != "string") throw Error("type must be defined")
     if (options) {
-        for (const p of ["render", "context", "cleanup"]) {
+        for (const p of ["render", "cleanup"]) {
             if (options[p] && typeof options[p] != "function") throw Error(p + " must be a function");
         }
         if (typeof options?.Component == "function") {
@@ -53,22 +53,27 @@ app.render = (options, dflt) => {
     const element = app.$(params.$target || app.main);
     if (!element) return;
 
-    // Replacing main component, ask if it can be destroyed first
+    // Replacing main component
     if (!params.$target || params.$target == app.main) {
-        var plugins = Object.values(_plugins);
-        for (const p of plugins.filter(x => x.context)) {
-            if (app.call(p.context(element), "beforeDelete", tmpl) === false) return false;
-        }
+
+        // Ask if it can be destroyed first
+        var ev = { name: tmpl.name };
+        app.emit(app.event, "prepare:delete", ev);
+        if (ev.stop) return;
+
         // Cleanup by all plugins
+        var plugins = Object.values(_plugins);
         for (const p of plugins.filter(x => x.cleanup)) {
             app.call(p.cleanup, element);
         }
-        params.$history = 1;
+        // Save in history if not excplicitly asked not to
+        if (!(options.nohistory || params.$nohistory)) params.$history = 1;
     }
 
     var plugin = tmpl.component?.$type || options.plugin || params.$plugin;
     plugin = _plugins[plugin] || _default_plugin;
     if (!plugin?.render) return;
-    return plugin.render(element, tmpl);
+    plugin.render(element, tmpl);
+    return tmpl;
 }
 
