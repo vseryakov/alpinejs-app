@@ -15,16 +15,16 @@ class Component {
         this.$name = name;
         this.$_id = `${name}:${_alpine}:${Component._id++}`;
         Object.assign(this.params, params);
-        if (!this.params.$noevents) {
-            this._handleEvent = this.handleEvent.bind(this);
-        }
+        this._handleEvent = this.handleEvent.bind(this);
     }
 
     init() {
         app.trace("init:", this.$_id);
         Object.assign(this.params, this.$el._x_params);
         app.call(this.onCreate?.bind(this));
-        app.on(app.event, this._handleEvent);
+        if (!this.params.$noevents) {
+            app.on(app.event, this._handleEvent);
+        }
         app.emit("component:create", { type: _alpine, name: this.$name, component: this, element: this.$el, params: Alpine.raw(this.params) });
     }
 
