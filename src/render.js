@@ -57,7 +57,7 @@ app.render = (options, dflt) => {
     if (!params.$target || params.$target == app.main) {
 
         // Ask if it can be destroyed first
-        var ev = { name: tmpl.name };
+        var ev = { name: tmpl.name, params };
         app.emit(app.event, "prepare:delete", ev);
         if (ev.stop) return;
 

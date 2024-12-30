@@ -197,7 +197,7 @@
     const element = app_default.$(params.$target || app_default.main);
     if (!element) return;
     if (!params.$target || params.$target == app_default.main) {
-      var ev = { name: tmpl.name };
+      var ev = { name: tmpl.name, params };
       app_default.emit(app_default.event, "prepare:delete", ev);
       if (ev.stop) return;
       var plugins = Object.values(_plugins);
