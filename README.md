@@ -49,7 +49,7 @@ Here's a simple introductory example featuring a hello world scenario.
         }
     }
 
-    app.$ready(app.restorePath);
+    app.start();
 </script>
 </head>
 
@@ -76,7 +76,7 @@ Here's a simple introductory example featuring a hello world scenario.
 
 **Explanation:**
 
-- The script defines a template and a component, initializing `restorePath` when the page is ready, defaulting to render `index` since the static path doesn’t match.
+- The script defines a template and a component, `app.start` calls `restorePath` when the page is ready, defaulting to render `index` since the static path doesn’t match.
 - The body includes a placeholder for the main app.
 - The `index` template is the default starting page, with a `x-render` directive for displaying the `hello` component with parameters.
 - Clicking 'Say Hello' switches the display to the `hello` component.
@@ -204,7 +204,7 @@ For complete interaction, access the "index.html" included, and experiment by op
 
 - `index: "index"`
 
-  Specifies a fallback component for unrecognized paths on initial load.
+  Specifies a fallback component for unrecognized paths on initial load, it is used by `restorePath`.
 
 - `templates: {}`
 
@@ -231,7 +231,8 @@ For complete interaction, access the "index.html" included, and experiment by op
   When showing main app the current component is asked to be deleted first by sending an event `prepare:delete`, a component that is not ready to be deleted yet
   must set the property `event.stop` in the event handler `onPrepareDelete(event)` in order to prevent rendering new component.
 
-  To explicitly disable history pass `options.nohistory` or `params.$nohistory` otherwise main components are saved automatically.
+  To explicitly disable history pass `options.nohistory` or `params.$nohistory` otherwise main components are saved automatically by sending
+  the `path:save` event.
 
 - `app.resolve(path, dflt)`
 
@@ -256,11 +257,18 @@ For complete interaction, access the "index.html" included, and experiment by op
 
 ### Router
 
-- `app.restorePath(path, dflt)`
+- `app.start`
 
-  Show a component by path, it is called on `window.popstate` event by default and is used
-  to show first component on initial page load. Empty path means to use current location. If the
-  path is not recognized or no component is found then the default `dflt` component is shown.
+  Setup default handlers:
+   - on `path:restore` event call `restorePath`
+   - on `path:save` call `savePath`
+   - on page ready call `restorePath`
+
+- `app.restorePath(path)`
+
+  Show a component by path, it is called on `path:restore` event by default from `app.start` and is used
+  to show first component on initial page load. If the path is not recognized or no component is
+  found then the default `app.index` component is shown.
 
 - `app.savePath(options)`
 
@@ -310,7 +318,9 @@ The app implements very simple event emitter to handle internal messages separat
 
 There are predefined system events:
 
- - `component:create` - is sent when a new component is rendered, { type, name, element, params }
+ - `path:restore` - is sent by the window `popstate` event
+ - `path:save` - is sent by `render` for main components
+ - `component:create` - is sent when a new component is created, { type, name, element, params }
  - `component:delete` - is sent when a component is deleted, { type, name, element, params }
  - `component:event` - a generic event defined in `app.event` is received by every live component and is handled by `onEvent(...)` method if exist.
    Then convert the first string argument into camel format like `onFirstArg(...)` and call this method if exists
@@ -360,7 +370,6 @@ Methods:
 
   Register a render plugin, at least 2 functions must be defined in the options object:
    - `render(element, options)` - show a component, called by `app.render`
-   - `context(element)` - return the component or data context for the root element
    - `cleanup(element)` - optional, run additional cleanups before destroying a component
    - `default` - if not empty make this plugin default
    - `Component` - optional base component constructor, it will be registered as app.{Type}Component, like AlpineComponent, KoComponent,... to easy create custom components

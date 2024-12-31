@@ -28,6 +28,7 @@ app.off = (event, callback) => {
 }
 
 app.emit = (event, ...args) => {
+    app.trace(event, ...args);
     if (!_events[event]) return;
     for (const cb of _events[event]) app.call(cb, ...args);
 }

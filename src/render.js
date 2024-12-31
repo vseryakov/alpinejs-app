@@ -53,9 +53,12 @@ app.render = (options, dflt) => {
     const element = app.$(params.$target || app.main);
     if (!element) return;
 
+    var plugin = tmpl.component?.$type || options?.plugin || params.$plugin;
+    plugin = _plugins[plugin] || _default_plugin;
+    if (!plugin?.render) return;
+
     // Replacing main component
     if (!params.$target || params.$target == app.main) {
-
         // Ask if it can be destroyed first
         var ev = { name: tmpl.name, params };
         app.emit(app.event, "prepare:delete", ev);
@@ -66,13 +69,15 @@ app.render = (options, dflt) => {
         for (const p of plugins.filter(x => x.cleanup)) {
             app.call(p.cleanup, element);
         }
-        // Save in history if not excplicitly asked not to
-        if (!(options.nohistory || params.$nohistory)) params.$history = 1;
-    }
 
-    var plugin = tmpl.component?.$type || options.plugin || params.$plugin;
-    plugin = _plugins[plugin] || _default_plugin;
-    if (!plugin?.render) return;
+        // Save in history if not explicitly asked not to
+        if (!(options?.nohistory || params.$nohistory)) {
+            queueMicrotask(() => {
+                app.emit("path:save", tmpl);
+            });
+        }
+    }
+    app.emit("component:render", tmpl);
     plugin.render(element, tmpl);
     return tmpl;
 }

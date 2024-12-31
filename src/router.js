@@ -50,17 +50,16 @@ app.savePath = (options) => {
     window.history.pushState(null, "", window.location.origin + app.base + path);
 }
 
-app.restorePath = (path, dflt) => {
-    app.trace("restorePath:", path || window.location.href, dflt || app.index);
-    app.render(path || window.location.href, dflt || app.index);
+app.restorePath = (path) => {
+    app.trace("restorePath:", path, app.index);
+    app.render(path, app.index);
 }
 
-app.$on(window, "popstate", () => app.restorePath());
+app.start = () => {
+    app.on("path:save", app.savePath);
+    app.on("path:restore", app.restorePath);
+    app.$ready(app.restorePath.bind(app, window.location.href));
+}
 
-app.on("component:create", (event) => {
-    app.trace("component:create", event);
-    queueMicrotask(() => {
-        if (event?.params?.$history) app.savePath(event);
-    });
-});
+app.$on(window, "popstate", () => app.emit("path:restore", window.location.href));
 
