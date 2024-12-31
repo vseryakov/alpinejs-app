@@ -24,7 +24,7 @@ app_default.call = (obj, method, ...arg) => {
 };
 var _events = {};
 app_default.on = (event, callback) => {
-  if (!callback) return;
+  if (typeof callback != "function") return;
   if (!_events[event]) _events[event] = [];
   _events[event].push(callback);
 };
@@ -34,9 +34,17 @@ app_default.off = (event, callback) => {
   if (i > -1) return _events[event].splice(i, 1);
 };
 app_default.emit = (event, ...args) => {
-  app_default.trace(event, ...args);
-  if (!_events[event]) return;
-  for (const cb of _events[event]) app_default.call(cb, ...args);
+  app_default.trace("emit:", event, ...args);
+  if (_events[event]) {
+    for (const cb of _events[event]) cb(...args);
+  } else if (typeof event == "string" && event.endsWith(":*")) {
+    event = event.slice(0, -1);
+    for (const p in _events) {
+      if (p.startsWith(event)) {
+        for (const cb of _events[p]) cb(...args);
+      }
+    }
+  }
 };
 
 // src/dom.js

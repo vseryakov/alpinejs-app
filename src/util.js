@@ -16,7 +16,7 @@ app.call = (obj, method, ...arg) => {
 var _events = {}
 
 app.on = (event, callback) => {
-    if (!callback) return;
+    if (typeof callback != "function") return;
     if (!_events[event]) _events[event] = [];
     _events[event].push(callback);
 }
@@ -28,8 +28,17 @@ app.off = (event, callback) => {
 }
 
 app.emit = (event, ...args) => {
-    app.trace(event, ...args);
-    if (!_events[event]) return;
-    for (const cb of _events[event]) app.call(cb, ...args);
+    app.trace("emit:", event, ...args);
+    if (_events[event]) {
+        for (const cb of _events[event]) cb(...args);
+    } else
+    if (typeof event == "string" && event.endsWith(":*")) {
+        event = event.slice(0, -1);
+        for (const p in _events) {
+            if (p.startsWith(event)) {
+                for (const cb of _events[p]) cb(...args);
+            }
+        }
+    }
 }
 

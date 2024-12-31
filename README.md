@@ -260,9 +260,12 @@ For complete interaction, access the "index.html" included, and experiment by op
 - `app.start`
 
   Setup default handlers:
-   - on `path:restore` event call `restorePath`
-   - on `path:save` call `savePath`
-   - on page ready call `restorePath`
+   - on `path:restore` event call `restorePath` to render a component from the history
+   - on `path:save` call `savePath` to save the current component in the history
+   - on page ready call `restorePath` to render the initial page
+
+   **If not called then no browser history will not be handled, up to the app to do it some other way.**. One good
+   reason is to create your own handlers to build different path and then save/restore.
 
 - `app.restorePath(path)`
 
@@ -318,8 +321,8 @@ The app implements very simple event emitter to handle internal messages separat
 
 There are predefined system events:
 
- - `path:restore` - is sent by the window `popstate` event
- - `path:save` - is sent by `render` for main components
+ - `path:restore` - is sent by the window `popstate` event from `app.start`
+ - `path:save` - is sent by `app.render` for main components only
  - `component:create` - is sent when a new component is created, { type, name, element, params }
  - `component:delete` - is sent when a component is deleted, { type, name, element, params }
  - `component:event` - a generic event defined in `app.event` is received by every live component and is handled by `onEvent(...)` method if exist.
@@ -337,7 +340,11 @@ Methods:
 
 - `app.emit(event, ...args)`
 
-  Send an event to all listeners at once, one by one
+  Send an event to all listeners at once, one by one.
+
+  If the event ends with `:*` it means notify all listeners that match the beginning of the given pattern, for example:
+
+      `app.emit("topic:*",....)` will notify `topic:event1`, `topic:event2`, ...
 
 
 ### General utilities
