@@ -28,6 +28,16 @@ app_default.on = (event, callback) => {
   if (!_events[event]) _events[event] = [];
   _events[event].push(callback);
 };
+app_default.once = (event, callback) => {
+  if (typeof callback != "function") return;
+  app_default.on(event, (...args) => {
+    app_default.off(event, callback);
+    callback(...args);
+  });
+};
+app_default.only = (event, callback) => {
+  _events[event] = typeof callback == "function" ? [callback] : [];
+};
 app_default.off = (event, callback) => {
   if (!_events[event] || !callback) return;
   const i = _events[event].indexOf(callback);
@@ -287,6 +297,7 @@ function render(element, options) {
       }
     });
   } else {
+    Alpine.data(options.name, () => new options.component(options.name));
     const node = app_default.$elem("div", "x-data", options.name, ":_x_params", options.params);
     while (body.firstChild) {
       node.appendChild(body.firstChild);
@@ -299,13 +310,16 @@ function render(element, options) {
   }
 }
 app_default.plugin(_alpine, { render, Component, default: 1 });
-app_default.$on(document, "alpine:init", () => {
+app_default.on("alpine:init", () => {
   for (const [name, obj] of Object.entries(app_default.components)) {
-    if (obj?.$type != _alpine) continue;
+    if (obj?.$type != _alpine || customElements.get(Alpine.prefixed(name))) continue;
     customElements.define(Alpine.prefixed(name), class extends Element {
     });
     Alpine.data(name, () => new obj(name));
   }
+});
+app_default.$on(document, "alpine:init", () => {
+  app_default.emit("alpine:init");
   Alpine.magic("app", (el) => app_default);
   Alpine.directive("render", (el, { modifiers, expression }, { evaluate, cleanup }) => {
     const click = (e) => {

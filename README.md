@@ -334,6 +334,14 @@ Methods:
 
   Listen on event, the callback is called synchronously
 
+- `app.once(event, callback)`
+
+  Listen on event, the callback is called only once
+
+- `app.only(event, callback)`
+
+  Remove all current listeners for the given event, if a callback is given make it the only listener.
+
 - `app.off(event, callback)`
 
   Remove event listener

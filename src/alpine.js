@@ -77,6 +77,8 @@ function render(element, options)
             }
         });
     } else {
+        // In case a component was loaded after alpine:init event
+        Alpine.data(options.name, () => (new options.component(options.name)));
         const node = app.$elem("div", "x-data", options.name, ":_x_params", options.params);
         while (body.firstChild) {
             node.appendChild(body.firstChild);
@@ -92,13 +94,17 @@ function render(element, options)
 
 app.plugin(_alpine, { render, Component, default: 1 });
 
-app.$on(document, "alpine:init", () => {
-
+app.on("alpine:init", () => {
     for (const [name, obj] of Object.entries(app.components)) {
-        if (obj?.$type != _alpine) continue;
+        if (obj?.$type != _alpine || customElements.get(Alpine.prefixed(name))) continue;
         customElements.define(Alpine.prefixed(name), class extends Element {});
         Alpine.data(name, () => (new obj(name)));
     }
+});
+
+app.$on(document, "alpine:init", () => {
+
+    app.emit("alpine:init");
 
     Alpine.magic('app', (el) => app);
 

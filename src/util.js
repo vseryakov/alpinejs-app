@@ -21,6 +21,18 @@ app.on = (event, callback) => {
     _events[event].push(callback);
 }
 
+app.once = (event, callback) => {
+    if (typeof callback != "function") return;
+    app.on(event, (...args) => {
+        app.off(event, callback);
+        callback(...args);
+    })
+}
+
+app.only = (event, callback) => {
+    _events[event] = typeof callback == "function" ? [callback] : [];
+}
+
 app.off = (event, callback) => {
     if (!_events[event] || !callback) return;
     const i = _events[event].indexOf(callback);
