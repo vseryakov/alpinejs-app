@@ -57,6 +57,10 @@ app.$elem = (name, ...arg) => {
     return el;
 }
 
+app.$parse = (text) => {
+    return new window.DOMParser().parseFromString(text, 'text/html').body;
+}
+
 var _ready = []
 
 app.$ready = (callback) => {

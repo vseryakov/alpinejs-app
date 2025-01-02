@@ -314,6 +314,9 @@ For complete interaction, access the "index.html" included, and experiment by op
 
     ```app.$elem("div", "id", "123", ".display", "none", ":_x-prop", "value", "click", () => {})```
 
+- `app.$parse(text)`
+
+  A shortcut to DOMParser, returns the .body
 
 ### Event emitter
 

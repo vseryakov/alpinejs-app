@@ -65,7 +65,7 @@ function render(element, options)
     app.$empty(element)
 
     // Add new elements
-    const body = new DOMParser().parseFromString(options.template, "text/html").body;
+    const body = app.$parse(options.template);
     if (!options.component) {
         Alpine.mutateDom(() => {
             while (body.firstChild) {
