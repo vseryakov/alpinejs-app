@@ -6,7 +6,7 @@
 
 The rationale behind `alpinejs-app` is the preference to maintain a clear separation between HTML and JavaScript logic. This separation keeps presentation distinct from logic, a methodology introduced a long time ago. With Alpine.js, we now get efficient two-way data bindings and reactivity using even less code.
 
-This structure also offers flexible bundling options: bundle everything into a single file by converting HTML to strings, keep HTML templates in JSON files to load separately, or maintain them on the server to load individually.
+This structure also offers flexible bundling options: bundle everything into a single file by converting HTML files to strings, keep HTML templates in JSON files to load separately, or maintain HTML files on the server to load individually or else ...
 
 ### Key Features
 
@@ -314,9 +314,19 @@ For complete interaction, access the "index.html" included, and experiment by op
 
     ```app.$elem("div", "id", "123", ".display", "none", ":_x-prop", "value", "click", () => {})```
 
-- `app.$parse(text)`
+- `app.$elem(name, object)`
 
-  A shortcut to DOMParser, returns the .body
+  Similar to above but all properties and attributes are taken from an object
+
+    ```app.$elem("div", { id: "123", ".display": "none", ":_x-prop": "value", "click": () => {} })```
+
+- `app.$parse(text, list)`
+
+  A shortcut to DOMParser, returns the .body.
+
+  If the second argument is true then the result will be an array with all child nodes, i.e. simpler to feed it to Element.append()
+
+    ```document.append(...app.$parse("<div>...</div>"), true))```
 
 ### Event emitter
 

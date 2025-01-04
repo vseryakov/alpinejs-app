@@ -1,4 +1,4 @@
-import app from './app';
+import { app, isStr, toCamel } from './app';
 
 const _alpine = "alpine";
 
@@ -39,8 +39,8 @@ class Component {
     handleEvent(event, ...args) {
         app.trace("event:", this.$_id, ...args)
         app.call(this.onEvent?.bind(this.$data), event, ...args);
-        if (typeof event != "string") return;
-        var method = ("on_" + event).toLowerCase().replace(/[.:_-](\w)/g, (_, char) => char.toUpperCase());
+        if (!isStr(event)) return;
+        var method = toCamel("on_" + event);
         app.call(this[method]?.bind(this.$data), ...args);
     }
 
@@ -56,7 +56,7 @@ class Element extends HTMLElement {
 
 function render(element, options)
 {
-    if (typeof options == "string") {
+    if (isStr(options)) {
         options = app.resolve(options);
         if (!options) return;
     }

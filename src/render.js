@@ -1,15 +1,15 @@
-import app from "./app"
+import { app, isStr, isFunc } from "./app"
 
 var _plugins = {}
 var _default_plugin;
 
 app.plugin = (name, options) => {
-    if (!name || typeof name != "string") throw Error("type must be defined")
+    if (!name || !isStr(name)) throw Error("type must be defined")
     if (options) {
         for (const p of ["render", "cleanup"]) {
-            if (options[p] && typeof options[p] != "function") throw Error(p + " must be a function");
+            if (options[p] && !isFunc(options[p])) throw Error(p + " must be a function");
         }
-        if (typeof options?.Component == "function") {
+        if (isFunc(options?.Component)) {
             app[`${name.substr(0, 1).toUpperCase() + name.substr(1).toLowerCase()}Component`] = options.Component;
         }
     }
@@ -37,7 +37,7 @@ app.resolve = (path, dflt) => {
     if (!template) return;
     rc.template = template;
     var component = components[name] || components[rc.name];
-    if (typeof component == "string") component = components[component];
+    if (isStr(component)) component = components[component];
     rc.component = component;
     return rc;
 }

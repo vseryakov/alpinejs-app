@@ -1,4 +1,4 @@
-import app from "./app"
+import { app, isStr, isObj } from "./app"
 
 app.fetchOpts = function(options)
 {
@@ -11,11 +11,11 @@ app.fetchOpts = function(options)
 
     var data = options.data;
     if (opts.method == "GET" || opts.method == "HEAD") {
-        if (typeof data == "object" && data) {
+        if (isObj(data)) {
             options.url += "?" + new URLSearchParams(data).toString();
         }
     } else
-    if (typeof data == "string") {
+    if (isStr(data)) {
         opts.body = data;
         headers["content-type"] = options.contentType || 'application/x-www-form-urlencoded; charset=UTF-8';
     } else
@@ -23,7 +23,7 @@ app.fetchOpts = function(options)
         opts.body = data;
         delete headers["content-type"];
     } else
-    if (typeof data == "object") {
+    if (isObj(data)) {
         opts.body = JSON.stringify(data);
         headers["content-type"] = "application/json; charset=UTF-8";
     } else
