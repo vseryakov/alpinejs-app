@@ -1,4 +1,4 @@
-import { app, isStr, toCamel } from './app';
+import { app, isString, isElement, toCamel } from './app';
 
 const _alpine = "alpine";
 
@@ -39,7 +39,7 @@ class Component {
     handleEvent(event, ...args) {
         app.trace("event:", this.$_id, ...args)
         app.call(this.onEvent?.bind(this.$data), event, ...args);
-        if (!isStr(event)) return;
+        if (!isString(event)) return;
         var method = toCamel("on_" + event);
         app.call(this[method]?.bind(this.$data), ...args);
     }
@@ -56,7 +56,7 @@ class Element extends HTMLElement {
 
 function render(element, options)
 {
-    if (isStr(options)) {
+    if (isString(options)) {
         options = app.resolve(options);
         if (!options) return;
     }
@@ -92,7 +92,13 @@ function render(element, options)
     }
 }
 
-app.plugin(_alpine, { render, Component, default: 1 });
+function data(element)
+{
+    if (!isElement(element)) element = app.$(app.main + " div");
+    return element && Alpine.closestDataStack(element)[0];
+}
+
+app.plugin(_alpine, { render, Component, data, default: 1 });
 
 app.on("alpine:init", () => {
     for (const [name, obj] of Object.entries(app.components)) {

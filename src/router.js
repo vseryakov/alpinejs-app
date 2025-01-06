@@ -1,9 +1,9 @@
-import { app, isStr } from "./app"
+import { app, isString } from "./app"
 
 app.parsePath = (path) => {
     var rc = { name: "", params: {} }, query, loc = window.location;
 
-    if (!isStr(path)) return rc;
+    if (!isString(path)) return rc;
 
     // Custom parser b/c this is not always url
     var base = app.base;
@@ -37,7 +37,7 @@ app.parsePath = (path) => {
 }
 
 app.savePath = (options) => {
-    if (isStr(options)) options = { name: options };
+    if (isString(options)) options = { name: options };
     if (!options?.name) return;
     var path = [options.name];
     if (options?.params) {

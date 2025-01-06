@@ -1,10 +1,10 @@
-import { app, isStr, isFunc, isObj, isElement, toCamel } from "./app"
+import { app, isString, isFunction, isObj, isElement, toCamel } from "./app"
 
 app.$param = (name, dflt) => {
     return new URLSearchParams(location.search).get(name) || dflt || "";
 }
 
-const esc = (selector) => (isStr(selector) ? selector.replace(/#([^\s"#']+)/g, (_, id) => `#${CSS.escape(id)}`) : "")
+const esc = (selector) => (isString(selector) ? selector.replace(/#([^\s"#']+)/g, (_, id) => `#${CSS.escape(id)}`) : "")
 
 app.$ = (selector, doc) => ((isElement(doc) || document).querySelector(esc(selector)))
 
@@ -14,15 +14,15 @@ app.$event = (element, name, detail = {}) =>
     (isElement(element) && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true })))
 
 app.$on = (element, event, callback, ...arg) => {
-    return isFunc(callback) && element.addEventListener(event, callback, ...arg);
+    return isFunction(callback) && element.addEventListener(event, callback, ...arg);
 }
 
 app.$off = (element, event, callback, ...arg) => {
-    return isFunc(callback) && element.removeEventListener(event, callback, ...arg);
+    return isFunction(callback) && element.removeEventListener(event, callback, ...arg);
 }
 
 app.$attr = (element, attr, value) => {
-    if (isStr(element) && element) element = app.$(element);
+    if (isString(element) && element) element = app.$(element);
     if (!isElement(element)) return;
     return value === undefined ? element.getAttribute(attr) :
            value === null ? element.removeAttribute(attr) :
@@ -30,6 +30,7 @@ app.$attr = (element, attr, value) => {
 }
 
 app.$empty = (element, cleanup) => {
+    if (isString(element) && element) element = app.$(element);
     if (!isElement(element)) return;
     while (element.firstChild) {
         const node = element.firstChild;
@@ -46,8 +47,8 @@ app.$elem = (name, ...arg) => {
     }
     for (let i = 0; i < arg.length - 1; i += 2) {
         key = arg[i], val = arg[i + 1];
-        if (!isStr(key)) continue;
-        if (isFunc(val)) {
+        if (!isString(key)) continue;
+        if (isFunction(val)) {
             app.$on(element, key, val);
         } else
         if (key.startsWith(".")) {

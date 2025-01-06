@@ -328,6 +328,11 @@ For complete interaction, access the "index.html" included, and experiment by op
 
     ```document.append(...app.$parse("<div>...</div>"), true))```
 
+- `app.$data(element)`
+
+  Return component data instance for the given element or the main component if omitted. This is for
+  debugging purposes or cases when calling some known method is required.
+
 ### Event emitter
 
 The app implements very simple event emitter to handle internal messages separate from the DOM events.
@@ -399,6 +404,7 @@ Methods:
   Register a render plugin, at least 2 functions must be defined in the options object:
    - `render(element, options)` - show a component, called by `app.render`
    - `cleanup(element)` - optional, run additional cleanups before destroying a component
+   - `data(element)` - return the component class instance for the given element or the main
    - `default` - if not empty make this plugin default
    - `Component` - optional base component constructor, it will be registered as app.{Type}Component, like AlpineComponent, KoComponent,... to easy create custom components
 

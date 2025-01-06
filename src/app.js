@@ -6,13 +6,15 @@ export var app = {
     event: "component:event",
     templates: {},
     components: {},
+    isF: isFunction,
+    isS: isString,
+    isE: isElement,
+    isO: isObj,
 }
 
-export function isFunc(callback) { return typeof callback == "function" }
+export function isFunction(callback) { return typeof callback == "function" }
 
-export function isStr(str) { return typeof str == "string" }
-
-export function isNull(obj) { return obj ?? true }
+export function isString(str) { return typeof str == "string" }
 
 export function isObj(obj) { return typeof obj == "object" && obj }
 

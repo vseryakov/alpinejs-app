@@ -1,4 +1,4 @@
-import { app, isStr, isObj } from "./app"
+import { app, isString, isObj } from "./app"
 
 app.fetchOpts = function(options)
 {
@@ -15,7 +15,7 @@ app.fetchOpts = function(options)
             options.url += "?" + new URLSearchParams(data).toString();
         }
     } else
-    if (isStr(data)) {
+    if (isString(data)) {
         opts.body = data;
         headers["content-type"] = options.contentType || 'application/x-www-form-urlencoded; charset=UTF-8';
     } else
