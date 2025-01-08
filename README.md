@@ -232,7 +232,7 @@ For complete interaction, access the "index.html" included, and experiment by op
   must set the property `event.stop` in the event handler `onPrepareDelete(event)` in order to prevent rendering new component.
 
   To explicitly disable history pass `options.nohistory` or `params.$nohistory` otherwise main components are saved automatically by sending
-  the `path:save` event.
+  the `path:save` event. A component can globally disable history by creating a static property `$nohistory` in the class definition.
 
 - `app.resolve(path, dflt)`
 

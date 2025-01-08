@@ -265,7 +265,7 @@
       for (const p of plugins.filter((x) => x.cleanup)) {
         app.call(p.cleanup, element);
       }
-      if (!(options?.nohistory || params.$nohistory)) {
+      if (!(options?.nohistory || params.$nohistory || tmpl.component?.$nohistory)) {
         queueMicrotask(() => {
           app.emit("path:save", tmpl);
         });

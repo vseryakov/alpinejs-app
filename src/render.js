@@ -80,7 +80,7 @@ app.render = (options, dflt) => {
         }
 
         // Save in history if not explicitly asked not to
-        if (!(options?.nohistory || params.$nohistory)) {
+        if (!(options?.nohistory || params.$nohistory || tmpl.component?.$nohistory)) {
             queueMicrotask(() => {
                 app.emit("path:save", tmpl);
             });
