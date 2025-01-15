@@ -62,7 +62,8 @@ app.$elem = (name, ...arg) => {
         } else
         if (key == "text") {
             element.textContent = val || "";
-        } else {
+        } else
+        if (val !== null) {
             element.setAttribute(key, val ?? "");
         }
     }

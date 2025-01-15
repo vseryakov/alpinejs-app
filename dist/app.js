@@ -124,7 +124,7 @@
         element.dataset[toCamel(key.substr(5))] = val;
       } else if (key == "text") {
         element.textContent = val || "";
-      } else {
+      } else if (val !== null) {
         element.setAttribute(key, val ?? "");
       }
     }
@@ -237,11 +237,12 @@
     if (template?.startsWith("#")) {
       template = document.getElementById(template.substr(1))?.innerHTML;
     } else if (template?.startsWith("$")) {
-      template = templates[template.substr(1)];
+      rc.name = template.substr(1);
+      template = templates[rc.name];
     }
     if (!template) return;
     rc.template = template;
-    var component = components[name] || components[rc.name];
+    var component = components[rc.name] || components[name];
     if (isString(component)) component = components[component];
     rc.component = component;
     return rc;

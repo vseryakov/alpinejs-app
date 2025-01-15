@@ -41,11 +41,12 @@ app.resolve = (path, dflt) => {
         template = document.getElementById(template.substr(1))?.innerHTML;
     } else
     if (template?.startsWith("$")) {
-        template = templates[template.substr(1)];
+        rc.name = template.substr(1);
+        template = templates[rc.name];
     }
     if (!template) return;
     rc.template = template;
-    var component = components[name] || components[rc.name];
+    var component = components[rc.name] || components[name];
     if (isString(component)) component = components[component];
     rc.component = component;
     return rc;
