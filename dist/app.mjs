@@ -235,13 +235,10 @@ app.resolve = (path, dflt) => {
   }
   if (template?.startsWith("#")) {
     template = document.getElementById(template.substr(1))?.innerHTML;
-  } else if (template?.startsWith("$")) {
-    rc.name = template.substr(1);
-    template = templates[rc.name];
-  }
+  } else if (template?.startsWith("$")) template = templates[template.substr(1)];
   if (!template) return;
   rc.template = template;
-  var component = components[rc.name] || components[name];
+  var component = components[name] || components[rc.name];
   if (isString(component)) component = components[component];
   rc.component = component;
   return rc;
@@ -333,7 +330,6 @@ function render(element, options) {
         const node = body.firstChild;
         element.appendChild(node);
         if (node.nodeType != 1) continue;
-        Alpine.addScopeToNode(node, {}, element);
         Alpine.initTree(node);
       }
     });
@@ -384,8 +380,11 @@ app.$on(document, "alpine:init", () => {
         app.$empty(el, (node) => Alpine.destroyTree(node));
       });
     };
+    var template;
     effect(() => evaluate((value) => {
-      value ? render(el, value) : hide();
+      if (!value) return hide();
+      if (value !== template) render(el, value);
+      template = value;
     }));
     cleanup(hide);
   });

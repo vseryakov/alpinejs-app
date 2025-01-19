@@ -9,17 +9,15 @@ class Component {
     params = {};
 
     static $type = _alpine;
-    static _id = 0;
 
     constructor(name, params) {
         this.$name = name;
-        this.$_id = `${name}:${_alpine}:${Component._id++}`;
         Object.assign(this.params, params);
         this._handleEvent = this.handleEvent.bind(this);
     }
 
     init() {
-        app.trace("init:", this.$_id);
+        app.trace("init:", this.$name);
         Object.assign(this.params, this.$el._x_params);
         app.call(this.onCreate?.bind(this));
         if (!this.params.$noevents) {
@@ -29,7 +27,7 @@ class Component {
     }
 
     destroy() {
-        app.trace("destroy:", this.$_id);
+        app.trace("destroy:", this.$name);
         app.off(app.event, this._handleEvent);
         app.emit("component:delete", { type: _alpine, name: this.$name, component: this, element: this.$el, params: Alpine.raw(this.params) });
         app.call(this.onDelete?.bind(this));
@@ -37,7 +35,7 @@ class Component {
     }
 
     handleEvent(event, ...args) {
-        app.trace("event:", this.$_id, ...args)
+        app.trace("event:", this.$name, ...args)
         app.call(this.onEvent?.bind(this.$data), event, ...args);
         if (!isString(event)) return;
         var method = toCamel("on_" + event);
@@ -49,7 +47,9 @@ class Component {
 class Element extends HTMLElement {
 
     connectedCallback() {
-        render(this, this.getAttribute("template") || this.localName.substr(Alpine.prefixed().length));
+        queueMicrotask(() => {
+            render(this, this.getAttribute("template") || this.localName.substr(4));
+        });
     }
 
 }
@@ -72,7 +72,6 @@ function render(element, options)
                 const node = body.firstChild;
                 element.appendChild(node);
                 if (node.nodeType != 1) continue;
-                Alpine.addScopeToNode(node, {}, element);
                 Alpine.initTree(node);
             }
         });
@@ -102,8 +101,9 @@ app.plugin(_alpine, { render, Component, data, default: 1 });
 
 app.on("alpine:init", () => {
     for (const [name, obj] of Object.entries(app.components)) {
-        if (obj?.$type != _alpine || customElements.get(Alpine.prefixed(name))) continue;
-        customElements.define(Alpine.prefixed(name), class extends Element {});
+        const tag = `app-${obj?.$tag || name}`;
+        if (obj?.$type != _alpine || customElements.get(tag)) continue;
+        customElements.define(tag, class extends Element {});
         Alpine.data(name, () => (new obj(name)));
     }
 });
@@ -129,20 +129,23 @@ app.$on(document, "alpine:init", () => {
 
     Alpine.directive('template', (el, { expression }, { effect, cleanup }) => {
         const evaluate = Alpine.evaluateLater(el, expression || "template");
+        var template;
 
         const hide = () => {
+            template = null;
             Alpine.mutateDom(() => {
                 app.$empty(el, (node) => Alpine.destroyTree(node));
             })
         }
 
         effect(() => evaluate(value => {
-            value ? render(el, value) : hide()
+            if (!value) return hide();
+            if (value !== template) render(el, value);
+            template = value;
         }))
 
         cleanup(hide);
     });
 
 });
-
 

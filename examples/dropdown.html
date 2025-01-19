@@ -1,0 +1,14 @@
+
+<div class="dropdown">
+
+    <button type="button" class="btn btn-outline-dark dropdown-toggle" aria-haspopup="true" aria-expanded="false" data-bs-toggle="dropdown" x-text="title">
+    </button>
+
+    <div class="dropdown-menu">
+        <template x-for="item in options">
+            <a tabindex=-1 class="dropdown-item py-2" :class="value == _value(item) ? 'active' : ''" @click="_click(item)">
+                <span x-text="_title(item)"></span>
+            </a>
+        </template>
+    </div>
+</div>

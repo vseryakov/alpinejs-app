@@ -188,7 +188,9 @@ The `hello2` component utilizes lifecycle methods:
 - `onDelete` manages cleanup by stopping timers.
 - `toggle` method now highlights template toggling and broadcasts changes via events.
 
-For complete interaction, access the "index.html" included, and experiment by opening it.
+For complete interaction, access the "examples/index.html" included, and experiment by opening it.
+
+The examples/ folder contains more components to play around and a bundle.sh script to show a simple way of bundling components together.
 
 ## API
 
