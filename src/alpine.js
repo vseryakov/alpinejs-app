@@ -35,7 +35,7 @@ class Component {
     }
 
     handleEvent(event, ...args) {
-        app.trace("event:", this.$name, ...args)
+        app.trace("event:", this.$name, event, ...args);
         app.call(this.onEvent?.bind(this.$data), event, ...args);
         if (!isString(event)) return;
         var method = toCamel("on_" + event);

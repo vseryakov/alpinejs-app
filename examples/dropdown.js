@@ -9,7 +9,7 @@ app.components.dropdown = class extends app.AlpineComponent {
         var options = this.options;
         this.parent = this.$el.parentElement;
         this.value = this.parent._x_model?.get() || app.$data(this.parent)?.value || this._value(options[0]);
-        this.title = options.find(x => (this.value == this._value(x)));
+        this.title = this._title(options.find(x => (this.value == this._value(x))));
     }
     
     _title(item) {

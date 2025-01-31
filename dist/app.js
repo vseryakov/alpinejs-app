@@ -10,7 +10,8 @@
     isF: isFunction,
     isS: isString,
     isE: isElement,
-    isO: isObj
+    isO: isObj,
+    toCamel
   };
   function isFunction(callback) {
     return typeof callback == "function";
@@ -25,7 +26,7 @@
     return element instanceof HTMLElement ? element : void 0;
   }
   function toCamel(key) {
-    return key.toLowerCase().replace(/-(\w)/g, (_, c) => c.toUpperCase());
+    return isString(key) ? key.toLowerCase().replace(/[.:_-](\w)/g, (_, c) => c.toUpperCase()) : "";
   }
 
   // src/util.js
@@ -304,7 +305,7 @@
       this.params = {};
     }
     handleEvent(event, ...args) {
-      app.trace("event:", this.$name, ...args);
+      app.trace("event:", this.$name, event, ...args);
       app.call(this.onEvent?.bind(this.$data), event, ...args);
       if (!isString(event)) return;
       var method = toCamel("on_" + event);
