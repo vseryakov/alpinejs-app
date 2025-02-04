@@ -18,11 +18,11 @@ app.plugin = (name, options) => {
     return Object.assign(plugin, options);
 }
 
-app.$data = (element) => {
+app.$data = (element, level) => {
     if (isString(element) && element) element = app.$(element);
     for (const p in _plugins) {
         if (!_plugins[p].data) continue;
-        const d = _plugins[p].data(element);
+        const d = _plugins[p].data(element, level);
         if (d) return d;
     }
 }

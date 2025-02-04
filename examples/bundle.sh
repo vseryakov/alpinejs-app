@@ -4,6 +4,9 @@ echo > bundle.js
 
 for file in "$@"; do
     case $file in
+    -minify)
+      minify=1
+      ;;
     *.js)
       cat $file >> bundle.js
       ;;
@@ -14,5 +17,8 @@ for file in "$@"; do
       ;;
   esac
 done
+
+[ -n "$minify" ] && esbuild --minify bundle.js > bundle.min.js
+
 
                         

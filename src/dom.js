@@ -70,9 +70,9 @@ app.$elem = (name, ...arg) => {
     return element;
 }
 
-app.$parse = (html, list) => {
-    html = new window.DOMParser().parseFromString(html || "", 'text/html').body;
-    return list ? Array.from(html.childNodes) : html;
+app.$parse = (html, format) => {
+    html = new window.DOMParser().parseFromString(html || "", 'text/html');
+    return format === "doc" ? html : format === "list" ? Array.from(html.body.childNodes) : html.body;
 }
 
 var _ready = []

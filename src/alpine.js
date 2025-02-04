@@ -35,10 +35,14 @@ class Component {
     }
 
     handleEvent(event, ...args) {
-        app.trace("event:", this.$name, event, ...args);
-        app.call(this.onEvent?.bind(this.$data), event, ...args);
+        if (this.onEvent) {
+            app.trace("event:", this.$name, event, ...args);
+            app.call(this.onEvent?.bind(this.$data), event, ...args);
+        }
         if (!isString(event)) return;
         var method = toCamel("on_" + event);
+        if (!this[method]) return;
+        app.trace("event:", this.$name, method, ...args);
         app.call(this[method]?.bind(this.$data), ...args);
     }
 
@@ -51,7 +55,6 @@ class Element extends HTMLElement {
             render(this, this.getAttribute("template") || this.localName.substr(4));
         });
     }
-
 }
 
 function render(element, options)
@@ -65,11 +68,14 @@ function render(element, options)
     app.$empty(element)
 
     // Add new elements
-    const body = app.$parse(options.template);
+    const doc = app.$parse(options.template, "doc");
     if (!options.component) {
         Alpine.mutateDom(() => {
-            while (body.firstChild) {
-                const node = body.firstChild;
+            while (doc.head.firstChild) {
+                element.appendChild(doc.head.firstChild);
+            }
+            while (doc.body.firstChild) {
+                const node = doc.body.firstChild;
                 element.appendChild(node);
                 if (node.nodeType != 1) continue;
                 Alpine.initTree(node);
@@ -79,8 +85,11 @@ function render(element, options)
         // In case a component was loaded after alpine:init event
         Alpine.data(options.name, () => (new options.component(options.name)));
         const node = app.$elem("div", "x-data", options.name, ":_x_params", options.params);
-        while (body.firstChild) {
-            node.appendChild(body.firstChild);
+        while (doc.head.firstChild) {
+            element.appendChild(doc.head.firstChild);
+        }
+        while (doc.body.firstChild) {
+            node.appendChild(doc.body.firstChild);
         }
 
         Alpine.mutateDom(() => {
@@ -91,10 +100,12 @@ function render(element, options)
     }
 }
 
-function data(element)
+function data(element, level)
 {
     if (!isElement(element)) element = app.$(app.main + " div");
-    return element && Alpine.closestDataStack(element)[0];
+    if (!element) return;
+    if (typeof level == "number") return element._x_dataStack?.at(level);
+    return Alpine.closestDataStack(element)[0];
 }
 
 app.plugin(_alpine, { render, Component, data, default: 1 });
@@ -146,6 +157,12 @@ app.$on(document, "alpine:init", () => {
 
         cleanup(hide);
     });
+
+    Alpine.directive("scope-level", (el, { expression }, { evaluate }) => {
+        const scope = Alpine.closestDataStack(el);
+        el._x_dataStack = scope.slice(0, parseInt(evaluate(expression)) || 0);
+    });
+
 
 });
 

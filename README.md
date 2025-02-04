@@ -86,7 +86,7 @@ Here's a simple introductory example featuring a hello world scenario.
 
 Nothing much, all the work is done by Alpinejs actually.
 
-## Render directive
+## Directive: `x-render`
 
 Binds to click events to display components. Can set components via a syntax supporting names, paths, or URLs with parameters through `parsePath`.
 
@@ -101,7 +101,7 @@ Special options include:
 <button class="btn btn-primary" x-render="'index?$target=#div'">Show</button>
 ```
 
-## Template directive
+## Directive: `x-template`
 
 Render a template or component inside the container, by default the expression is to use variable `template`,
 it is defined in every `app.AlpineComponent` class.
@@ -114,7 +114,19 @@ This can be an alternative to the `x-if` Alpine directive.
 <div x-template="template"></div>
 ```
 
-## Magic $app
+## Directive: `x-scope-level`
+
+Reduce data scope depth for the given element, it basically cuts off data inheritence at the requested depth.
+Useful for sub-componetnts not to interfere with parent's properties. In most cases decalring local properties would work but
+limiting scope for children might as well be useful.
+
+```html
+<div x-data-depth></div>
+
+<div x-data-depth=1></div>
+```
+
+## Magic: `$app`
 
 The `$app` object opens access to app-wide methods and properties, enabling features such as programmatic rendering.
 
@@ -190,7 +202,17 @@ The `hello2` component utilizes lifecycle methods:
 
 For complete interaction, access the "examples/index.html" included, and experiment by opening it.
 
+### Examples
+
 The examples/ folder contains more components to play around and a bundle.sh script to show a simple way of bundling components together.
+
+#### Simple bundler example
+
+An example to show very simple way to bundcle .html and .js files into a bundle and load it.
+
+- run `cd examples && ./bundle.sh -minify dropdown*`
+- it will generate bundle.js and bundle.min.js files that includes all HTML and Javascript code
+- load it in the browser: `open bundle.html`
 
 ## API
 
@@ -322,18 +344,23 @@ The examples/ folder contains more components to play around and a bundle.sh scr
 
     ```app.$elem("div", { id: "123", ".display": "none", ":_x-prop": "value", "click": () => {} })```
 
-- `app.$parse(text, list)`
+- `app.$parse(text, format)`
 
-  A shortcut to DOMParser, returns the .body.
+  A shortcut to DOMParser, default is to return the .body.
 
-  If the second argument is true then the result will be an array with all child nodes, i.e. simpler to feed it to Element.append()
+  Second argument defined the result format:
+   - `list` - the result will be an array with all body child nodes, i.e. simpler to feed it to Element.append()
+   - `doc` - return the whole parsed document
 
-    ```document.append(...app.$parse("<div>...</div>"), true))```
+    ```document.append(...app.$parse("<div>...</div>"), 'list'))```
 
-- `app.$data(element)`
+- `app.$data(element, level)`
 
   Return component data instance for the given element or the main component if omitted. This is for
   debugging purposes or cases when calling some known method is required.
+
+  if the `level` is not a number then the closest scope is returned otherwise only the requested scope at the level or undefined.
+  This is useful for components to make sure they use only the parent's scope for example.
 
 ### Event emitter
 
