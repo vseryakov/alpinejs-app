@@ -51,10 +51,10 @@ app.$elem = (name, ...arg) => {
         if (isFunction(val)) {
             app.$on(element, key, val);
         } else
-        if (key.startsWith(".")) {
+        if (key.startsWith("-")) {
             element.style[key.substr(1)] = val;
         } else
-        if (key.startsWith(":")) {
+        if (key.startsWith(".")) {
             element[key.substr(1)] = val;
         } else
         if (key.startsWith("data-")) {

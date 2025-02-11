@@ -117,9 +117,9 @@
       if (!isString(key)) continue;
       if (isFunction(val)) {
         app.$on(element, key, val);
-      } else if (key.startsWith(".")) {
+      } else if (key.startsWith("-")) {
         element.style[key.substr(1)] = val;
-      } else if (key.startsWith(":")) {
+      } else if (key.startsWith(".")) {
         element[key.substr(1)] = val;
       } else if (key.startsWith("data-")) {
         element.dataset[toCamel(key.substr(5))] = val;
@@ -344,7 +344,7 @@
       });
     } else {
       Alpine.data(options.name, () => new options.component(options.name));
-      const node = app.$elem("div", "x-data", options.name, ":_x_params", options.params);
+      const node = app.$elem("div", "x-data", options.name, "#_x_params", options.params);
       while (doc.head.firstChild) {
         element.appendChild(doc.head.firstChild);
       }
