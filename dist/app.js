@@ -344,7 +344,7 @@
       });
     } else {
       Alpine.data(options.name, () => new options.component(options.name));
-      const node = app.$elem("div", "x-data", options.name, "#_x_params", options.params);
+      const node = app.$elem("div", "x-data", options.name, "._x_params", options.params);
       while (doc.head.firstChild) {
         element.appendChild(doc.head.firstChild);
       }
