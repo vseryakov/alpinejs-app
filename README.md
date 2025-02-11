@@ -136,7 +136,7 @@ The `$app` object opens access to app-wide methods and properties, enabling feat
 <a @click="$app.render({ name: 'page', params: { $target: '#section' }})">Render Magic</a>
 ```
 
-### Component Lifecycle and Event Handling
+## Component Lifecycle and Event Handling
 
 While Alpinejs has several ways how to reuse the data this app makes it more unified, this is opinionated of course.
 
@@ -206,9 +206,9 @@ For complete interaction, access the "examples/index.html" included, and experim
 
 The examples/ folder contains more components to play around and a bundle.sh script to show a simple way of bundling components together.
 
-#### Simple bundler example
+### Simple bundle example
 
-An example to show very simple way to bundcle .html and .js files into a bundle and load it.
+An example to show very simple way to bundle .html and .js files into a single file and load it.
 
 - run `cd examples && ./bundle.sh -minify dropdown*`
 - it will generate bundle.js and bundle.min.js files that includes all HTML and Javascript code
@@ -279,6 +279,7 @@ An example to show very simple way to bundcle .html and .js files into a bundle 
   if the `component` property is empty then this component is HTML template.
 
 
+
 ### Router
 
 - `app.start`
@@ -315,6 +316,7 @@ An example to show very simple way to bundcle .html and .js files into a bundle 
    - URL: https://host/app/name/param1/...
 
    All parts from the path and query parameters will be placed in the `params` object.
+
 
 
 ### DOM utilities
@@ -363,6 +365,7 @@ An example to show very simple way to bundcle .html and .js files into a bundle 
   This is useful for components to make sure they use only the parent's scope for example.
 
   This returns Proxy object, to get the actual object pass it to `Alpine.raw(app.$data())`
+
 
 ### Event emitter
 
@@ -450,5 +453,5 @@ Methods:
 
 Licensed under [MIT](https://github.com/vseryakov/alpinejs-app/blob/master/LICENSE)
 
-Some parts of the documentation are produced by ChatGPT.
+_Some parts of the documentation are produced by ChatGPT._
 
