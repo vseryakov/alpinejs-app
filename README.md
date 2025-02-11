@@ -202,7 +202,16 @@ The `hello2` component utilizes lifecycle methods:
 
 For complete interaction, access the "examples/index.html" included, and experiment by opening it.
 
-### Examples
+## Custom Elements
+
+  Component classes are registered as Custom Elements with `app-` prefix,
+
+  using the example above hello component can be placed inside HTML as ``` <app-hello></app-hello>`.
+
+  See also how the `dropdown` component is used in examples/bundle.html.
+
+
+## Examples
 
 The examples/ folder contains more components to play around and a bundle.sh script to show a simple way of bundling components together.
 
@@ -241,7 +250,6 @@ An example to show very simple way to bundle .html and .js files into a single f
 
   Component classes, this is the registry of all components logic to be used with corresponding templates.
   Only classed derived from `app.AlpineComponent` will be used, internally they are registered with `Alpine.data()` to be reused by name.
-
 
 ### Rendering
 
