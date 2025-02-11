@@ -362,6 +362,8 @@ An example to show very simple way to bundcle .html and .js files into a bundle 
   if the `level` is not a number then the closest scope is returned otherwise only the requested scope at the level or undefined.
   This is useful for components to make sure they use only the parent's scope for example.
 
+  This returns Proxy object, to get the actual object pass it to `Alpine.raw(app.$data())`
+
 ### Event emitter
 
 The app implements very simple event emitter to handle internal messages separate from the DOM events.

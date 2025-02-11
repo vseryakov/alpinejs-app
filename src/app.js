@@ -13,12 +13,12 @@ export var app = {
     toCamel,
 }
 
-export function isFunction(callback) { return typeof callback == "function" }
-
 export function isString(str) { return typeof str == "string" }
+
+export function isFunction(callback) { return typeof callback == "function" && callback }
 
 export function isObj(obj) { return typeof obj == "object" && obj }
 
-export function isElement(element) { return element instanceof HTMLElement ? element : undefined }
+export function isElement(element) { return element instanceof HTMLElement && element }
 
 export function toCamel(key) { return isString(key) ? key.toLowerCase().replace(/[.:_-](\w)/g, (_, c) => c.toUpperCase()) : "" }
