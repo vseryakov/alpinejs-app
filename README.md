@@ -233,7 +233,7 @@ An example to show very simple way to bundle .html and .js files into a single f
 - `templates: {}`
 
   HTML templates, this is the central registry of HTML templates to be rendered on demand,
-  this is an alternative to using <template> tags which are kept in the DOM all the time even if not used.
+  this is an alternative to using `<template>` tags which are kept in the DOM all the time even if not used.
 
   This object can be populated in the bundle or loaded later as JSON, this all depends on the application environment.
 
@@ -279,7 +279,6 @@ An example to show very simple way to bundle .html and .js files into a single f
   if the `component` property is empty then this component is HTML template.
 
 
-
 ### Router
 
 - `app.start`
@@ -316,7 +315,6 @@ An example to show very simple way to bundle .html and .js files into a single f
    - URL: https://host/app/name/param1/...
 
    All parts from the path and query parameters will be placed in the `params` object.
-
 
 
 ### DOM utilities
