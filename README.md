@@ -116,8 +116,8 @@ This can be an alternative to the `x-if` Alpine directive.
 
 ## Directive: `x-scope-level`
 
-Reduce data scope depth for the given element, it basically cuts off data inheritence at the requested depth.
-Useful for sub-componetnts not to interfere with parent's properties. In most cases decalring local properties would work but
+Reduce data scope depth for the given element, it basically cuts off data inheritance at the requested depth.
+Useful for sub-components not to interfere with parent's properties. In most cases declaring local properties would work but
 limiting scope for children might as well be useful.
 
 ```html
