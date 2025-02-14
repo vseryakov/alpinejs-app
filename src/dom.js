@@ -41,15 +41,16 @@ app.$empty = (element, cleanup) => {
 }
 
 app.$elem = (name, ...arg) => {
-    var element = document.createElement(name), key, val;
+    var element = document.createElement(name), key, val, opts;
     if (isObj(arg[0])) {
         arg = Object.entries(arg[0]).flatMap(x => x);
+        opts = arg[1];
     }
     for (let i = 0; i < arg.length - 1; i += 2) {
         key = arg[i], val = arg[i + 1];
         if (!isString(key)) continue;
         if (isFunction(val)) {
-            app.$on(element, key, val);
+            app.$on(element, key, val, { capture: opts?.capture, passive: opts?.passive, once: opts?.once, signal: opts?.signal });
         } else
         if (key.startsWith("-")) {
             element.style[key.substr(1)] = val;

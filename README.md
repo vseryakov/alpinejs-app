@@ -344,13 +344,14 @@ An example to show very simple way to bundle .html and .js files into a single f
   Create a DOM element with attributes, `-name` means `style.name`, `.name` means a property `name`, all other are attributes,
   functions are event listeners
 
-    ```app.$elem("div", "id", "123", "-display", "none", "#_x-prop", "value", "click", () => {})```
+    ```app.$elem("div", "id", "123", "-display", "none", "._x-prop", "value", "click", () => {})```
 
-- `app.$elem(name, object)`
+- `app.$elem(name, object [, options])`
 
-  Similar to above but all properties and attributes are taken from an object
+  Similar to above but all properties and attributes are taken from an object, in this form options can be passed, at the moment only
+  options for addEventListener are supported.
 
-    ```app.$elem("div", { id: "123", "-display": "none", "#_x-prop": "value", click: () => {} })```
+    ```app.$elem("div", { id: "123", "-display": "none", "._x-prop": "value", click: () => {} }, { signal })```
 
 - `app.$parse(text, format)`
 
