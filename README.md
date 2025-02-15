@@ -48,9 +48,9 @@ Here's a simple introductory [example](examples/index.html) featuring a hello wo
 
 ```html
 <head>
-<script>
-    app.templates.example = `<div>HTML only template inside <span x-text="$name"></span> showing <span x-text=template></span></div>`
+<script src="bundle.js"></script>
 
+<script>
     app.components.hello = class extends app.AlpineComponent {
         toggle() {
             this.template = !this.template ? "example" : "";
@@ -77,7 +77,7 @@ Here's a simple introductory [example](examples/index.html) featuring a hello wo
 
     <div x-template></div>
 
-    <button @click="toggle">Show Example</button>
+    <button @click="toggle" x-text="template ? 'Hide':'Show Example'"></button>
     <button x-render="'index'">Back</button>
 </template>
 ```
@@ -90,7 +90,8 @@ Here's a simple introductory [example](examples/index.html) featuring a hello wo
 - Clicking 'Say Hello' switches the display to the `hello` component.
 - The `hello` component is a typical Alpine.js setup involving `x-text` for displaying component properties.
 - The component extends `app.AlpineComponent` to include a toggle function.
-- A `x-template` directive remains empty until the template variable is populated by clicking the 'Toggle' button, which triggers the component's toggle method to render the `example` template in the contained div.
+- A `x-template` directive remains empty until the template variable is populated by clicking the 'Show' button, which triggers the component's toggle method to render the `example` template in the contained div.
+- The `example` template is defined in the `examples/example.html` file and bundled into bundle.js.
 
 Nothing much, all the work is done by Alpinejs actually.
 
@@ -161,7 +162,7 @@ Here is the life-cycle of a component:
   each component will decide what to do with it. This is uses app event emitter instead of DOM events to keep it separate and not overload
   browser with app specific messages.
 
-In extending the example:
+### In extending the example:
 
 Add a new button to the index template:
 
@@ -172,8 +173,6 @@ Add a new button to the index template:
 Introduce another component:
 
 ```javascript
-    app.templates.example2 = `<div>Another template inside <span x-text="$app.base + $name"></span> showing template <span x-text=template></span></div>`
-
     app.templates.hello2 = "#hello"
 
     app.components.hello2 = class extends app.components.hello {
@@ -191,7 +190,7 @@ Introduce another component:
         }
 
         toggle() {
-            this.template = !this.template ? "example2" : "";
+            super.toggle();
             app.emit(app.event, "toggle", this.template)
         }
     }
@@ -199,14 +198,13 @@ Introduce another component:
 
 Key additions include:
 
-- An additional HTML template `example2` paralleling the previous example structure.
-- A `hello2` template referencing `hello` for shared markup.
+- A `hello2` template referencing existing `hello` for shared markup.
 - A new `hello2` component extending from `hello`, showcasing class inheritance.
 
 The `hello2` component utilizes lifecycle methods:
 - `onCreate` sets up initialization like overriding reasons and running a timer.
 - `onDelete` manages cleanup by stopping timers.
-- `toggle` method now highlights template toggling and broadcasts changes via events.
+- `toggle` method reuses the toggling but adds broadcasting changes via events.
 
 For complete interaction, access the [index.html](examples/index.html), and experiment by opening it.
 
@@ -216,21 +214,21 @@ For complete interaction, access the [index.html](examples/index.html), and expe
 
   using the example above hello component can be placed inside HTML as `<app-hello></app-hello>`.
 
-  See also how the [dropdown](examples/dropdown.js) component is implemented and used in [bundle.html](examples/bundle.html).
+  See also how the [dropdown](examples/dropdown.js) component is implemented and used in [example.html](examples/example.html).
 
 
 ## Examples
 
 The examples/ folder contains more components to play around and a bundle.sh script to show a simple way of bundling components together.
 
-### Simple bundle example: [bundle.html](examples/bundle.html)
+### Simple bundle example: [index.html](examples/index.html)
 
 An example to show very simple way to bundle .html and .js files into a single file and load it, it includes dropdown component.
 
 It comes with pre-created bundle but to rebuild:
 - run `npm run examples`
 - it will generate bundle.js and bundle.min.js files that includes all HTML and Javascript code
-- load it in the browser: `open bundle.html`
+- load it in the browser: `open index.html`
 
 ## API
 

@@ -18,9 +18,9 @@
     "esm": "esbuild builds/module.js --platform=neutral --bundle --outfile=dist/app.mjs",
     "cdn-min": "esbuild builds/cdn.js --platform=browser --bundle --minify --outfile=dist/app.min.js",
     "esm-min": "esbuild builds/module.js --platform=neutral --bundle --minify --outfile=dist/app.min.mjs",
-    "all": "npm run cdn;npm run esm;npm run cdn-min;npm run esm-min",
-    "devbuild": "npm run cdn",
-    "examples": "cd examples && ./bundle.sh -minify ../dist/app.js dropdown*"
+    "all": "npm run cdn;npm run esm;npm run cdn-min;npm run esm-min;npm run examples",
+    "devbuild": "npm run all",
+    "examples": "cd examples && ./bundle.sh -minify ../dist/app.js dropdown* example*"
   },
   "devDependencies": {
     "esbuild": "^0.24.0"

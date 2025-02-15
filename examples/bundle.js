@@ -513,3 +513,4 @@ app.components.dropdown = class extends app.AlpineComponent {
         this.$dispatch("change", item);
     }
 }
+app.templates["example"]='<div class="bg-light border">    <h5>Example template</h5>    <div>        This HTML template is inside        `<span x-text="$name"></span>` component        showing `<span x-text=template></span>` template    </div>    <h5>Example of custom element component:</h5>    <div x-data="{ name: \'\', names: [\'None\', \'John\', \'Mary\', \'Chris\', \'Natalie\'] }">        <input x-model="name">        <app-dropdown x-data="{ options: names }" x-model="name"></app-dropdown>    </div></div>';
