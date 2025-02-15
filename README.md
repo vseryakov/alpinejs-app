@@ -4,9 +4,17 @@
 
 ### The Motivation
 
-The rationale behind `alpinejs-app` is the preference to maintain a clear separation between HTML and JavaScript logic. This separation keeps presentation distinct from logic, a methodology introduced a long time ago. With Alpine.js, we now get efficient two-way data bindings and reactivity using even less code.
+- The first rationale behind `alpinejs-app` is the preference to maintain a clear separation between HTML and JavaScript logic. This separation keeps presentation distinct from logic, a methodology introduced a long time ago. With Alpine.js, we now get efficient two-way data bindings and reactivity using even less code.
 
-This structure also offers flexible bundling options: bundle everything into a single file by converting HTML files to strings, keep HTML templates in JSON files to load separately, or maintain HTML files on the server to load individually or else ...
+- The second rationale is to have some kind of central registry of HTML templates and Javascript classes and use it to register components.
+
+The registry is just 2 global Javascript objects, `templates` and `components`.
+
+How the registry is delivered to the browser depends on bundling or application, for example:
+
+- bundle everything into a single file by converting HTML files to strings: `templates.basename="HTML code here..."`
+- keep HTML templates in JSON files to load separately via fetch on demand
+- maintain HTML files on the server to load individually on demand similar to `htmx`
 
 ### Key Features
 
@@ -36,7 +44,7 @@ npm install @vseryakov/alpinejs-app
 
 ## Getting Started
 
-Here's a simple introductory example featuring a hello world scenario.
+Here's a simple introductory [example](examples/index.html) featuring a hello world scenario.
 
 ```html
 <head>
@@ -200,26 +208,27 @@ The `hello2` component utilizes lifecycle methods:
 - `onDelete` manages cleanup by stopping timers.
 - `toggle` method now highlights template toggling and broadcasts changes via events.
 
-For complete interaction, access the "examples/index.html" included, and experiment by opening it.
+For complete interaction, access the [index.html](examples/index.html), and experiment by opening it.
 
 ## Custom Elements
 
   Component classes are registered as Custom Elements with `app-` prefix,
 
-  using the example above hello component can be placed inside HTML as ``` <app-hello></app-hello>`.
+  using the example above hello component can be placed inside HTML as `<app-hello></app-hello>`.
 
-  See also how the `dropdown` component is used in examples/bundle.html.
+  See also how the [dropdown](examples/dropdown.js) component is implemented and used in [bundle.html](examples/bundle.html).
 
 
 ## Examples
 
 The examples/ folder contains more components to play around and a bundle.sh script to show a simple way of bundling components together.
 
-### Simple bundle example
+### Simple bundle example: [bundle.html](examples/bundle.html)
 
-An example to show very simple way to bundle .html and .js files into a single file and load it.
+An example to show very simple way to bundle .html and .js files into a single file and load it, it includes dropdown component.
 
-- run `cd examples && ./bundle.sh -minify dropdown*`
+It comes with pre-created bundle but to rebuild:
+- run `npm run examples`
 - it will generate bundle.js and bundle.min.js files that includes all HTML and Javascript code
 - load it in the browser: `open bundle.html`
 
