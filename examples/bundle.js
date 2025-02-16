@@ -184,6 +184,7 @@
       path = path.join("/");
       app2.trace("savePath:", path, options);
       if (!path) return;
+      app2.emit("path:push", window.location.origin + app2.base + path);
       window.history.pushState(null, "", window.location.origin + app2.base + path);
     };
     app2.restorePath = (path) => {
@@ -470,7 +471,7 @@
   // hello.js
   app.components.hello = class extends app.AlpineComponent {
     toggle() {
-      this.template = !this.template ? "example" : "";
+      this.template = !this.template ? "example" : this.template == "example" ? "hello2" : "";
     }
   };
   app.templates.hello2 = "#hello";
@@ -525,7 +526,28 @@
   app.templates.dropdown = `<div class="dropdown">    <button type="button" class="btn btn-outline-dark dropdown-toggle" aria-haspopup="true" aria-expanded="false" data-bs-toggle="dropdown" x-text="title">    </button>    <div class="dropdown-menu">        <template x-for="item in options">            <a tabindex=-1 class="dropdown-item py-2" :class="value == _value(item) ? 'active' : ''" @click="_click(item)">                <span x-text="_title(item)"></span>            </a>        </template>    </div></div>`;
 
   // example.html
-  app.templates.example = `<div class="bg-light border">    <h5>Example template</h5>    <div>        This HTML template is inside        \`<span x-text="$name"></span>\` component        showing \`<span x-text=template></span>\` template    </div>    <h5>Example of custom element component:</h5>    <div x-data="{ name: '', names: ['None', 'John', 'Mary', 'Chris', 'Natalie'] }">        <input x-model="name">        <app-dropdown x-data="{ options: names }" x-model="name"></app-dropdown>    </div></div>`;
+  app.templates.example = `<p>This is <b>\`<span x-text=template></span>\`</b> template inside <b>\`<span x-text="$name"></span>\`</b> component.</p><div class="bg-light border mt-3" x-data="{ name: '', names: ['Dropdown', 'John', 'Mary', 'Chris', 'Natalie'] }">    <h5>This is dropdown component updating the input model:</h5>    <div class="d-flex flex-columns align-items-center">        <app-dropdown x-data="{ options: names }" x-model="name"></app-dropdown>        <div>            Name: <input x-model="name">        </div>    </div></div>`;
+
+  // todo.js
+  app.components.todo = class extends app.AlpineComponent {
+    newTask = "";
+    tasks = [];
+    add() {
+      if (this.newTask.trim()) {
+        this.tasks.push({ descr: this.newTask, done: false });
+        this.newTask = "";
+      }
+    }
+    toggle(task) {
+      task.done = !task.done;
+    }
+    remove(index) {
+      this.tasks.splice(index, 1);
+    }
+  };
+
+  // todo.html
+  app.templates.todo = `<h3>Alpinejs-app: Todo component</h3><form @submit.prevent="add">    <input type="text" placeholder="Add a new task..." x-model="newTask" required>    <button class="btn btn-outline-dark" type="submit">Add</button></form><ul>    <template x-for="(task, index) in tasks" :key="index">        <li :style="{ 'text-decoration': task.done ? 'line-through': 'none' }">            <input type="checkbox" @change="toggle(task)" :checked="task.done">            <span x-text="task.descr"></span>            <button class="btn btn-outline-dark" @click="remove(index)">Remove</button>        </li>    </template></ul><button class="btn btn-outline-dark" x-render="'index'">Back</button>`;
 
   // index.js
   app.debug = 1;

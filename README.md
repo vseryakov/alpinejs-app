@@ -12,7 +12,7 @@ The registry is just 2 global Javascript objects, `templates` and `components`.
 
 How the registry is delivered to the browser depends on bundling or application, for example:
 
-- bundle everything into a single file by converting HTML files to strings: `templates.basename="HTML code here..."`, see `examples/build.js`
+- bundle everything into a single file by converting HTML files to strings: see `examples/build.js` for a simple `esbuild` plugin
 - keep HTML templates in JSON files to load separately via fetch on demand
 - maintain HTML files on the server to load individually on demand similar to `htmx`
 
@@ -59,7 +59,8 @@ Here's a simple introductory [example](examples/index.html) featuring a hello wo
 
 <template id="index">
     <h5>This is the index component</h5>
-    <button x-render="'hello/123?reason=World'">Say Hello</button>
+
+    <button x-render="'hello/hi?reason=World'">Say Hello</button>
 </template>
 
 <template id="hello">
@@ -69,7 +70,7 @@ Here's a simple introductory [example](examples/index.html) featuring a hello wo
 
     <div x-template></div>
 
-    <button @click="toggle" x-text="template ? 'Hide':'Show Example'"></button>
+    <button @click="toggle">Toggle</button>
     <button x-render="'index'">Back</button>
 </template>
 ```
@@ -82,6 +83,7 @@ import './hello'
 import './dropdown'
 import "./dropdown.html"
 import "./example.html"
+
 app.debug = 1
 app.start();
 ```
@@ -96,11 +98,9 @@ app.components.hello = class extends app.AlpineComponent {
 }
 ```
 
-Build it in examples/ with `node build.js`
-
 **Explanation:**
 
-- The script defines a template and a component, `app.start` calls `restorePath` when the page is ready, defaulting to render `index` since the static path doesn’t match.
+- The script defines a template and a component, `app.start` calls `restorePath` when the page is ready, defaulting to render `index` since the static path doesn’t match. (running locally with file:// origin will not replace history)
 - The body includes a placeholder for the main app.
 - The `index` template is the default starting page, with a `x-render` directive for displaying the `hello` component with parameters.
 - Clicking 'Say Hello' switches the display to the `hello` component.
@@ -121,9 +121,9 @@ Special options include:
 - `$history` - to explicitly manage browser history.
 
 ```html
-<a x-render="'hello/1/2?reason=World'">Say Hello</a>
+<a x-render="'hello/hi?reason=World'">Say Hello</a>
 
-<button class="btn btn-primary" x-render="'index?$target=#div'">Show</button>
+<button x-render="'index?$target=#div'">Show</button>
 ```
 
 ## Directive: `x-template`
@@ -224,24 +224,24 @@ The `hello2` component utilizes lifecycle methods:
 - `onDelete` manages cleanup by stopping timers.
 - `toggle` method reuses the toggling but adds broadcasting changes via events.
 
-For complete interaction, access the [index.html](examples/index.html), and experiment by opening it.
+For complete interaction, access live demo at the [index.html](examples/index.html).
 
 ## Custom Elements
 
-  Component classes are registered as Custom Elements with `app-` prefix,
+Component classes are registered as Custom Elements with `app-` prefix,
 
-  using the example above hello component can be placed inside HTML as `<app-hello></app-hello>`.
+using the example above hello component can be placed inside HTML as `<app-hello></app-hello>`.
 
-  See also how the [dropdown](examples/dropdown.js) component is implemented and used in [example.html](examples/example.html).
+See also how the [dropdown](examples/dropdown.js) component is implemented.
 
 
 ## Examples
 
 The examples/ folder contains more components to play around and a bundle.sh script to show a simple way of bundling components together.
 
-### Simple bundle example: [index.html](examples/index.html)
+### Simple bundled example: [index.html](examples/index.html)
 
-An example to show very simple way to bundle .html and .js files into a single file and load it, it includes dropdown component.
+An example to show very simple way to bundle .html and .js files into a single file.
 
 It comes with pre-created bundle but to rebuild:
 - run `npm run demo`
@@ -250,7 +250,7 @@ It comes with pre-created bundle but to rebuild:
 
 ### Esbuild app plugin
 
-The `examples/build.js` script is an esbuild plugin that bundles templates from .html files to be used by the app.
+The `examples/build.js` script is an `esbuild` plugin that bundles templates from .html files to be used by the app.
 
 Running `node build.js` in the examples folder will generate the `bundle.js` which includes all .js and .html files used by the index.html
 
@@ -414,6 +414,7 @@ There are predefined system events:
 
  - `path:restore` - is sent by the window `popstate` event from `app.start`
  - `path:save` - is sent by `app.render` for main components only
+ - `path:push` - is sent just before calling `history.pushState` with the path to be pushed
  - `component:create` - is sent when a new component is created, { type, name, element, params }
  - `component:delete` - is sent when a component is deleted, { type, name, element, params }
  - `component:event` - a generic event defined in `app.event` is received by every live component and is handled by `onEvent(...)` method if exist.

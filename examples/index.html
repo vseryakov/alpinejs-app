@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>App Demo</title>
+    <title>Alpinejs.app Demo</title>
 
     <style type="text/css">
         body, div { padding:1em }
@@ -16,26 +16,34 @@
 
 </head>
 
-<body>
+<body class="text-center">
+    <div x-data="{
+        history:'',
+        init() {
+            app.on('path:push', (path) => this.history=path)
+        }
+    }" class="text-end small p-0" x-text="history"></div>
+
     <div id="app-main"></div>
 </body>
 
 <template id="index">
-    <h5>This is the index component</h5>
+    <h3>Alpinejs-app: This is index component</h3>
 
-    <button x-render="'hello/123?reason=World'">Say Hello</button>
-    <button x-render="'hello2'">Say Hello2</button>
+    <button class="btn btn-outline-dark" x-render="'hello/hi?reason=World'">Say Hello</button>
+    <button class="btn btn-outline-dark" x-render="'todo'">Todo Tasks</button>
 </template>
 
 <template id="hello">
-    <h5>This is the <span x-text=$name></span> component</h5>
+    <h3>Alpinejs-app: This is the <span x-text=$name></span> component</h3>
+
     Param: <span x-text="params.param1"></span><br>
     Reason: <span x-text="params.reason"></span><br>
 
-    <div x-template></div>
+    <div :class="template?'border my-3':''" x-template></div>
 
-    <button @click="toggle" x-text="template ? 'Hide':'Show Example'"></button>
-    <button x-render="'index'">Back</button>
+    <button class="btn btn-outline-dark" @click="toggle">Toggle</button>
+    <button class="btn btn-outline-dark" x-render="'index'">Back</button>
 </template>
 
 </html>

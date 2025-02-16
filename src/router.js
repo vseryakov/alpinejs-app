@@ -47,6 +47,7 @@ app.savePath = (options) => {
     path = path.join("/");
     app.trace("savePath:", path, options);
     if (!path) return;
+    app.emit("path:push", window.location.origin + app.base + path);
     window.history.pushState(null, "", window.location.origin + app.base + path);
 }
 

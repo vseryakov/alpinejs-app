@@ -1,20 +1,20 @@
 
-<div class="bg-light border">
-    <h5>Example template</h5>
+<p>
+This is <b>`<span x-text=template></span>`</b> template inside <b>`<span x-text="$name"></span>`</b> component.
+</p>
 
-    <div>
-        This HTML template is inside
-        `<span x-text="$name"></span>` component
-        showing `<span x-text=template></span>` template
-    </div>
+<div class="bg-light border mt-3" x-data="{ name: '', names: ['Dropdown', 'John', 'Mary', 'Chris', 'Natalie'] }">
 
-    <h5>Example of custom element component:</h5>
+    <h5>This is dropdown component updating the input model:</h5>
 
-    <div x-data="{ name: '', names: ['None', 'John', 'Mary', 'Chris', 'Natalie'] }">
-
-        <input x-model="name">
+    <div class="d-flex flex-columns align-items-center">
 
         <app-dropdown x-data="{ options: names }" x-model="name"></app-dropdown>
+
+        <div>
+            Name: <input x-model="name">
+        </div>
     </div>
+
 </div>
 

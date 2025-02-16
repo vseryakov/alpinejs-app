@@ -1,0 +1,20 @@
+
+<h3>Alpinejs-app: Todo component</h3>
+
+<form @submit.prevent="add">
+    <input type="text" placeholder="Add a new task..." x-model="newTask" required>
+    <button class="btn btn-outline-dark" type="submit">Add</button>
+</form>
+
+<ul>
+    <template x-for="(task, index) in tasks" :key="index">
+        <li :style="{ 'text-decoration': task.done ? 'line-through': 'none' }">
+            <input type="checkbox" @change="toggle(task)" :checked="task.done">
+            <span x-text="task.descr"></span>
+            <button class="btn btn-outline-dark" @click="remove(index)">Remove</button>
+        </li>
+    </template>
+</ul>
+
+<button class="btn btn-outline-dark" x-render="'index'">Back</button>
+
