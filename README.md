@@ -244,9 +244,9 @@ The examples/ folder contains more components to play around and a bundle.sh scr
 An example to show very simple way to bundle .html and .js files into a single file and load it, it includes dropdown component.
 
 It comes with pre-created bundle but to rebuild:
-- run `npm run examples`
-- it will generate index.js files that includes all HTML and Javascript code
-- load it in the browser: `open index.html`
+- run `npm run demo`
+- it will generate examples/bundle.js file that includes all HTML and Javascript code
+- load it in the browser: `open examples/index.html`
 
 ### Esbuild app plugin
 

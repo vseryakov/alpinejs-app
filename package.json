@@ -15,7 +15,7 @@
     "build": "node scripts/build.js",
     "devbuild": "node scripts/build.js",
     "watch": "node scripts/build.js --watch",
-    "examples": "cd examples && ./bundle.sh ../dist/app.js dropdown* example*"
+    "demo": "cd examples && npm run build"
   },
   "devDependencies": {
     "esbuild": "^0.24.0"
