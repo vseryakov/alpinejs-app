@@ -12,7 +12,7 @@ The registry is just 2 global Javascript objects, `templates` and `components`.
 
 How the registry is delivered to the browser depends on bundling or application, for example:
 
-- bundle everything into a single file by converting HTML files to strings: `templates.basename="HTML code here..."`
+- bundle everything into a single file by converting HTML files to strings: `templates.basename="HTML code here..."`, see `examples/build.js`
 - keep HTML templates in JSON files to load separately via fetch on demand
 - maintain HTML files on the server to load individually on demand similar to `htmx`
 
@@ -46,19 +46,11 @@ npm install @vseryakov/alpinejs-app
 
 Here's a simple introductory [example](examples/index.html) featuring a hello world scenario.
 
+### index.html
+
 ```html
 <head>
 <script src="bundle.js"></script>
-
-<script>
-    app.components.hello = class extends app.AlpineComponent {
-        toggle() {
-            this.template = !this.template ? "example" : "";
-        }
-    }
-
-    app.start();
-</script>
 </head>
 
 <body>
@@ -81,6 +73,30 @@ Here's a simple introductory [example](examples/index.html) featuring a hello wo
     <button x-render="'index'">Back</button>
 </template>
 ```
+
+### index.js
+
+```javascript
+import '../dist/app.js'
+import './hello'
+import './dropdown'
+import "./dropdown.html"
+import "./example.html"
+app.debug = 1
+app.start();
+```
+
+### hello.js
+
+``` javascript
+app.components.hello = class extends app.AlpineComponent {
+    toggle() {
+        this.template = !this.template ? "example" : "";
+    }
+}
+```
+
+Build it in examples/ with `node build.js`
 
 **Explanation:**
 
@@ -172,6 +188,8 @@ Add a new button to the index template:
 
 Introduce another component:
 
+### hello.js
+
 ```javascript
     app.templates.hello2 = "#hello"
 
@@ -227,8 +245,15 @@ An example to show very simple way to bundle .html and .js files into a single f
 
 It comes with pre-created bundle but to rebuild:
 - run `npm run examples`
-- it will generate bundle.js and bundle.min.js files that includes all HTML and Javascript code
+- it will generate index.js files that includes all HTML and Javascript code
 - load it in the browser: `open index.html`
+
+### Esbuild app plugin
+
+The `examples/build.js` script is an esbuild plugin that bundles templates from .html files to be used by the app.
+
+Running `node build.js` in the examples folder will generate the `bundle.js` which includes all .js and .html files used by the index.html
+
 
 ## API
 

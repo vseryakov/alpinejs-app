@@ -6,26 +6,22 @@
         "type": "git",
         "url": "https://github.com/vseryakov/alpinejs-app.git"
   },
-  "type": "module",
   "author": "Vlad Seryakov",
   "license": "MIT",
   "keywords": [ "Alpine JS", "Alpine JS SPA" ],
   "module": "dist/app.mjs",
   "unpkg": "dist/app.min.js",  
   "scripts": {
-    "watch": "npm run cdn -- --watch",
-    "cdn": "esbuild builds/cdn.js --platform=browser --bundle --outfile=dist/app.js",
-    "esm": "esbuild builds/module.js --platform=neutral --bundle --outfile=dist/app.mjs",
-    "cdn-min": "esbuild builds/cdn.js --platform=browser --bundle --minify --outfile=dist/app.min.js",
-    "esm-min": "esbuild builds/module.js --platform=neutral --bundle --minify --outfile=dist/app.min.mjs",
-    "all": "npm run cdn;npm run esm;npm run cdn-min;npm run esm-min;npm run examples",
-    "devbuild": "npm run all",
-    "examples": "cd examples && ./bundle.sh -minify ../dist/app.js dropdown* example*"
+    "build": "node scripts/build.js",
+    "devbuild": "node scripts/build.js",
+    "watch": "node scripts/build.js --watch",
+    "examples": "cd examples && ./bundle.sh ../dist/app.js dropdown* example*"
   },
   "devDependencies": {
     "esbuild": "^0.24.0"
   },
   "eslintConfig": {
+    "root": true,
     "parserOptions": {
         "ecmaVersion": 2022,
         "sourceType": "module"

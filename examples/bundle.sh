@@ -1,6 +1,7 @@
 #!/bin/sh
 
-echo > bundle.js
+bundle=bundle.js
+echo > $bundle
 
 for file in "$@"; do
     case $file in
@@ -8,17 +9,14 @@ for file in "$@"; do
       minify=1
       ;;
     *.js)
-      cat $file >> bundle.js
+      cat $file >> $bundle
       ;;
 
     *.html)
       n=$(basename $file .html)
-      echo "app.templates[\"$n\"]='$(cat $file|tr -d '\r\n'|sed "s/['\\]/\\\&/g")';" >> bundle.js
+      echo "app.templates[\"$n\"]='$(cat $file|tr -d '\r\n'|sed "s/['\\]/\\\&/g")';" >> $bundle
       ;;
   esac
 done
-
-[ -n "$minify" ] && esbuild --minify bundle.js > bundle.min.js
-
 
                         
