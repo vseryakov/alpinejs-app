@@ -46,6 +46,8 @@ npm install @vseryakov/alpinejs-app
 
 Here's a simple introductory [example](examples/index.html) featuring a hello world scenario.
 
+Live demo is available at [demo](https://vseryakov.github.io/alpinejs-app/examples/index.html).
+
 ### index.html
 
 ```html
@@ -224,7 +226,7 @@ The `hello2` component utilizes lifecycle methods:
 - `onDelete` manages cleanup by stopping timers.
 - `toggle` method reuses the toggling but adds broadcasting changes via events.
 
-For complete interaction, access live demo at the [index.html](examples/index.html).
+For complete interaction, access live demo at the [index.html](https://vseryakov.github.io/alpinejs-app/examples/index.html).
 
 ## Custom Elements
 
