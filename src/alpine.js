@@ -3,9 +3,6 @@ import { app, isString, isElement, toCamel } from './app';
 const _alpine = "alpine";
 
 class Component {
-    // x-template dynamic rendering
-    template = "";
-    // Render options
     params = {};
 
     static $type = _alpine;
@@ -139,7 +136,7 @@ app.$on(document, "alpine:init", () => {
     });
 
     Alpine.directive('template', (el, { expression }, { effect, cleanup }) => {
-        const evaluate = Alpine.evaluateLater(el, expression || "template");
+        const evaluate = Alpine.evaluateLater(el, expression);
         var template;
 
         const hide = () => {

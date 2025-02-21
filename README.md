@@ -4,9 +4,9 @@
 
 ### The Motivation
 
-- The first rationale behind `alpinejs-app` is the preference to maintain a clear separation between HTML and JavaScript logic. This separation keeps presentation distinct from logic, a methodology introduced a long time ago. With Alpine.js, we now get efficient two-way data bindings and reactivity using even less code.
+- to maintain a clear separation between HTML and JavaScript logic. This separation keeps presentation distinct from logic as much as possible. With Alpine.js, we now get efficient two-way data bindings and reactivity using even less code.
 
-- The second rationale is to have some kind of central registry of HTML templates and Javascript classes and use it to register components.
+- to have some kind of central registry of HTML templates and Javascript classes and use it to register components.
 
 The registry is just 2 global Javascript objects, `templates` and `components`.
 
@@ -16,13 +16,13 @@ How the registry is delivered to the browser depends on bundling or application,
 - keep HTML templates in JSON files to load separately via fetch on demand
 - maintain HTML files on the server to load individually on demand similar to `htmx`
 
-### Key Features
+### Features
 
 - **Components**: These are the primary building blocks of the UI. They can be either standalone HTML templates or HTML backed by JavaScript logic, capable of nesting other components.
 
-- **Main Component**: Displays the current main page within the `#app-main` HTML element. It manages the navigation and saves the view to the browser history using `savePath` when it's the main view.
+- **Main Component**: Displays the current main page within the `#app-main` HTML element. It manages the navigation and saves the view to the browser history using `app.savePath`.
 
-- **History Navigation**: Supports browser back/forward navigation by rendering the appropriate component on window `popstate` events, achieved using `restorePath`.
+- **History Navigation**: Supports browser back/forward navigation by rendering the appropriate component on window `popstate` events, achieved using `app.restorePath`.
 
 - **Direct Deep-Linking**: For direct access, server-side routes must redirect to the main app HTML page, with the base path set as '/app/' by default.
 
@@ -44,7 +44,7 @@ npm install @vseryakov/alpinejs-app
 
 ## Getting Started
 
-Here's a simple introductory [example](examples/index.html) featuring a hello world scenario.
+Here's a simple hello world [example](examples/index.html).
 
 Live demo is available at [demo](https://vseryakov.github.io/alpinejs-app/examples/index.html).
 
@@ -70,7 +70,7 @@ Live demo is available at [demo](https://vseryakov.github.io/alpinejs-app/exampl
     Param: <span x-text="params.param1"></span><br>
     Reason: <span x-text="params.reason"></span><br>
 
-    <div x-template></div>
+    <div x-template="template"></div>
 
     <button @click="toggle">Toggle</button>
     <button x-render="'index'">Back</button>
@@ -94,6 +94,8 @@ app.start();
 
 ``` javascript
 app.components.hello = class extends app.AlpineComponent {
+    template = ""
+
     toggle() {
         this.template = !this.template ? "example" : "";
     }
@@ -104,11 +106,10 @@ app.components.hello = class extends app.AlpineComponent {
 
 - The script defines a template and a component, `app.start` calls `restorePath` when the page is ready, defaulting to render `index` since the static path doesn’t match. (running locally with file:// origin will not replace history)
 - The body includes a placeholder for the main app.
-- The `index` template is the default starting page, with a `x-render` directive for displaying the `hello` component with parameters.
-- Clicking 'Say Hello' switches the display to the `hello` component.
-- The `hello` component is a typical Alpine.js setup involving `x-text` for displaying component properties.
-- The component extends `app.AlpineComponent` to include a toggle function.
-- A `x-template` directive remains empty until the template variable is populated by clicking the 'Show' button, which triggers the component's toggle method to render the `example` template in the contained div.
+- The `index` template is the default starting page, with a button to display the `hello` component with parameters.
+- Clicking 'Say Hello' switches the display to the `hello` component via `x-render` directive.
+- The `hello` component is a class extending `app.AlpineComponent` with a toggle function.
+- A `x-template` directive remains empty until the `template` variable is populated by clicking the 'Show' button, which triggers the component's toggle method to render the `example` template in the contained div.
 - The `example` template is defined in the `examples/example.html` file and bundled into bundle.js.
 
 Nothing much, all the work is done by Alpinejs actually.
@@ -130,15 +131,14 @@ Special options include:
 
 ## Directive: `x-template`
 
-Render a template or component inside the container, by default the expression is to use variable `template`,
-it is defined in every `app.AlpineComponent` class.
+Render a template or component inside the container from the expression which must return a template name or nothing to clear the container.
 
-This can be an alternative to the `x-if` Alpine directive.
+This can be an alternative to the `x-if` Alpine directive especially with multiple top elements because x-if only support one top element.
 
 ```html
-<div x-template></div>
-
 <div x-template="template"></div>
+
+<div x-template="show ? 'index' : ''"></div>
 ```
 
 ## Directive: `x-scope-level`
@@ -155,7 +155,7 @@ limiting scope for children might as well be useful.
 
 ## Magic: `$app`
 
-The `$app` object opens access to app-wide methods and properties, enabling features such as programmatic rendering.
+The `$app` object is an alias to the global app object to be called directly in the Alpine.js directives.
 
 ```html
 <a @click="$app.render('page/1/2?$target=#section')">Render Magic</a>
@@ -494,6 +494,4 @@ Methods:
 ## License
 
 Licensed under [MIT](https://github.com/vseryakov/alpinejs-app/blob/master/LICENSE)
-
-_Some parts of the documentation are produced by ChatGPT._
 

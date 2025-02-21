@@ -279,9 +279,6 @@ app.render = (options, dflt) => {
 // src/alpine.js
 var _alpine = "alpine";
 var Component = class {
-  // x-template dynamic rendering
-  template = "";
-  // Render options
   params = {};
   static $type = _alpine;
   constructor(name, params) {
@@ -390,7 +387,7 @@ app.$on(document, "alpine:init", () => {
     });
   });
   Alpine.directive("template", (el, { expression }, { effect, cleanup }) => {
-    const evaluate = Alpine.evaluateLater(el, expression || "template");
+    const evaluate = Alpine.evaluateLater(el, expression);
     var template;
     const hide = () => {
       template = null;
