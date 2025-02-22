@@ -1,5 +1,5 @@
 {
-  "version": "1.0.9",
+  "version": "1.0.10",
   "name": "alpinejs-app",
   "description": "Simple SPA plugin for Alpinejs",
   "repository": {
@@ -11,6 +11,11 @@
   "keywords": [ "Alpine JS", "Alpine JS SPA" ],
   "module": "dist/app.mjs",
   "unpkg": "dist/app.min.js",  
+  "files": [
+    "dist/",
+    "src/",
+    "builds/"
+  ],
   "scripts": {
     "build": "node scripts/build.js",
     "devbuild": "node scripts/build.js",
