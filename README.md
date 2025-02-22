@@ -37,7 +37,7 @@ npm install @vseryakov/alpinejs-app
 ### cdn
 
 ```html
-<script src="https://unpkg.com/@vseryakov/alpinejs-app@1.x.x/dist/app.min.js"></script>
+<script src="https://unpkg.com/alpinejs-app@1.x.x/dist/app.min.js"></script>
 
 <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 ```
