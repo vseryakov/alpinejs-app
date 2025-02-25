@@ -271,9 +271,6 @@
     };
     var _alpine = "alpine";
     var Component = class {
-      // x-template dynamic rendering
-      template = "";
-      // Render options
       params = {};
       static $type = _alpine;
       constructor(name, params) {
@@ -350,6 +347,7 @@
           delete node._x_params;
         });
       }
+      return options;
     }
     function data(element, level) {
       if (!isElement(element)) element = app2.$(app2.main + " div");
@@ -381,21 +379,34 @@
           app2.$off(el, "click", click);
         });
       });
-      Alpine.directive("template", (el, { expression }, { effect, cleanup }) => {
-        const evaluate = Alpine.evaluateLater(el, expression || "template");
+      Alpine.directive("template", (el, { modifiers, expression }, { effect, cleanup }) => {
+        const evaluate = Alpine.evaluateLater(el, expression);
         var template;
-        const hide = () => {
+        const empty = () => {
           template = null;
           Alpine.mutateDom(() => {
             app2.$empty(el, (node) => Alpine.destroyTree(node));
+            if (modifiers.includes("show")) {
+              el.style.setProperty("display", "none", modifiers.includes("important") ? "important" : void 0);
+            }
           });
         };
         effect(() => evaluate((value) => {
-          if (!value) return hide();
-          if (value !== template) render(el, value);
+          if (!value) return empty();
+          if (value !== template) {
+            if (render(el, value)) {
+              if (modifiers.includes("show")) {
+                el.style.setProperty(
+                  "display",
+                  modifiers.includes("flex") ? "flex" : modifiers.includes("inline") ? "inline-block" : "block",
+                  modifiers.includes("important") ? "important" : void 0
+                );
+              }
+            }
+          }
           template = value;
         }));
-        cleanup(hide);
+        cleanup(empty);
       });
       Alpine.directive("scope-level", (el, { expression }, { evaluate }) => {
         const scope = Alpine.closestDataStack(el);
@@ -470,6 +481,7 @@
 
   // hello.js
   app.components.hello = class extends app.AlpineComponent {
+    template = "";
     toggle() {
       this.template = !this.template ? "example" : this.template == "example" ? "hello2" : "";
     }

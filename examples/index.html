@@ -40,7 +40,7 @@
     Param: <span x-text="params.param1"></span><br>
     Reason: <span x-text="params.reason"></span><br>
 
-    <div :class="template?'border my-3':''" x-template></div>
+    <div :class="template?'border my-3':''" x-template.show="template"></div>
 
     <button class="btn btn-outline-dark" @click="toggle">Toggle</button>
     <button class="btn btn-outline-dark" x-render="'index'">Back</button>

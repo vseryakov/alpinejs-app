@@ -355,6 +355,7 @@ function render(element, options) {
       delete node._x_params;
     });
   }
+  return options;
 }
 function data(element, level) {
   if (!isElement(element)) element = app.$(app.main + " div");
@@ -386,21 +387,34 @@ app.$on(document, "alpine:init", () => {
       app.$off(el, "click", click);
     });
   });
-  Alpine.directive("template", (el, { expression }, { effect, cleanup }) => {
+  Alpine.directive("template", (el, { modifiers, expression }, { effect, cleanup }) => {
     const evaluate = Alpine.evaluateLater(el, expression);
     var template;
-    const hide = () => {
+    const empty = () => {
       template = null;
       Alpine.mutateDom(() => {
         app.$empty(el, (node) => Alpine.destroyTree(node));
+        if (modifiers.includes("show")) {
+          el.style.setProperty("display", "none", modifiers.includes("important") ? "important" : void 0);
+        }
       });
     };
     effect(() => evaluate((value) => {
-      if (!value) return hide();
-      if (value !== template) render(el, value);
+      if (!value) return empty();
+      if (value !== template) {
+        if (render(el, value)) {
+          if (modifiers.includes("show")) {
+            el.style.setProperty(
+              "display",
+              modifiers.includes("flex") ? "flex" : modifiers.includes("inline") ? "inline-block" : "block",
+              modifiers.includes("important") ? "important" : void 0
+            );
+          }
+        }
+      }
       template = value;
     }));
-    cleanup(hide);
+    cleanup(empty);
   });
   Alpine.directive("scope-level", (el, { expression }, { evaluate }) => {
     const scope = Alpine.closestDataStack(el);

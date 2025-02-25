@@ -1,5 +1,7 @@
 
 app.components.hello = class extends app.AlpineComponent {
+    template = ""
+
     toggle() {
         this.template = !this.template ? "example" : this.template == "example" ? "hello2" : "";
     }

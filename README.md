@@ -70,7 +70,7 @@ Live demo is available at [demo](https://vseryakov.github.io/alpinejs-app/exampl
     Param: <span x-text="params.param1"></span><br>
     Reason: <span x-text="params.reason"></span><br>
 
-    <div x-template="template"></div>
+    <div x-template.show="template"></div>
 
     <button @click="toggle">Toggle</button>
     <button x-render="'index'">Back</button>
@@ -109,10 +109,28 @@ app.components.hello = class extends app.AlpineComponent {
 - The `index` template is the default starting page, with a button to display the `hello` component with parameters.
 - Clicking 'Say Hello' switches the display to the `hello` component via `x-render` directive.
 - The `hello` component is a class extending `app.AlpineComponent` with a toggle function.
-- A `x-template` directive remains empty until the `template` variable is populated by clicking the 'Show' button, which triggers the component's toggle method to render the `example` template in the contained div.
+- A `x-template` directive remains empty until the `template` variable is populated by clicking the 'Show' button, which triggers the component's toggle method to render the `example` template in the contained div. The `.show` modifier keeps the div hidden until template is set.
 - The `example` template is defined in the `examples/example.html` file and bundled into bundle.js.
 
 Nothing much, all the work is done by Alpinejs actually.
+
+## Directive: `x-template`
+
+Render a template or component inside the container from the expression which must return a template name or nothing to clear the container.
+
+This can be an alternative to the `x-if` Alpine directive especially with multiple top elements because x-if only support one top element.
+
+```html
+<div x-template="template"></div>
+
+<div x-template="show ? 'index' : ''"></div>
+```
+
+Modifiers:
+ - `show` - behave as `x-show`, i.e. hide if no template and display if it is set, `x-template.show="..."`
+ - `flex` - set display to flex instead of block
+ - `inline` - set display to inline-block instead of block
+ - `important` - apply !important similar to `x-show`
 
 ## Directive: `x-render`
 
@@ -127,18 +145,6 @@ Special options include:
 <a x-render="'hello/hi?reason=World'">Say Hello</a>
 
 <button x-render="'index?$target=#div'">Show</button>
-```
-
-## Directive: `x-template`
-
-Render a template or component inside the container from the expression which must return a template name or nothing to clear the container.
-
-This can be an alternative to the `x-if` Alpine directive especially with multiple top elements because x-if only support one top element.
-
-```html
-<div x-template="template"></div>
-
-<div x-template="show ? 'index' : ''"></div>
 ```
 
 ## Directive: `x-scope-level`
