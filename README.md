@@ -128,6 +128,7 @@ This can be an alternative to the `x-if` Alpine directive especially with multip
 
 Modifiers:
  - `show` - behave as `x-show`, i.e. hide if no template and display if it is set, `x-template.show="..."`
+ - `nonempty` - force to hide the container if it is empty even if the expression is not, only works with `show`
  - `flex` - set display to flex instead of block
  - `inline` - set display to inline-block instead of block
  - `important` - apply !important similar to `x-show`
