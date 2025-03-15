@@ -421,6 +421,8 @@ The app implements very simple event emitter to handle internal messages separat
 
 There are predefined system events:
 
+ - `alpine:init` - is sent on document alpine:init event from Alpine. Initializes custom elements at the moment, in case some components were loaded after
+    app and Alpine loaded it is necessary to emit it again via `app.emit('alpine:init')`
  - `path:restore` - is sent by the window `popstate` event from `app.start`
  - `path:save` - is sent by `app.render` for main components only
  - `path:push` - is sent just before calling `history.pushState` with the path to be pushed
