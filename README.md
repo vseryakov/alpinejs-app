@@ -133,6 +133,12 @@ Modifiers:
  - `inline` - set display to inline-block instead of block
  - `important` - apply !important similar to `x-show`
 
+The directive also supports special parameters to be set in `this.params`, similar to `x-render`, for example:
+
+    <div x-template="'docs?$nohistory=1'">Show</div>
+
+The component `docs` will have `this.params.$nohistory` set to 1 on creation.
+
 ## Directive: `x-render`
 
 Binds to click events to display components. Can set components via a syntax supporting names, paths, or URLs with parameters through `parsePath`.
