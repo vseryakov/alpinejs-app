@@ -41,7 +41,7 @@ app.off = (event, callback) => {
 }
 
 app.emit = (event, ...args) => {
-    app.trace("emit:", event, ...args);
+    app.trace("emit:", event, ...args, app.debug > 1 && _events[event]);
     if (_events[event]) {
         for (const cb of _events[event]) cb(...args);
     } else

@@ -11,12 +11,14 @@ class Component {
         this.$name = name;
         Object.assign(this.params, params);
         this._handleEvent = this.handleEvent.bind(this);
+        this._onCreate = this.onCreate || null;
+        this._onDelete = this.onDelete || null;
     }
 
     init() {
         app.trace("init:", this.$name);
         Object.assign(this.params, this.$el._x_params);
-        app.call(this.onCreate?.bind(this));
+        app.call(this._onCreate?.bind(this));
         if (!this.params.$noevents) {
             app.on(app.event, this._handleEvent);
         }
@@ -27,7 +29,7 @@ class Component {
         app.trace("destroy:", this.$name);
         app.off(app.event, this._handleEvent);
         app.emit("component:delete", { type: _alpine, name: this.$name, component: this, element: this.$el, params: Alpine.raw(this.params) });
-        app.call(this.onDelete?.bind(this));
+        app.call(this._onDelete?.bind(this));
         this.params = {};
     }
 
