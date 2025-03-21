@@ -1,48 +1,18 @@
-import { app, isString, isElement, toCamel } from './app';
+import { app, isString, isElement } from './app';
+import Component from './component';
 
 const _alpine = "alpine";
 
-class Component {
-    params = {};
-
+class AlpineComponent extends Component {
     static $type = _alpine;
 
     constructor(name, params) {
-        this.$name = name;
-        Object.assign(this.params, params);
-        this._handleEvent = this.handleEvent.bind(this);
-        this._onCreate = this.onCreate || null;
-        this._onDelete = this.onDelete || null;
+        super(name, params);
+        this.$type = _alpine;
     }
 
     init() {
-        app.trace("init:", this.$name);
-        Object.assign(this.params, this.$el._x_params);
-        app.call(this._onCreate?.bind(this));
-        if (!this.params.$noevents) {
-            app.on(app.event, this._handleEvent);
-        }
-        app.emit("component:create", { type: _alpine, name: this.$name, component: this, element: this.$el, params: Alpine.raw(this.params) });
-    }
-
-    destroy() {
-        app.trace("destroy:", this.$name);
-        app.off(app.event, this._handleEvent);
-        app.emit("component:delete", { type: _alpine, name: this.$name, component: this, element: this.$el, params: Alpine.raw(this.params) });
-        app.call(this._onDelete?.bind(this));
-        this.params = {};
-    }
-
-    handleEvent(event, ...args) {
-        if (this.onEvent) {
-            app.trace("event:", this.$name, event, ...args);
-            app.call(this.onEvent?.bind(this.$data), event, ...args);
-        }
-        if (!isString(event)) return;
-        var method = toCamel("on_" + event);
-        if (!this[method]) return;
-        app.trace("event:", this.$name, method, ...args);
-        app.call(this[method]?.bind(this.$data), ...args);
+        super.init(this.$root._x_params);
     }
 
 }
@@ -51,7 +21,7 @@ class Element extends HTMLElement {
 
     connectedCallback() {
         queueMicrotask(() => {
-            render(this, this.getAttribute("template") || this.localName.substr(4));
+            render(this, this.localName.substr(4));
         });
     }
 }
@@ -63,33 +33,18 @@ function render(element, options)
         if (!options) return;
     }
 
-    // Remove existing elements, allow Alpine to cleanup
-    app.$empty(element)
+    app.$empty(element);
 
-    // Add new elements
-    const doc = app.$parse(options.template, "doc");
     if (!options.component) {
         Alpine.mutateDom(() => {
-            while (doc.head.firstChild) {
-                element.appendChild(doc.head.firstChild);
-            }
-            while (doc.body.firstChild) {
-                const node = doc.body.firstChild;
-                element.appendChild(node);
-                if (node.nodeType != 1) continue;
-                Alpine.initTree(node);
-            }
+            app.$append(element, options.template, Alpine.initTree);
         });
     } else {
         // In case a component was loaded after alpine:init event
         Alpine.data(options.name, () => (new options.component(options.name)));
+
         const node = app.$elem("div", "x-data", options.name, "._x_params", options.params);
-        while (doc.head.firstChild) {
-            element.appendChild(doc.head.firstChild);
-        }
-        while (doc.body.firstChild) {
-            node.appendChild(doc.body.firstChild);
-        }
+        app.$append(node, options.template);
 
         Alpine.mutateDom(() => {
             element.appendChild(node);
@@ -108,16 +63,17 @@ function data(element, level)
     return Alpine.closestDataStack(element)[0];
 }
 
-app.plugin(_alpine, { render, Component, data, default: 1 });
-
-app.on("alpine:init", () => {
+function init()
+{
     for (const [name, obj] of Object.entries(app.components)) {
         const tag = `app-${obj?.$tag || name}`;
         if (obj?.$type != _alpine || customElements.get(tag)) continue;
         customElements.define(tag, class extends Element {});
         Alpine.data(name, () => (new obj(name)));
     }
-});
+}
+
+app.plugin(_alpine, { render, Component: AlpineComponent, data, init, default: 1 });
 
 app.$on(document, "alpine:init", () => {
 

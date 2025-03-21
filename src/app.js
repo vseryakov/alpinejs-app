@@ -13,7 +13,7 @@ export var app = {
     toCamel,
 }
 
-export function isString(str) { return typeof str == "string" }
+export function isString(str) { return typeof str == "string" && str }
 
 export function isFunction(callback) { return typeof callback == "function" && callback }
 

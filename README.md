@@ -380,7 +380,7 @@ Running `node build.js` in the examples folder will generate the `bundle.js` whi
 
 - `app.$(selector[, doc])`
 
-  An alias to `document.querySelector`, doc can be an Element
+  An alias to `document.querySelector`, doc can be an Element, empty or non-string selectors will return null
 
 - `app.$on(element, event, callback)`
 
@@ -409,6 +409,18 @@ Running `node build.js` in the examples folder will generate the `bundle.js` whi
    - `doc` - return the whole parsed document
 
     ```document.append(...app.$parse("<div>...</div>"), 'list'))```
+
+- `app.$empty(element, cleanup)`
+
+  Remove all nodes from the given element, call the cleanup callback for each node if given
+
+- `app.$append(element, template, setup)`
+
+  Append nodes from the template to the given element, call optional setup callback for each node.
+
+  The `template` can be a string with HTML or a `<template>` element.
+
+      ```app.$append(document, "<div>...</div>")```
 
 - `app.$data(element, level)`
 

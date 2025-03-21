@@ -19,7 +19,7 @@ app.plugin = (name, options) => {
 }
 
 app.$data = (element, level) => {
-    if (isString(element) && element) element = app.$(element);
+    if (isString(element)) element = app.$(element);
     for (const p in _plugins) {
         if (!_plugins[p].data) continue;
         const d = _plugins[p].data(element, level);
@@ -32,15 +32,17 @@ app.resolve = (path, dflt) => {
     app.trace("resolve:", path, dflt, rc);
 
     var name = rc.name, templates = app.templates, components = app.components;
-    var template = templates[name] || document.getElementById(name)?.innerHTML;
+    var template = templates[name] || document.getElementById(name);
     if (!template && dflt) {
-        template = templates[dflt] || document.getElementById(dflt)?.innerHTML;
+        template = templates[dflt] || document.getElementById(dflt);
         if (template) rc.name = dflt;
     }
-    if (template?.startsWith("#")) {
-        template = document.getElementById(template.substr(1))?.innerHTML;
+    if (isString(template) && template.startsWith("#")) {
+        template = document.getElementById(template.substr(1));
     } else
-    if (template?.startsWith("$")) template = templates[template.substr(1)];
+    if (isString(template) && template.startsWith("$")) {
+        template = templates[template.substr(1)];
+    }
 
     if (!template) return;
     rc.template = template;
@@ -89,4 +91,10 @@ app.render = (options, dflt) => {
     plugin.render(element, tmpl);
     return tmpl;
 }
+
+app.on("alpine:init", () => {
+    for (const p in _plugins) {
+        app.call(_plugins[p], "init");
+    }
+});
 

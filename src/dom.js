@@ -4,11 +4,11 @@ app.$param = (name, dflt) => {
     return new URLSearchParams(location.search).get(name) || dflt || "";
 }
 
-const esc = (selector) => (isString(selector) ? selector.replace(/#([^\s"#']+)/g, (_, id) => `#${CSS.escape(id)}`) : "")
+const esc = (selector) => (selector.replace(/#([^\s"#']+)/g, (_, id) => `#${CSS.escape(id)}`))
 
-app.$ = (selector, doc) => ((isElement(doc) || document).querySelector(esc(selector)))
+app.$ = (selector, doc) => (isString(selector) ? (isElement(doc) || document).querySelector(esc(selector)) : null)
 
-app.$all = (selector, doc) => ((isElement(doc) || document).querySelectorAll(esc(selector)))
+app.$all = (selector, doc) => (isString(selector) ? (isElement(doc) || document).querySelectorAll(esc(selector)) : null)
 
 app.$event = (element, name, detail = {}) =>
     (isElement(element) && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true })))
@@ -22,7 +22,7 @@ app.$off = (element, event, callback, ...arg) => {
 }
 
 app.$attr = (element, attr, value) => {
-    if (isString(element) && element) element = app.$(element);
+    if (isString(element)) element = app.$(element);
     if (!isElement(element)) return;
     return value === undefined ? element.getAttribute(attr) :
            value === null ? element.removeAttribute(attr) :
@@ -30,7 +30,7 @@ app.$attr = (element, attr, value) => {
 }
 
 app.$empty = (element, cleanup) => {
-    if (isString(element) && element) element = app.$(element);
+    if (isString(element)) element = app.$(element);
     if (!isElement(element)) return;
     while (element.firstChild) {
         const node = element.firstChild;
@@ -74,6 +74,26 @@ app.$elem = (name, ...arg) => {
 app.$parse = (html, format) => {
     html = new window.DOMParser().parseFromString(html || "", 'text/html');
     return format === "doc" ? html : format === "list" ? Array.from(html.body.childNodes) : html.body;
+}
+
+app.$append = (element, template, setup) => {
+    if (isString(element)) element = app.$(element);
+    if (!isElement(element)) return;
+
+    let doc;
+    if (isString(template)) doc = app.$parse(template, "doc"); else
+    if (template?.content?.nodeType == 11) doc = { body: template.content.cloneNode(true) }; else
+    return element;
+
+    let node;
+    while (node = doc.head?.firstChild) {
+        element.appendChild(node);
+    }
+    while (node = doc.body.firstChild) {
+        element.appendChild(node);
+        if (setup && node.nodeType == 1) app.call(setup, node);
+    }
+    return element;
 }
 
 var _ready = []

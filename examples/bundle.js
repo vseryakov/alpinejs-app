@@ -15,7 +15,7 @@
       toCamel
     };
     function isString(str) {
-      return typeof str == "string";
+      return typeof str == "string" && str;
     }
     function isFunction(callback) {
       return typeof callback == "function" && callback;
@@ -64,7 +64,7 @@
       if (i > -1) return _events[event].splice(i, 1);
     };
     app2.emit = (event, ...args) => {
-      app2.trace("emit:", event, ...args);
+      app2.trace("emit:", event, ...args, app2.debug > 1 && _events[event]);
       if (_events[event]) {
         for (const cb of _events[event]) cb(...args);
       } else if (isString(event) && event.endsWith(":*")) {
@@ -79,9 +79,9 @@
     app2.$param = (name, dflt) => {
       return new URLSearchParams(location.search).get(name) || dflt || "";
     };
-    var esc = (selector) => isString(selector) ? selector.replace(/#([^\s"#']+)/g, (_, id) => `#${CSS.escape(id)}`) : "";
-    app2.$ = (selector, doc) => (isElement(doc) || document).querySelector(esc(selector));
-    app2.$all = (selector, doc) => (isElement(doc) || document).querySelectorAll(esc(selector));
+    var esc = (selector) => selector.replace(/#([^\s"#']+)/g, (_, id) => `#${CSS.escape(id)}`);
+    app2.$ = (selector, doc) => isString(selector) ? (isElement(doc) || document).querySelector(esc(selector)) : null;
+    app2.$all = (selector, doc) => isString(selector) ? (isElement(doc) || document).querySelectorAll(esc(selector)) : null;
     app2.$event = (element, name, detail = {}) => isElement(element) && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true }));
     app2.$on = (element, event, callback, ...arg) => {
       return isFunction(callback) && element.addEventListener(event, callback, ...arg);
@@ -90,12 +90,12 @@
       return isFunction(callback) && element.removeEventListener(event, callback, ...arg);
     };
     app2.$attr = (element, attr, value) => {
-      if (isString(element) && element) element = app2.$(element);
+      if (isString(element)) element = app2.$(element);
       if (!isElement(element)) return;
       return value === void 0 ? element.getAttribute(attr) : value === null ? element.removeAttribute(attr) : element.setAttribute(attr, value);
     };
     app2.$empty = (element, cleanup) => {
-      if (isString(element) && element) element = app2.$(element);
+      if (isString(element)) element = app2.$(element);
       if (!isElement(element)) return;
       while (element.firstChild) {
         const node = element.firstChild;
@@ -132,6 +132,24 @@
     app2.$parse = (html, format) => {
       html = new window.DOMParser().parseFromString(html || "", "text/html");
       return format === "doc" ? html : format === "list" ? Array.from(html.body.childNodes) : html.body;
+    };
+    app2.$append = (element, template, setup) => {
+      if (isString(element)) element = app2.$(element);
+      if (!isElement(element)) return;
+      let doc;
+      if (isString(template)) doc = app2.$parse(template, "doc");
+      else if (template?.content?.nodeType == 11) doc = { body: template.content.cloneNode(true) };
+      else
+        return element;
+      let node;
+      while (node = doc.head?.firstChild) {
+        element.appendChild(node);
+      }
+      while (node = doc.body.firstChild) {
+        element.appendChild(node);
+        if (setup && node.nodeType == 1) app2.call(setup, node);
+      }
+      return element;
     };
     var _ready = [];
     app2.$ready = (callback) => {
@@ -214,7 +232,7 @@
       return Object.assign(plugin, options);
     };
     app2.$data = (element, level) => {
-      if (isString(element) && element) element = app2.$(element);
+      if (isString(element)) element = app2.$(element);
       for (const p in _plugins) {
         if (!_plugins[p].data) continue;
         const d = _plugins[p].data(element, level);
@@ -225,14 +243,16 @@
       const rc = app2.parsePath(path);
       app2.trace("resolve:", path, dflt, rc);
       var name = rc.name, templates = app2.templates, components = app2.components;
-      var template = templates[name] || document.getElementById(name)?.innerHTML;
+      var template = templates[name] || document.getElementById(name);
       if (!template && dflt) {
-        template = templates[dflt] || document.getElementById(dflt)?.innerHTML;
+        template = templates[dflt] || document.getElementById(dflt);
         if (template) rc.name = dflt;
       }
-      if (template?.startsWith("#")) {
-        template = document.getElementById(template.substr(1))?.innerHTML;
-      } else if (template?.startsWith("$")) template = templates[template.substr(1)];
+      if (isString(template) && template.startsWith("#")) {
+        template = document.getElementById(template.substr(1));
+      } else if (isString(template) && template.startsWith("$")) {
+        template = templates[template.substr(1)];
+      }
       if (!template) return;
       rc.template = template;
       var component = components[name] || components[rc.name];
@@ -269,47 +289,65 @@
       plugin.render(element, tmpl);
       return tmpl;
     };
-    var _alpine = "alpine";
+    app2.on("alpine:init", () => {
+      for (const p in _plugins) {
+        app2.call(_plugins[p], "init");
+      }
+    });
     var Component = class {
       params = {};
-      static $type = _alpine;
       constructor(name, params) {
         this.$name = name;
         Object.assign(this.params, params);
-        this._handleEvent = this.handleEvent.bind(this);
+        this._handleEvent = handleEvent.bind(this);
+        this._onCreate = this.onCreate || null;
+        this._onDelete = this.onDelete || null;
       }
-      init() {
-        app2.trace("init:", this.$name);
-        Object.assign(this.params, this.$el._x_params);
-        app2.call(this.onCreate?.bind(this));
+      init(params) {
+        app2.trace("init:", this.$type, this.$name);
+        Object.assign(this.params, params);
         if (!this.params.$noevents) {
           app2.on(app2.event, this._handleEvent);
         }
-        app2.emit("component:create", { type: _alpine, name: this.$name, component: this, element: this.$el, params: Alpine.raw(this.params) });
+        app2.call(this._onCreate?.bind(this, this.params));
+        app2.emit("component:create", { type: this.$type, name: this.$name, component: this, element: this.$el, params: this.params });
       }
       destroy() {
-        app2.trace("destroy:", this.$name);
+        app2.trace("destroy:", this.$type, this.$name);
         app2.off(app2.event, this._handleEvent);
-        app2.emit("component:delete", { type: _alpine, name: this.$name, component: this, element: this.$el, params: Alpine.raw(this.params) });
-        app2.call(this.onDelete?.bind(this));
+        app2.emit("component:delete", { type: this.$type, name: this.$name, component: this, element: this.$el, params: this.params });
+        app2.call(this._onDelete?.bind(this));
         this.params = {};
+        delete this.$root;
       }
-      handleEvent(event, ...args) {
-        if (this.onEvent) {
-          app2.trace("event:", this.$name, event, ...args);
-          app2.call(this.onEvent?.bind(this.$data), event, ...args);
-        }
-        if (!isString(event)) return;
-        var method = toCamel("on_" + event);
-        if (!this[method]) return;
-        app2.trace("event:", this.$name, method, ...args);
-        app2.call(this[method]?.bind(this.$data), ...args);
+    };
+    function handleEvent(event, ...args) {
+      if (this.onEvent) {
+        app2.trace("event:", this.$type, this.$name, event, ...args);
+        app2.call(this.onEvent?.bind(this.$data || this), event, ...args);
+      }
+      if (!isString(event)) return;
+      var method = toCamel("on_" + event);
+      if (!this[method]) return;
+      app2.trace("event:", this.$type, this.$name, method, ...args);
+      app2.call(this[method]?.bind(this.$data || this), ...args);
+    }
+    var component_default = Component;
+    var _alpine = "alpine";
+    var AlpineComponent = class extends component_default {
+      static $type = _alpine;
+      constructor(name, params) {
+        super(name, params);
+        this.$type = _alpine;
+      }
+      init() {
+        super.init(this.$root._x_params);
       }
     };
     var Element = class extends HTMLElement {
       connectedCallback() {
         queueMicrotask(() => {
-          render(this, this.getAttribute("template") || this.localName.substr(4));
+          render(this, this.localName.substr(4));
         });
       }
     };
@@ -319,28 +357,14 @@
         if (!options) return;
       }
       app2.$empty(element);
-      const doc = app2.$parse(options.template, "doc");
       if (!options.component) {
         Alpine.mutateDom(() => {
-          while (doc.head.firstChild) {
-            element.appendChild(doc.head.firstChild);
-          }
-          while (doc.body.firstChild) {
-            const node = doc.body.firstChild;
-            element.appendChild(node);
-            if (node.nodeType != 1) continue;
-            Alpine.initTree(node);
-          }
+          app2.$append(element, options.template, Alpine.initTree);
         });
       } else {
         Alpine.data(options.name, () => new options.component(options.name));
         const node = app2.$elem("div", "x-data", options.name, "._x_params", options.params);
-        while (doc.head.firstChild) {
-          element.appendChild(doc.head.firstChild);
-        }
-        while (doc.body.firstChild) {
-          node.appendChild(doc.body.firstChild);
-        }
+        app2.$append(node, options.template);
         Alpine.mutateDom(() => {
           element.appendChild(node);
           Alpine.initTree(node);
@@ -355,8 +379,7 @@
       if (typeof level == "number") return element._x_dataStack?.at(level);
       return Alpine.closestDataStack(element)[0];
     }
-    app2.plugin(_alpine, { render, Component, data, default: 1 });
-    app2.on("alpine:init", () => {
+    function init() {
       for (const [name, obj] of Object.entries(app2.components)) {
         const tag = `app-${obj?.$tag || name}`;
         if (obj?.$type != _alpine || customElements.get(tag)) continue;
@@ -364,7 +387,8 @@
         });
         Alpine.data(name, () => new obj(name));
       }
-    });
+    }
+    app2.plugin(_alpine, { render, Component: AlpineComponent, data, init, default: 1 });
     app2.$on(document, "alpine:init", () => {
       app2.emit("alpine:init");
       Alpine.magic("app", (el) => app2);
@@ -479,6 +503,7 @@
         app2.call(callback, err);
       }
     };
+    app2.Component = component_default;
     var src_default = app2;
     window.app = src_default;
   })();
