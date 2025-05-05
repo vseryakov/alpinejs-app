@@ -67,8 +67,10 @@ Live demo is available at [demo](https://vseryakov.github.io/alpinejs-app/exampl
 
 <template id="hello">
     <h5>This is the <span x-text=$name></span> component</h5>
-    Param: <span x-text="params.param1"></span><br>
-    Reason: <span x-text="params.reason"></span><br>
+    Param: <span x-text="params.param1"></span>
+    <br>
+    Reason: <span x-text="params.reason"></span>
+    <br>
 
     <div x-template.show="template"></div>
 
@@ -104,7 +106,7 @@ app.components.hello = class extends app.AlpineComponent {
 
 **Explanation:**
 
-- The script defines a template and a component, `app.start` calls `restorePath` when the page is ready, defaulting to render `index` since the static path doesn’t match. (running locally with file:// origin will not replace history)
+- The script defines a template and a component, `app.start` calls `app.restorePath` when the page is ready, defaulting to render `index` since the static path doesn’t match. (running locally with file:// origin will not replace history)
 - The body includes a placeholder for the main app.
 - The `index` template is the default starting page, with a button to display the `hello` component with parameters.
 - Clicking 'Say Hello' switches the display to the `hello` component via `x-render` directive.
@@ -118,7 +120,7 @@ Nothing much, all the work is done by Alpinejs actually.
 
 Render a template or component inside the container from the expression which must return a template name or nothing to clear the container.
 
-This can be an alternative to the `x-if` Alpine directive especially with multiple top elements because x-if only support one top element.
+This can be an alternative to the `x-if` Alpine directive especially with multiple top elements because x-if only supports one top element.
 
 ```html
 <div x-template="template"></div>
@@ -178,7 +180,7 @@ The `$app` object is an alias to the global app object to be called directly in 
 
 ## Component Lifecycle and Event Handling
 
-While Alpinejs has several ways how to reuse the data this app makes it more unified, this is opinionated of course.
+While Alpine.js has several ways how to reuse the data this app makes it more unified, this is opinionated of course.
 
 Here is the life-cycle of a component:
 
@@ -258,7 +260,7 @@ The examples/ folder contains more components to play around and a bundle.sh scr
 
 An example to show very simple way to bundle .html and .js files into a single file.
 
-It comes with pre-created bundle but to rebuild:
+It comes with pre-created bundle, to rebuild:
 - run `npm run demo`
 - it will generate examples/bundle.js file that includes all HTML and Javascript code
 - load it in the browser: `open examples/index.html`
@@ -284,7 +286,7 @@ Running `node build.js` in the examples folder will generate the `bundle.js` whi
 
 - `index: "index"`
 
-  Specifies a fallback component for unrecognized paths on initial load, it is used by `restorePath`.
+  Specifies a fallback component for unrecognized paths on initial load, it is used by `app.restorePath`.
 
 - `templates: {}`
 
@@ -339,9 +341,9 @@ Running `node build.js` in the examples folder will generate the `bundle.js` whi
 - `app.start`
 
   Setup default handlers:
-   - on `path:restore` event call `restorePath` to render a component from the history
-   - on `path:save` call `savePath` to save the current component in the history
-   - on page ready call `restorePath` to render the initial page
+   - on `path:restore` event call `app.restorePath` to render a component from the history
+   - on `path:save` call `app.savePath` to save the current component in the history
+   - on page ready call `app.restorePath` to render the initial page
 
    **If not called then no browser history will not be handled, up to the app to do it some other way.**. One good
    reason is to create your own handlers to build different path and then save/restore.
@@ -511,7 +513,7 @@ Methods:
    - `default` - if not empty make this plugin default
    - `Component` - optional base component constructor, it will be registered as app.{Type}Component, like AlpineComponent, KoComponent,... to easy create custom components
 
-  The reason for plugins is that while this is designed for Alpinejs, the idea originated by using Knockoutjs with this system,
+  The reason for plugins is that while this is designed for Alpine.js, the idea originated by using Knockout.js with this system,
   the plugin can be found at [app.ko.js](https://github.com/vseryakov/backendjs/blob/master/web/js/app.ko.js).
 
 
