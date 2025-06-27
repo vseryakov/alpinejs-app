@@ -144,6 +144,7 @@ The component `docs` will have `this.params.$nohistory` set to 1 on creation.
 ## Directive: `x-render`
 
 Binds to click events to display components. Can set components via a syntax supporting names, paths, or URLs with parameters through `parsePath`.
+Nothing happens in case the expression is empty.
 
 Special options include:
 
@@ -231,12 +232,12 @@ Introduce another component:
     }
 ````
 
-Key additions include:
+Additions to the previous example:
 
 - A `hello2` template referencing existing `hello` for shared markup.
 - A new `hello2` component extending from `hello`, showcasing class inheritance.
 
-The `hello2` component utilizes lifecycle methods:
+The `hello2` component takes advantage of the lifecycle methods to customize the behaviour:
 - `onCreate` sets up initialization like overriding reasons and running a timer.
 - `onDelete` manages cleanup by stopping timers.
 - `toggle` method reuses the toggling but adds broadcasting changes via events.
