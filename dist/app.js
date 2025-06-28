@@ -405,8 +405,11 @@
     Alpine.magic("app", (el) => app);
     Alpine.directive("render", (el, { modifiers, expression }, { evaluate, cleanup }) => {
       const click = (e) => {
+        const name = evaluate(expression);
+        if (!name) return;
         e.preventDefault();
-        app.render(evaluate(expression));
+        e.stopPropagation();
+        app.render(name);
       };
       app.$on(el, "click", click);
       el.style.cursor = "pointer";

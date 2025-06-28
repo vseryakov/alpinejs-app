@@ -164,9 +164,9 @@ Useful for sub-components not to interfere with parent's properties. In most cas
 limiting scope for children might as well be useful.
 
 ```html
-<div x-data-depth></div>
+<div x-scope-level></div>
 
-<div x-data-depth=1></div>
+<div x-scope-level=1></div>
 ```
 
 ## Magic: `$app`
