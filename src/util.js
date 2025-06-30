@@ -15,41 +15,48 @@ app.call = (obj, method, ...arg) => {
 
 var _events = {}
 
-app.on = (event, callback) => {
+app.on = (event, callback, namespace) => {
     if (!isFunction(callback)) return;
     if (!_events[event]) _events[event] = [];
-    _events[event].push(callback);
+    _events[event].push([callback, isString(namespace)]);
 }
 
-app.once = (event, callback) => {
+app.once = (event, callback, namespace) => {
     if (!isFunction(callback)) return;
     const cb = (...args) => {
         app.off(event, cb);
         callback(...args);
     }
-    app.on(event, cb);
+    app.on(event, cb, namespace);
 }
 
-app.only = (event, callback) => {
-    _events[event] = isFunction(callback) ? [callback] : [];
+app.only = (event, callback, namespace) => {
+    _events[event] = isFunction(callback) ? [callback, isString(namespace)] : [];
 }
 
 app.off = (event, callback) => {
-    if (!_events[event] || !callback) return;
-    const i = _events[event].indexOf(callback);
-    if (i > -1) return _events[event].splice(i, 1);
+    if (event && callback) {
+        if (!_events[event]) return;
+        const i = isFunction(callback) ? 0 : isString(callback) ? 1 : -1;
+        if (i >= 0) _events[event] = _events[event].filter(x => x[i] !== callback);
+    } else
+    if (isString(event)) {
+        for (const ev in _events) {
+            _events[ev] = _events[ev].filter(x => x[1] !== event);
+        }
+    }
 }
 
 app.emit = (event, ...args) => {
     app.trace("emit:", event, ...args, app.debug > 1 && _events[event]);
     if (_events[event]) {
-        for (const cb of _events[event]) cb(...args);
+        for (const cb of _events[event]) cb[0](...args);
     } else
     if (isString(event) && event.endsWith(":*")) {
         event = event.slice(0, -1);
         for (const p in _events) {
             if (p.startsWith(event)) {
-                for (const cb of _events[p]) cb(...args);
+                for (const cb of _events[p]) cb[0](...args);
             }
         }
     }

@@ -454,21 +454,30 @@ There are predefined system events:
 
 Methods:
 
-- `app.on(event, callback)`
+- `app.on(event, callback, [namespace])`
 
-  Listen on event, the callback is called synchronously
+  Listen on event, the callback is called synchronously, optional namespace allows deleting callbacks later easier by not providing
+  exact function by just namespace.
 
-- `app.once(event, callback)`
+- `app.once(event, callback, [namespace])`
 
   Listen on event, the callback is called only once
 
-- `app.only(event, callback)`
+- `app.only(event, callback, [namespace])`
 
   Remove all current listeners for the given event, if a callback is given make it the only listener.
 
 - `app.off(event, callback)`
 
-  Remove event listener
+  Remove all event listeners by event name and exact callback function
+
+- `app.off(event, namespace)`
+
+  Remove all event listeners by event name and namespace
+
+- `app.off(namespace)`
+
+  Remove all event listeners by namespace
 
 - `app.emit(event, ...args)`
 
