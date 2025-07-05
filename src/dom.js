@@ -11,7 +11,7 @@ app.$ = (selector, doc) => (isString(selector) ? (isElement(doc) || document).qu
 app.$all = (selector, doc) => (isString(selector) ? (isElement(doc) || document).querySelectorAll(esc(selector)) : null)
 
 app.$event = (element, name, detail = {}) =>
-    (isElement(element) && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true })))
+    (element instanceof EventTarget && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true })))
 
 app.$on = (element, event, callback, ...arg) => {
     return isFunction(callback) && element.addEventListener(event, callback, ...arg);
