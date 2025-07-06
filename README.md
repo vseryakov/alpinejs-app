@@ -134,12 +134,21 @@ Modifiers:
  - `flex` - set display to flex instead of block
  - `inline` - set display to inline-block instead of block
  - `important` - apply !important similar to `x-show`
+ - `params.opts` - pass an object `opts` in the current scope as the `params` to the component, similar to `app.render({ name, params: opts })`
 
-The directive also supports special parameters to be set in `this.params`, similar to `x-render`, for example:
+The directive supports special parameters to be set in `this.params`, similar to `x-render`, for example:
 
     <div x-template="'docs?$nohistory=1'">Show</div>
 
 The component `docs` will have `this.params.$nohistory` set to 1 on creation.
+
+The other way to pass params to be sure the component will not use by accident wrong data is to use modifier `.params.NAME`
+
+    <div x-data="{ opts: { $nohistory: 1, docid: 123 } }">
+        <div x-template.params.opts="'docs'">Show</div>
+    </div
+
+The component docs will have `opts` as the `this.params`.
 
 ## Directive: `x-render`
 

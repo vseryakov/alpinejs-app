@@ -91,7 +91,7 @@
   var esc = (selector) => selector.replace(/#([^\s"#']+)/g, (_, id) => `#${CSS.escape(id)}`);
   app.$ = (selector, doc) => isString(selector) ? (isElement(doc) || document).querySelector(esc(selector)) : null;
   app.$all = (selector, doc) => isString(selector) ? (isElement(doc) || document).querySelectorAll(esc(selector)) : null;
-  app.$event = (element, name, detail = {}) => isElement(element) && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true }));
+  app.$event = (element, name, detail = {}) => element instanceof EventTarget && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true }));
   app.$on = (element, event, callback, ...arg) => {
     return isFunction(callback) && element.addEventListener(event, callback, ...arg);
   };
@@ -438,16 +438,30 @@
       effect(() => evaluate((value) => {
         if (!value) return empty();
         if (value !== template) {
-          if (render(el, value)) {
-            if (modifiers.includes("show")) {
-              if (modifiers.includes("nonempty") && !el.firstChild) {
-                el.style.setProperty("display", "none", modifiers.includes("important") ? "important" : void 0);
+          const tmpl = app.resolve(value);
+          if (!tmpl) return;
+          const mods = {};
+          for (let i = 0; i < modifiers.length; i++) {
+            const mod = modifiers[i];
+            switch (mod) {
+              case "params":
+                var scope = Alpine.$data(el);
+                if (!isObj(scope[modifiers[i + 1]])) break;
+                Object.assign(tmpl, { params: scope[modifiers[i + 1]] });
+                break;
+              case "inline":
+                mods.inline = "inline-block";
+                break;
+              default:
+                mods[mod] = mod;
+            }
+          }
+          if (render(el, tmpl)) {
+            if (mods.show) {
+              if (mods.nonempty && !el.firstChild) {
+                el.style.setProperty("display", "none", mods.important);
               } else {
-                el.style.setProperty(
-                  "display",
-                  modifiers.includes("flex") ? "flex" : modifiers.includes("inline") ? "inline-block" : "block",
-                  modifiers.includes("important") ? "important" : void 0
-                );
+                el.style.setProperty("display", mods.flex || mods.inline || "block", mods.important);
               }
             }
           }

@@ -1,4 +1,4 @@
-import { app, isString, isElement } from './app';
+import { app, isString, isElement, isObj } from './app';
 import Component from './component';
 
 const _alpine = "alpine";
@@ -116,15 +116,32 @@ app.$on(document, "alpine:init", () => {
             if (!value) return empty();
 
             if (value !== template) {
-                if (render(el, value)) {
-                    if (modifiers.includes("show")) {
-                        if (modifiers.includes("nonempty") && !el.firstChild) {
-                            el.style.setProperty('display', "none", modifiers.includes('important') ? 'important' : undefined);
+                const tmpl = app.resolve(value);
+                if (!tmpl) return;
+
+                const mods = {};
+                for (let i = 0; i < modifiers.length; i++) {
+                    const mod = modifiers[i];
+                    switch (mod) {
+                    case "params":
+                        var scope = Alpine.$data(el);
+                        if (!isObj(scope[modifiers[i + 1]])) break;
+                        Object.assign(tmpl, { params: scope[modifiers[i + 1]] });
+                        break;
+                    case "inline":
+                        mods.inline = "inline-block";
+                        break;
+                    default:
+                        mods[mod] = mod;
+                    }
+                }
+
+                if (render(el, tmpl)) {
+                    if (mods.show) {
+                        if (mods.nonempty && !el.firstChild) {
+                            el.style.setProperty('display', "none", mods.important);
                         } else {
-                            el.style.setProperty('display',
-                               modifiers.includes('flex') ? 'flex' :
-                               modifiers.includes('inline') ? "inline-block": "block",
-                               modifiers.includes('important') ? 'important' : undefined)
+                            el.style.setProperty('display', mods.flex || mods.inline || "block", mods.important)
                         }
                     }
                 }
