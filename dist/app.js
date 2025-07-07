@@ -409,6 +409,8 @@
   app.$on(document, "alpine:init", () => {
     app.emit("alpine:init");
     Alpine.magic("app", (el) => app);
+    Alpine.magic("component", (el) => Alpine.closestDataStack(el).find((x) => x.$type == _alpine && x.$name));
+    Alpine.magic("parent", (el) => Alpine.closestDataStack(el).filter((x) => x.$type == _alpine && x.$name)[1]);
     Alpine.directive("render", (el, { modifiers, expression }, { evaluate, cleanup }) => {
       const click = (e) => {
         const name = evaluate(expression);
@@ -447,7 +449,7 @@
               case "params":
                 var scope = Alpine.$data(el);
                 if (!isObj(scope[modifiers[i + 1]])) break;
-                Object.assign(tmpl, { params: scope[modifiers[i + 1]] });
+                tmpl.params = Object.assign(scope[modifiers[i + 1]], tmpl.params);
                 break;
               case "inline":
                 mods.inline = "inline-block";

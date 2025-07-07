@@ -177,7 +177,6 @@ limiting scope for children might as well be useful.
 
 <div x-scope-level=1></div>
 ```
-
 ## Magic: `$app`
 
 The `$app` object is an alias to the global app object to be called directly in the Alpine.js directives.
@@ -186,6 +185,23 @@ The `$app` object is an alias to the global app object to be called directly in 
 <a @click="$app.render('page/1/2?$target=#section')">Render Magic</a>
 
 <a @click="$app.render({ name: 'page', params: { $target: '#section' }})">Render Magic</a>
+```
+
+## Magic: `$component`
+
+The `$component` magic returns the immediate component. It may be convenient to directly call the component method or access property
+to avoid confusion with intermediate `x-data` scopes esecially if same property names are used.
+
+```html
+<a @click="$component.method()">Component Method</a>
+```
+
+## Magic: `$parent`
+
+The `$parent` magic returns a parent component for the immediate component i.e. a parent for `$component` magic.
+
+```html
+<a @click="$parent.method()">Parent Method</a>
 ```
 
 ## Component Lifecycle and Event Handling
