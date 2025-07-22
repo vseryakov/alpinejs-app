@@ -158,7 +158,7 @@ app.$on(document, "alpine:init", () => {
 
     Alpine.directive("scope-level", (el, { expression }, { evaluate }) => {
         const scope = Alpine.closestDataStack(el);
-        el._x_dataStack = scope.slice(0, parseInt(evaluate(expression)) || 0);
+        el._x_dataStack = scope.slice(0, parseInt(evaluate(expression || "")) || 0);
     });
 
 });
