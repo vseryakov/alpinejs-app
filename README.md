@@ -2,7 +2,7 @@
 
 ## A Simple Single Page Application (SPA) library for Alpine.js.
 
-### The Motivation
+### The Vision
 
 - to maintain a clear separation between HTML and JavaScript logic. This separation keeps presentation distinct from logic as much as possible. With Alpine.js, we now get efficient two-way data bindings and reactivity using even less code.
 
@@ -104,7 +104,7 @@ app.components.hello = class extends app.AlpineComponent {
 }
 ```
 
-**Explanation:**
+**What is happening:**
 
 - The script defines a template and a component, `app.start` calls `app.restorePath` when the page is ready, defaulting to render `index` since the static path doesn’t match. (running locally with file:// origin will not replace history)
 - The body includes a placeholder for the main app.
@@ -114,7 +114,7 @@ app.components.hello = class extends app.AlpineComponent {
 - A `x-template` directive remains empty until the `template` variable is populated by clicking the 'Show' button, which triggers the component's toggle method to render the `example` template in the contained div. The `.show` modifier keeps the div hidden until template is set.
 - The `example` template is defined in the `examples/example.html` file and bundled into bundle.js.
 
-Nothing much, all the work is done by Alpinejs actually.
+Nothing much, all the work is done by Alpine.js actually.
 
 ## Directive: `x-template`
 
@@ -153,7 +153,7 @@ The component docs will have `opts` as the `this.params`.
 ## Directive: `x-render`
 
 Binds to click events to display components. Can set components via a syntax supporting names, paths, or URLs with parameters through `parsePath`.
-Nothing happens in case the expression is empty.
+Nothing happens in case the expression is empty. Event's default action is cancelled automatically.
 
 Special options include:
 
@@ -190,7 +190,7 @@ The `$app` object is an alias to the global app object to be called directly in 
 ## Magic: `$component`
 
 The `$component` magic returns the immediate component. It may be convenient to directly call the component method or access property
-to avoid confusion with intermediate `x-data` scopes esecially if same property names are used.
+to avoid confusion with intermediate `x-data` scopes especially if same property names are used.
 
 ```html
 <a @click="$component.method()">Component Method</a>
@@ -206,7 +206,7 @@ The `$parent` magic returns a parent component for the immediate component i.e. 
 
 ## Component Lifecycle and Event Handling
 
-While Alpine.js has several ways how to reuse the data this app makes it more unified, this is opinionated of course.
+While Alpine.js has several ways how to reuse the data this app makes it more unified, it is opinionated of course.
 
 Here is the life-cycle of a component:
 
@@ -221,7 +221,7 @@ Here is the life-cycle of a component:
   each component will decide what to do with it. This is uses app event emitter instead of DOM events to keep it separate and not overload
   browser with app specific messages.
 
-### In extending the example:
+### Using the example above:
 
 Add a new button to the index template:
 
@@ -257,7 +257,7 @@ Introduce another component:
     }
 ````
 
-Additions to the previous example:
+Changes to the previous example:
 
 - A `hello2` template referencing existing `hello` for shared markup.
 - A new `hello2` component extending from `hello`, showcasing class inheritance.
