@@ -157,7 +157,7 @@ Nothing happens in case the expression is empty. Event's default action is cance
 
 Special options include:
 
-- `$target` - to define a specific container for rendering.
+- `$target` - to define a specific container for rendering, it is always set in the params even if empty
 - `$history` - to explicitly manage browser history.
 
 ```html

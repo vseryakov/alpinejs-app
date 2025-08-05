@@ -14,11 +14,11 @@ class Component {
     init(params) {
         app.trace("init:", this.$type, this.$name);
         Object.assign(this.params, params);
+        app.emit("component:create", { type: this.$type, name: this.$name, component: this, element: this.$el, params: this.params });
         if (!this.params.$noevents) {
             app.on(app.event, this._handleEvent);
         }
         app.call(this._onCreate?.bind(this, this.params));
-        app.emit("component:create", { type: this.$type, name: this.$name, component: this, element: this.$el, params: this.params });
     }
 
     destroy() {

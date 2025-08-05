@@ -42,36 +42,42 @@
       if (obj && isFunction(obj[method])) return obj[method].call(obj, ...arg);
     };
     var _events = {};
-    app2.on = (event, callback) => {
+    app2.on = (event, callback, namespace) => {
       if (!isFunction(callback)) return;
       if (!_events[event]) _events[event] = [];
-      _events[event].push(callback);
+      _events[event].push([callback, isString(namespace)]);
     };
-    app2.once = (event, callback) => {
+    app2.once = (event, callback, namespace) => {
       if (!isFunction(callback)) return;
       const cb = (...args) => {
         app2.off(event, cb);
         callback(...args);
       };
-      app2.on(event, cb);
+      app2.on(event, cb, namespace);
     };
-    app2.only = (event, callback) => {
-      _events[event] = isFunction(callback) ? [callback] : [];
+    app2.only = (event, callback, namespace) => {
+      _events[event] = isFunction(callback) ? [callback, isString(namespace)] : [];
     };
     app2.off = (event, callback) => {
-      if (!_events[event] || !callback) return;
-      const i = _events[event].indexOf(callback);
-      if (i > -1) return _events[event].splice(i, 1);
+      if (event && callback) {
+        if (!_events[event]) return;
+        const i = isFunction(callback) ? 0 : isString(callback) ? 1 : -1;
+        if (i >= 0) _events[event] = _events[event].filter((x) => x[i] !== callback);
+      } else if (isString(event)) {
+        for (const ev in _events) {
+          _events[ev] = _events[ev].filter((x) => x[1] !== event);
+        }
+      }
     };
     app2.emit = (event, ...args) => {
       app2.trace("emit:", event, ...args, app2.debug > 1 && _events[event]);
       if (_events[event]) {
-        for (const cb of _events[event]) cb(...args);
+        for (const cb of _events[event]) cb[0](...args);
       } else if (isString(event) && event.endsWith(":*")) {
         event = event.slice(0, -1);
         for (const p in _events) {
           if (p.startsWith(event)) {
-            for (const cb of _events[p]) cb(...args);
+            for (const cb of _events[p]) cb[0](...args);
           }
         }
       }
@@ -82,7 +88,7 @@
     var esc = (selector) => selector.replace(/#([^\s"#']+)/g, (_, id) => `#${CSS.escape(id)}`);
     app2.$ = (selector, doc) => isString(selector) ? (isElement(doc) || document).querySelector(esc(selector)) : null;
     app2.$all = (selector, doc) => isString(selector) ? (isElement(doc) || document).querySelectorAll(esc(selector)) : null;
-    app2.$event = (element, name, detail = {}) => isElement(element) && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true }));
+    app2.$event = (element, name, detail = {}) => element instanceof EventTarget && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true }));
     app2.$on = (element, event, callback, ...arg) => {
       return isFunction(callback) && element.addEventListener(event, callback, ...arg);
     };
@@ -265,13 +271,14 @@
       if (!tmpl) return;
       var params = tmpl.params;
       Object.assign(params, options?.params);
+      params.$target = params.$target || app2.main;
       app2.trace("render:", options, tmpl.name, tmpl.params);
-      const element = app2.$(params.$target || app2.main);
+      const element = app2.$(params.$target);
       if (!element) return;
       var plugin = tmpl.component?.$type || options?.plugin || params.$plugin;
       plugin = _plugins[plugin] || _default_plugin;
       if (!plugin?.render) return;
-      if (!params.$target || params.$target == app2.main) {
+      if (params.$target == app2.main) {
         var ev = { name: tmpl.name, params };
         app2.emit(app2.event, "prepare:delete", ev);
         if (ev.stop) return;
@@ -306,11 +313,11 @@
       init(params) {
         app2.trace("init:", this.$type, this.$name);
         Object.assign(this.params, params);
+        app2.emit("component:create", { type: this.$type, name: this.$name, component: this, element: this.$el, params: this.params });
         if (!this.params.$noevents) {
           app2.on(app2.event, this._handleEvent);
         }
         app2.call(this._onCreate?.bind(this, this.params));
-        app2.emit("component:create", { type: this.$type, name: this.$name, component: this, element: this.$el, params: this.params });
       }
       destroy() {
         app2.trace("destroy:", this.$type, this.$name);
@@ -392,10 +399,15 @@
     app2.$on(document, "alpine:init", () => {
       app2.emit("alpine:init");
       Alpine.magic("app", (el) => app2);
+      Alpine.magic("component", (el) => Alpine.closestDataStack(el).find((x) => x.$type == _alpine && x.$name));
+      Alpine.magic("parent", (el) => Alpine.closestDataStack(el).filter((x) => x.$type == _alpine && x.$name)[1]);
       Alpine.directive("render", (el, { modifiers, expression }, { evaluate, cleanup }) => {
         const click = (e) => {
+          const name = evaluate(expression);
+          if (!name) return;
           e.preventDefault();
-          app2.render(evaluate(expression));
+          e.stopPropagation();
+          app2.render(name);
         };
         app2.$on(el, "click", click);
         el.style.cursor = "pointer";
@@ -418,16 +430,30 @@
         effect(() => evaluate((value) => {
           if (!value) return empty();
           if (value !== template) {
-            if (render(el, value)) {
-              if (modifiers.includes("show")) {
-                if (modifiers.includes("nonempty") && !el.firstChild) {
-                  el.style.setProperty("display", "none", modifiers.includes("important") ? "important" : void 0);
+            const tmpl = app2.resolve(value);
+            if (!tmpl) return;
+            const mods = {};
+            for (let i = 0; i < modifiers.length; i++) {
+              const mod = modifiers[i];
+              switch (mod) {
+                case "params":
+                  var scope = Alpine.$data(el);
+                  if (!isObj(scope[modifiers[i + 1]])) break;
+                  tmpl.params = Object.assign(scope[modifiers[i + 1]], tmpl.params);
+                  break;
+                case "inline":
+                  mods.inline = "inline-block";
+                  break;
+                default:
+                  mods[mod] = mod;
+              }
+            }
+            if (render(el, tmpl)) {
+              if (mods.show) {
+                if (mods.nonempty && !el.firstChild) {
+                  el.style.setProperty("display", "none", mods.important);
                 } else {
-                  el.style.setProperty(
-                    "display",
-                    modifiers.includes("flex") ? "flex" : modifiers.includes("inline") ? "inline-block" : "block",
-                    modifiers.includes("important") ? "important" : void 0
-                  );
+                  el.style.setProperty("display", mods.flex || mods.inline || "block", mods.important);
                 }
               }
             }
@@ -438,7 +464,7 @@
       });
       Alpine.directive("scope-level", (el, { expression }, { evaluate }) => {
         const scope = Alpine.closestDataStack(el);
-        el._x_dataStack = scope.slice(0, parseInt(evaluate(expression)) || 0);
+        el._x_dataStack = scope.slice(0, parseInt(evaluate(expression || "")) || 0);
       });
     });
     app2.fetchOpts = function(options) {
@@ -541,12 +567,12 @@
   app.components.dropdown = class extends app.AlpineComponent {
     title = "";
     value = "";
-    parent = "";
+    _parent = "";
     onCreate() {
-      this.$parent = this.$el.parentElement;
-      this.$xdata = app.$data(this.$parent, 0);
-      var options = this.$xdata?.options || this.options;
-      this.value = this.$parent._x_model?.get() || this.$xdata?.value || this._value(options[0]);
+      this._parent = this.$el.parentElement;
+      var xdata = app.$data(this.$parent, 0);
+      var options = xdata?.options || this.options;
+      this.value = this._parent._x_model?.get() || xdata?.value || this._value(options[0]);
       this.title = this._title(options.find((x) => this.value == this._value(x)));
     }
     _title(item) {
@@ -556,9 +582,9 @@
       return item?.value || item?.name || item || "";
     }
     _click(item) {
-      this.value = this.$parent.value = this._value(item);
+      this.value = this._parent.value = this._value(item);
       this.title = this._title(item);
-      this.$parent._x_model?.set(this.value);
+      this._parent._x_model?.set(this.value);
       this.$dispatch("change", item);
     }
   };

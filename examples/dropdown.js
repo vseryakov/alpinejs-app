@@ -3,13 +3,13 @@ app.components.dropdown = class extends app.AlpineComponent {
 
     title = ""
     value = ""
-    parent = ""
+    _parent = ""
 
     onCreate() {
-        this.$parent = this.$el.parentElement;
-        this.$xdata = app.$data(this.$parent, 0);
-        var options = this.$xdata?.options || this.options;
-        this.value = this.$parent._x_model?.get() || this.$xdata?.value || this._value(options[0]);
+        this._parent = this.$el.parentElement;
+        var xdata = app.$data(this.$parent, 0);
+        var options = xdata?.options || this.options;
+        this.value = this._parent._x_model?.get() || xdata?.value || this._value(options[0]);
         this.title = this._title(options.find(x => (this.value == this._value(x))));
     }
     
@@ -22,9 +22,9 @@ app.components.dropdown = class extends app.AlpineComponent {
     }
     
     _click(item) {
-        this.value = this.$parent.value = this._value(item);
+        this.value = this._parent.value = this._value(item);
         this.title = this._title(item);
-        this.$parent._x_model?.set(this.value);
+        this._parent._x_model?.set(this.value);
         this.$dispatch("change", item);
     }
 }

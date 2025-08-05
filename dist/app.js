@@ -278,13 +278,14 @@
     if (!tmpl) return;
     var params = tmpl.params;
     Object.assign(params, options?.params);
+    params.$target = params.$target || app.main;
     app.trace("render:", options, tmpl.name, tmpl.params);
-    const element = app.$(params.$target || app.main);
+    const element = app.$(params.$target);
     if (!element) return;
     var plugin = tmpl.component?.$type || options?.plugin || params.$plugin;
     plugin = _plugins[plugin] || _default_plugin;
     if (!plugin?.render) return;
-    if (!params.$target || params.$target == app.main) {
+    if (params.$target == app.main) {
       var ev = { name: tmpl.name, params };
       app.emit(app.event, "prepare:delete", ev);
       if (ev.stop) return;
@@ -321,11 +322,11 @@
     init(params) {
       app.trace("init:", this.$type, this.$name);
       Object.assign(this.params, params);
+      app.emit("component:create", { type: this.$type, name: this.$name, component: this, element: this.$el, params: this.params });
       if (!this.params.$noevents) {
         app.on(app.event, this._handleEvent);
       }
       app.call(this._onCreate?.bind(this, this.params));
-      app.emit("component:create", { type: this.$type, name: this.$name, component: this, element: this.$el, params: this.params });
     }
     destroy() {
       app.trace("destroy:", this.$type, this.$name);
@@ -474,7 +475,7 @@
     });
     Alpine.directive("scope-level", (el, { expression }, { evaluate }) => {
       const scope = Alpine.closestDataStack(el);
-      el._x_dataStack = scope.slice(0, parseInt(evaluate(expression)) || 0);
+      el._x_dataStack = scope.slice(0, parseInt(evaluate(expression || "")) || 0);
     });
   });
 

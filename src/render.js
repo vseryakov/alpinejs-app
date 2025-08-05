@@ -58,9 +58,11 @@ app.render = (options, dflt) => {
 
     var params = tmpl.params;
     Object.assign(params, options?.params);
+    params.$target = params.$target || app.main;
+
     app.trace("render:", options, tmpl.name, tmpl.params);
 
-    const element = app.$(params.$target || app.main);
+    const element = app.$(params.$target);
     if (!element) return;
 
     var plugin = tmpl.component?.$type || options?.plugin || params.$plugin;
@@ -68,7 +70,7 @@ app.render = (options, dflt) => {
     if (!plugin?.render) return;
 
     // Replacing main component
-    if (!params.$target || params.$target == app.main) {
+    if (params.$target == app.main) {
         // Ask if it can be destroyed first
         var ev = { name: tmpl.name, params };
         app.emit(app.event, "prepare:delete", ev);
