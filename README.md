@@ -343,21 +343,25 @@ Running `node build.js` in the examples folder will generate the `bundle.js` whi
 
 - `app.resolve(path, dflt)`
 
-  Returns an object with `template` and `component` properties: `{ name, params, template, component }`
+  Returns an object with `template` and `component` properties: `{ name, params, template, component }`.
+
   Calls `app.parsePath` first to resolve component name and params.
 
   The template property is set as:
    - try `app.templates[.name]`
    - try an element with ID `name` and use innerHTML
    - if not found and `dflt` is given try the same with it
-   - if template texts starts with # it means it is a reference to another element's innerHTML
-   - if template text starts with $ it means it is a reference to another template in `app.templates`
+   - if template texts starts with # it means it is a reference to another element's innerHTML,
+      `otemplate` is set with the original template before replacing the `template` property
+   - if template text starts with $ it means it is a reference to another template in `app.templates`,
+      `otemplate` is set with the original template before replacing the `template` property
 
   The component property is set as:
    - try `app.components[.name]`
    - try `app.components[dflt]`
    - if resolved to a function return
-   - if resolved to a string it refers to another component, try `app.templates[component]`
+   - if resolved to a string it refers to another component, try `app.templates[component]`,
+      `ocomponent` is set with the original component string before replacing the `component` property
 
   if the `component` property is empty then this component is HTML template.
 
