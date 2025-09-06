@@ -155,6 +155,8 @@ The component docs will have `opts` as the `this.params`.
 Binds to click events to display components. Can set components via a syntax supporting names, paths, or URLs with parameters through `parsePath`.
 Nothing happens in case the expression is empty. Event's default action is cancelled automatically.
 
+All query parameters will be stored in the component's `params` object.
+
 Special options include:
 
 - `$target` - to define a specific container for rendering, it is always set in the params even if empty
@@ -162,6 +164,8 @@ Special options include:
 
 ```html
 <a x-render="'hello/hi?reason=World'">Say Hello</a>
+
+in the hello component `this.params.reason` will be set with 'World'
 
 <button x-render="'index?$target=#div'">Show</button>
 ```
