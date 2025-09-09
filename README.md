@@ -42,6 +42,10 @@ npm install @vseryakov/alpinejs-app
 <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 ```
 
+### git
+
+    git clone https://github.com/vseryakov/alpinejs-app.git
+
 ## Getting Started
 
 Here's a simple hello world [example](examples/index.html).
