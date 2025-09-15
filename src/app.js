@@ -1,7 +1,7 @@
 
 export var app = {
     base: "/app/",
-    main: "#app-main",
+    $target: "#app-main",
     index: "index",
     event: "component:event",
     templates: {},

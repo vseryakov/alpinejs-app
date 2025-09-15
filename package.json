@@ -19,8 +19,8 @@
   "scripts": {
     "build": "node scripts/build.js",
     "devbuild": "node scripts/build.js",
-    "watch": "node scripts/build.js --watch",
-    "demo": "cd examples && npm run build"
+    "demo": "cd examples && npm run build",
+    "watch": "cd examples && npm run watch"
   },
   "devDependencies": {
     "esbuild": "^0.24.0"

@@ -48,7 +48,7 @@ function render(element, options)
 
 function data(element, level)
 {
-    if (!isElement(element)) element = app.$(app.main + " div");
+    if (!isElement(element)) element = app.$(app.$target + " div");
     return element?._x_simple;
 }
 

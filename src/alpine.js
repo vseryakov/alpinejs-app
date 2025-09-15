@@ -1,4 +1,4 @@
-import { app, isString, isElement, isObj } from './app';
+import { app, isElement, isObj, isString } from './app';
 import Component from './component';
 
 const _alpine = "alpine";
@@ -57,7 +57,7 @@ function render(element, options)
 
 function data(element, level)
 {
-    if (!isElement(element)) element = app.$(app.main + " div");
+    if (!isElement(element)) element = app.$(app.$target + " div");
     if (!element) return;
     if (typeof level == "number") return element._x_dataStack?.at(level);
     return Alpine.closestDataStack(element)[0];
@@ -71,6 +71,24 @@ function init()
         customElements.define(tag, class extends Element {});
         Alpine.data(name, () => (new obj(name)));
     }
+}
+
+function $render(options, cache)
+{
+    if (!options.url && !/^(https?:\/\/|\/|.+\.html(\?|$)).+/.test(options)) return;
+
+    app.fetch(options, (err, text, info) => {
+        if (err || !isString(text)) {
+            return console.warn("$render: Text expected from", options, "got", err, text);
+        }
+        if (isString(options)) options = app.parsePath(options);
+        options.template = text;
+        options.name = options.params?.$name || options.name;
+        if (cache) {
+            app.templates[options.name] = text;
+        }
+        app.render(options);
+    });
 }
 
 app.plugin(_alpine, { render, Component: AlpineComponent, data, init, default: 1 });
@@ -87,11 +105,15 @@ app.$on(document, "alpine:init", () => {
 
     Alpine.directive("render", (el, { modifiers, expression }, { evaluate, cleanup }) => {
         const click = (e) => {
-            const name = evaluate(expression);
-            if (!name) return;
+            const tmpl = evaluate(expression);
+            if (!tmpl) return;
             e.preventDefault();
-            e.stopPropagation();
-            app.render(name);
+            if (modifiers.includes("stop")) {
+                e.stopPropagation();
+            }
+            if (tmpl.url || !app.render(tmpl)) {
+                $render(tmpl, modifiers.includes("cache"));
+            }
         }
         app.$on(el, "click", click)
         el.style.cursor = "pointer";

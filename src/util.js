@@ -1,4 +1,4 @@
-import { app, isString, isFunction } from "./app"
+import { app, isFunction, isString } from "./app"
 
 app.noop = () => {}
 

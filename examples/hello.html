@@ -1,0 +1,20 @@
+
+<h3>Alpinejs-app: This is the standalone <span x-text=$name></span> component</h3>
+
+Param: <span x-text="params.param1"></span><br>
+Reason: <span x-text="params.reason"></span><br>
+
+<div class="border my-3" x-template.show.nonempty="template"></div>
+
+<button class="btn btn-outline-dark m-2" @click="toggle">Toggle Subcomponent</button>
+
+<button class="btn btn-outline-dark m-2" x-render="'index'">Back</button>
+
+<template id="hello">
+
+<h4>Alpinejs-app: This is the <span x-text=$name></span> subcomponent</h4>
+
+Param: <span x-text="params.param1"></span><br>
+Reason: <span x-text="params.reason"></span><br>
+
+</template>

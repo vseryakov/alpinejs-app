@@ -1,11 +1,11 @@
-import { app, isString, isObj } from "./app"
+import { app, isObj, isString } from "./app"
 
 app.fetchOpts = function(options)
 {
     var headers = options.headers || {};
     var opts = Object.assign({
         headers: headers,
-        method: options.type || "POST",
+        method: options.type || "GET",
         cache: "default",
     }, options.fetchOptions);
 
@@ -37,11 +37,14 @@ app.fetchOpts = function(options)
 app.fetch = function(options, callback)
 {
     try {
+        if (isString(options)) options = { url: options };
         const opts = app.fetchOpts(options);
+        app.trace("fetch:", opts, options);
+
         window.fetch(options.url, opts).
         then(async (res) => {
             var err, data;
-            var info = { status: res.status, headers: {}, type: res.type };
+            var info = { status: res.status, headers: {}, type: res.type, url: res.url, redirected: res.redirected };
             for (const h of res.headers) info.headers[h[0].toLowerCase()] = h[1];
             if (!res.ok) {
                 if (/\/json/.test(info.headers["content-type"])) {
@@ -64,10 +67,20 @@ app.fetch = function(options, callback)
                 data = /\/json/.test(info.headers["content-type"]) ? await res.json() : await res.text();
             }
             app.call(callback, null, data, info);
-        }).catch ((err) => {
+        }).catch (err => {
             app.call(callback, err);
         });
     } catch (err) {
         app.call(callback, err);
     }
+}
+
+app.afetch = function(options)
+{
+    return new Promise((resolve, reject) => {
+        app.fetch(options, (err, data, info) => {
+            if (err) return reject(err, data, info);
+            resolve(data, info);
+        });
+    });
 }

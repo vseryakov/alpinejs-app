@@ -1,14 +1,15 @@
-import { app, isString } from "./app"
+import { app, isObj, isString } from "./app"
 
 app.parsePath = (path) => {
     var rc = { name: "", params: {} }, query, loc = window.location;
 
+    if (isObj(path)) return Object.assign(rc, path);
     if (!isString(path)) return rc;
 
     // Custom parser b/c this is not always url
     var base = app.base;
     if (path.startsWith(loc.origin)) path = path.substr(loc.origin.length);
-    if (path.includes("://")) path = path.replace(/^(.*:\/\/[^\/]*)/, "");
+    if (path.includes("://")) path = path.replace(/^(.*:\/\/[^/]*)/, "");
     if (path.startsWith(base)) path = path.substr(base.length);
     if (path.startsWith("/")) path = path.substr(1);
     if (path == base.slice(1, -1)) path = "";
@@ -18,8 +19,11 @@ app.parsePath = (path) => {
         query = path.substr(q + 1, 1024);
         rc.name = path = path.substr(0, q);
     }
+    if (path.endsWith(".html")) {
+        path = path.slice(0, -5);
+    }
     if (path.includes("/")) {
-        path = path.split("/").slice(0, 5);
+        path = path.split("/").slice(0, 7);
         rc.name = path.shift();
         for (let i = 0; i < path.length; i++) {
             if (!path[i]) continue;
@@ -41,7 +45,7 @@ app.savePath = (options) => {
     if (!options?.name) return;
     var path = [options.name];
     if (options?.params) {
-        for (let i = 1; i < 5; i++) path.push(options.params[`param${i}`] || "");
+        for (let i = 1; i < 7; i++) path.push(options.params[`param${i}`] || "");
     }
     while (!path.at(-1)) path.length--;
     path = path.join("/");

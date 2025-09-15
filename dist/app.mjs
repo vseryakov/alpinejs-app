@@ -1,7 +1,7 @@
 // src/app.js
 var app = {
   base: "/app/",
-  main: "#app-main",
+  $target: "#app-main",
   index: "index",
   event: "component:event",
   templates: {},
@@ -84,19 +84,13 @@ app.emit = (event, ...args) => {
 };
 
 // src/dom.js
-app.$param = (name, dflt) => {
-  return new URLSearchParams(location.search).get(name) || dflt || "";
-};
+app.$param = (name, dflt) => new URLSearchParams(location.search).get(name) || dflt || "";
 var esc = (selector) => selector.replace(/#([^\s"#']+)/g, (_, id) => `#${CSS.escape(id)}`);
 app.$ = (selector, doc) => isString(selector) ? (isElement(doc) || document).querySelector(esc(selector)) : null;
 app.$all = (selector, doc) => isString(selector) ? (isElement(doc) || document).querySelectorAll(esc(selector)) : null;
 app.$event = (element, name, detail = {}) => element instanceof EventTarget && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true }));
-app.$on = (element, event, callback, ...arg) => {
-  return isFunction(callback) && element.addEventListener(event, callback, ...arg);
-};
-app.$off = (element, event, callback, ...arg) => {
-  return isFunction(callback) && element.removeEventListener(event, callback, ...arg);
-};
+app.$on = (element, event, callback, ...arg) => isFunction(callback) && element.addEventListener(event, callback, ...arg);
+app.$off = (element, event, callback, ...arg) => isFunction(callback) && element.removeEventListener(event, callback, ...arg);
 app.$attr = (element, attr, value) => {
   if (isString(element)) element = app.$(element);
   if (!isElement(element)) return;
@@ -172,10 +166,11 @@ app.$on(window, "DOMContentLoaded", () => {
 // src/router.js
 app.parsePath = (path) => {
   var rc = { name: "", params: {} }, query, loc = window.location;
+  if (isObj(path)) return Object.assign(rc, path);
   if (!isString(path)) return rc;
   var base = app.base;
   if (path.startsWith(loc.origin)) path = path.substr(loc.origin.length);
-  if (path.includes("://")) path = path.replace(/^(.*:\/\/[^\/]*)/, "");
+  if (path.includes("://")) path = path.replace(/^(.*:\/\/[^/]*)/, "");
   if (path.startsWith(base)) path = path.substr(base.length);
   if (path.startsWith("/")) path = path.substr(1);
   if (path == base.slice(1, -1)) path = "";
@@ -184,8 +179,11 @@ app.parsePath = (path) => {
     query = path.substr(q + 1, 1024);
     rc.name = path = path.substr(0, q);
   }
+  if (path.endsWith(".html")) {
+    path = path.slice(0, -5);
+  }
   if (path.includes("/")) {
-    path = path.split("/").slice(0, 5);
+    path = path.split("/").slice(0, 7);
     rc.name = path.shift();
     for (let i = 0; i < path.length; i++) {
       if (!path[i]) continue;
@@ -206,7 +204,7 @@ app.savePath = (options) => {
   if (!options?.name) return;
   var path = [options.name];
   if (options?.params) {
-    for (let i = 1; i < 5; i++) path.push(options.params[`param${i}`] || "");
+    for (let i = 1; i < 7; i++) path.push(options.params[`param${i}`] || "");
   }
   while (!path.at(-1)) path.length--;
   path = path.join("/");
@@ -252,41 +250,40 @@ app.$data = (element, level) => {
   }
 };
 app.resolve = (path, dflt) => {
-  const rc = app.parsePath(path);
-  app.trace("resolve:", path, dflt, rc);
-  var name = rc.name, templates = app.templates, components = app.components;
-  var template = templates[name] || document.getElementById(name);
+  const tmpl = app.parsePath(path);
+  app.trace("resolve:", path, dflt, tmpl);
+  var name = tmpl?.name, templates = app.templates, components = app.components;
+  var template = tmpl.template || templates[name] || document.getElementById(name);
   if (!template && dflt) {
     template = templates[dflt] || document.getElementById(dflt);
-    if (template) rc.name = dflt;
+    if (template) tmpl.name = dflt;
   }
   if (isString(template) && template.startsWith("#")) {
-    template = document.getElementById(rc.otemplate = template.substr(1));
+    template = document.getElementById(tmpl.otemplate = template.substr(1));
   } else if (isString(template) && template.startsWith("$")) {
-    template = templates[rc.otemplate = template.substr(1)];
+    template = templates[tmpl.otemplate = template.substr(1)];
   }
   if (!template) return;
-  rc.template = template;
-  var component = components[name] || components[rc.name];
+  tmpl.template = template;
+  var component = components[name] || components[tmpl.name];
   if (isString(component)) {
-    component = components[rc.ocomponent = component];
+    component = components[tmpl.ocomponent = component];
   }
-  rc.component = component;
-  return rc;
+  tmpl.component = component;
+  return tmpl;
 };
 app.render = (options, dflt) => {
-  var tmpl = app.resolve(options?.name || options, dflt);
+  var tmpl = app.resolve(options, dflt);
   if (!tmpl) return;
-  var params = tmpl.params;
-  Object.assign(params, options?.params);
-  params.$target = params.$target || app.main;
+  var params = tmpl.params = Object.assign(tmpl.params || {}, options?.params);
+  params.$target = options.$target || params.$target || app.$target;
   app.trace("render:", options, tmpl.name, tmpl.params);
-  const element = app.$(params.$target);
+  const element = isElement(params.$target) || app.$(params.$target);
   if (!element) return;
   var plugin = tmpl.component?.$type || options?.plugin || params.$plugin;
   plugin = _plugins[plugin] || _default_plugin;
   if (!plugin?.render) return;
-  if (params.$target == app.main) {
+  if (params.$target == app.$target) {
     var ev = { name: tmpl.name, params };
     app.emit(app.event, "prepare:delete", ev);
     if (ev.stop) return;
@@ -294,7 +291,7 @@ app.render = (options, dflt) => {
     for (const p of plugins.filter((x) => x.cleanup)) {
       app.call(p.cleanup, element);
     }
-    if (!(options?.nohistory || params.$nohistory || tmpl.component?.$nohistory)) {
+    if (!(options?.$nohistory || params.$nohistory || tmpl.component?.$nohistory || app.$nohistory)) {
       queueMicrotask(() => {
         app.emit("path:save", tmpl);
       });
@@ -393,7 +390,7 @@ function render(element, options) {
   return options;
 }
 function data(element, level) {
-  if (!isElement(element)) element = app.$(app.main + " div");
+  if (!isElement(element)) element = app.$(app.$target + " div");
   if (!element) return;
   if (typeof level == "number") return element._x_dataStack?.at(level);
   return Alpine.closestDataStack(element)[0];
@@ -407,6 +404,21 @@ function init() {
     Alpine.data(name, () => new obj(name));
   }
 }
+function $render(options, cache) {
+  if (!options.url && !/^(https?:\/\/|\/|.+\.html(\?|$)).+/.test(options)) return;
+  app.fetch(options, (err, text, info) => {
+    if (err || !isString(text)) {
+      return console.warn("$render: Text expected from", options, "got", err, text);
+    }
+    if (isString(options)) options = app.parsePath(options);
+    options.template = text;
+    options.name = options.params?.$name || options.name;
+    if (cache) {
+      app.templates[options.name] = text;
+    }
+    app.render(options);
+  });
+}
 app.plugin(_alpine, { render, Component: AlpineComponent, data, init, default: 1 });
 app.$on(document, "alpine:init", () => {
   app.emit("alpine:init");
@@ -415,11 +427,15 @@ app.$on(document, "alpine:init", () => {
   Alpine.magic("parent", (el) => Alpine.closestDataStack(el).filter((x) => x.$type == _alpine && x.$name)[1]);
   Alpine.directive("render", (el, { modifiers, expression }, { evaluate, cleanup }) => {
     const click = (e) => {
-      const name = evaluate(expression);
-      if (!name) return;
+      const tmpl = evaluate(expression);
+      if (!tmpl) return;
       e.preventDefault();
-      e.stopPropagation();
-      app.render(name);
+      if (modifiers.includes("stop")) {
+        e.stopPropagation();
+      }
+      if (tmpl.url || !app.render(tmpl)) {
+        $render(tmpl, modifiers.includes("cache"));
+      }
     };
     app.$on(el, "click", click);
     el.style.cursor = "pointer";
@@ -485,7 +501,7 @@ app.fetchOpts = function(options) {
   var headers = options.headers || {};
   var opts = Object.assign({
     headers,
-    method: options.type || "POST",
+    method: options.type || "GET",
     cache: "default"
   }, options.fetchOptions);
   var data2 = options.data;
@@ -510,10 +526,12 @@ app.fetchOpts = function(options) {
 };
 app.fetch = function(options, callback) {
   try {
+    if (isString(options)) options = { url: options };
     const opts = app.fetchOpts(options);
+    app.trace("fetch:", opts, options);
     window.fetch(options.url, opts).then(async (res) => {
       var err, data2;
-      var info = { status: res.status, headers: {}, type: res.type };
+      var info = { status: res.status, headers: {}, type: res.type, url: res.url, redirected: res.redirected };
       for (const h of res.headers) info.headers[h[0].toLowerCase()] = h[1];
       if (!res.ok) {
         if (/\/json/.test(info.headers["content-type"])) {
@@ -542,6 +560,14 @@ app.fetch = function(options, callback) {
   } catch (err) {
     app.call(callback, err);
   }
+};
+app.afetch = function(options) {
+  return new Promise((resolve, reject) => {
+    app.fetch(options, (err, data2, info) => {
+      if (err) return reject(err, data2, info);
+      resolve(data2, info);
+    });
+  });
 };
 
 // src/index.js

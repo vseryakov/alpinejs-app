@@ -1,8 +1,6 @@
-import { app, isString, isFunction, isObj, isElement, toCamel } from "./app"
+import { app, isElement, isFunction, isObj, isString, toCamel } from "./app"
 
-app.$param = (name, dflt) => {
-    return new URLSearchParams(location.search).get(name) || dflt || "";
-}
+app.$param = (name, dflt) => (new URLSearchParams(location.search).get(name) || dflt || "");
 
 const esc = (selector) => (selector.replace(/#([^\s"#']+)/g, (_, id) => `#${CSS.escape(id)}`))
 
@@ -10,16 +8,12 @@ app.$ = (selector, doc) => (isString(selector) ? (isElement(doc) || document).qu
 
 app.$all = (selector, doc) => (isString(selector) ? (isElement(doc) || document).querySelectorAll(esc(selector)) : null)
 
-app.$event = (element, name, detail = {}) =>
-    (element instanceof EventTarget && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true })))
+app.$event = (element, name, detail = {}) => (
+    element instanceof EventTarget && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true })))
 
-app.$on = (element, event, callback, ...arg) => {
-    return isFunction(callback) && element.addEventListener(event, callback, ...arg);
-}
+app.$on = (element, event, callback, ...arg) => (isFunction(callback) && element.addEventListener(event, callback, ...arg));
 
-app.$off = (element, event, callback, ...arg) => {
-    return isFunction(callback) && element.removeEventListener(event, callback, ...arg);
-}
+app.$off = (element, event, callback, ...arg) => (isFunction(callback) && element.removeEventListener(event, callback, ...arg));
 
 app.$attr = (element, attr, value) => {
     if (isString(element)) element = app.$(element);

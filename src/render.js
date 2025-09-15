@@ -1,4 +1,4 @@
-import { app, isString, isFunction } from "./app"
+import { app, isElement, isFunction, isString } from "./app"
 
 var _plugins = {}
 var _default_plugin;
@@ -28,43 +28,41 @@ app.$data = (element, level) => {
 }
 
 app.resolve = (path, dflt) => {
-    const rc = app.parsePath(path);
-    app.trace("resolve:", path, dflt, rc);
-
-    var name = rc.name, templates = app.templates, components = app.components;
-    var template = templates[name] || document.getElementById(name);
+    const tmpl = app.parsePath(path);
+    app.trace("resolve:", path, dflt, tmpl);
+    var name = tmpl?.name, templates = app.templates, components = app.components;
+    var template = tmpl.template || templates[name] || document.getElementById(name);
     if (!template && dflt) {
         template = templates[dflt] || document.getElementById(dflt);
-        if (template) rc.name = dflt;
+        if (template) tmpl.name = dflt;
     }
     if (isString(template) && template.startsWith("#")) {
-        template = document.getElementById(rc.otemplate = template.substr(1));
+        template = document.getElementById(tmpl.otemplate = template.substr(1));
     } else
     if (isString(template) && template.startsWith("$")) {
-        template = templates[rc.otemplate = template.substr(1)];
+        template = templates[tmpl.otemplate = template.substr(1)];
     }
 
     if (!template) return;
-    rc.template = template;
-    var component = components[name] || components[rc.name];
+    tmpl.template = template;
+    var component = components[name] || components[tmpl.name];
     if (isString(component)) {
-        component = components[rc.ocomponent = component];
+        component = components[tmpl.ocomponent = component];
     }
-    rc.component = component;
-    return rc;
+    tmpl.component = component;
+    return tmpl;
 }
 
 app.render = (options, dflt) => {
-    var tmpl = app.resolve(options?.name || options, dflt);
+    var tmpl = app.resolve(options, dflt);
     if (!tmpl) return;
 
-    var params = tmpl.params;
-    Object.assign(params, options?.params);
-    params.$target = params.$target || app.main;
+    var params = tmpl.params = Object.assign(tmpl.params || {}, options?.params);
+    params.$target = options.$target || params.$target || app.$target;
 
     app.trace("render:", options, tmpl.name, tmpl.params);
 
-    const element = app.$(params.$target);
+    const element = isElement(params.$target) || app.$(params.$target);
     if (!element) return;
 
     var plugin = tmpl.component?.$type || options?.plugin || params.$plugin;
@@ -72,7 +70,7 @@ app.render = (options, dflt) => {
     if (!plugin?.render) return;
 
     // Replacing main component
-    if (params.$target == app.main) {
+    if (params.$target == app.$target) {
         // Ask if it can be destroyed first
         var ev = { name: tmpl.name, params };
         app.emit(app.event, "prepare:delete", ev);
@@ -85,7 +83,7 @@ app.render = (options, dflt) => {
         }
 
         // Save in history if not explicitly asked not to
-        if (!(options?.nohistory || params.$nohistory || tmpl.component?.$nohistory)) {
+        if (!(options?.$nohistory || params.$nohistory || tmpl.component?.$nohistory || app.$nohistory)) {
             queueMicrotask(() => {
                 app.emit("path:save", tmpl);
             });

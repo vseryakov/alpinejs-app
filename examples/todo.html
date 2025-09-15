@@ -1,20 +1,26 @@
 
-<h3>Alpinejs-app: Todo component</h3>
+<h3>Todo component</h3>
 
 <form @submit.prevent="add">
-    <input type="text" placeholder="Add a new task..." x-model="newTask" required>
-    <button class="btn btn-outline-dark" type="submit">Add</button>
+    <div class="d-flex align-items-center py-1">
+        <input type="text" class="form-control" placeholder="Add a new task..." x-model="newTask" required>
+        <button class="btn btn-outline-dark mx-2" type="submit">Add</button>
+    </div>
 </form>
 
-<ul>
+<div class="text-start">
     <template x-for="(task, index) in tasks" :key="index">
-        <li :style="{ 'text-decoration': task.done ? 'line-through': 'none' }">
-            <input type="checkbox" @change="toggle(task)" :checked="task.done">
-            <span x-text="task.descr"></span>
-            <button class="btn btn-outline-dark" @click="remove(index)">Remove</button>
-        </li>
-    </template>
-</ul>
+        <div class="d-flex align-items-center justify-content-between py-1">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" @change="toggle(task)" :checked="task.done">
 
-<button class="btn btn-outline-dark" x-render="'index'">Back</button>
+                <label class="form-check-label">
+                    <span class="h5" x-text="task.descr" :style="{ 'text-decoration': task.done ? 'line-through': 'none' }"></span>
+                </label>
+            </div>
+
+            <button class="btn btn-outline-dark px-2" @click="remove(index)">Remove</button>
+        </div>
+    </template>
+</div>
 

@@ -1,0 +1,31 @@
+
+<div x-data="{ ext: false }">
+
+    <p>
+        This is external template inside <b>`<span x-text="$name"></span>`</b> component.
+    </p>
+
+    <p>
+        URL like templates are fetched from the server and rendered inside the target element.
+    </p>
+
+    <p>
+        It is shown using directive <b>x-render</b> and cached so subsequent rendering is done in browser:
+
+        <pre class="bg-light p-2">
+            &lt;div x-render.cache="'ext.html?$target=#tabext'"&gt;&lt;div&gt;
+        </pre>
+    </p>
+
+    <p>
+        <a class="btn btn-outline-dark" role="button" @click="ext=!ext">Toggle</a> ext.html inside the
+        div below on click using directive <b>x-template</b>
+
+        <pre class="bg-light p-2">
+            &lt;div x-template="ext ? 'ext.html' : ''"&gt;
+        </pre>
+    </p>
+
+    <div class="p-3 border rounded" x-template.nocache="ext ? 'ext.html' : ''"></div>
+
+</div>

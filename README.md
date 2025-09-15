@@ -156,8 +156,10 @@ The component docs will have `opts` as the `this.params`.
 
 ## Directive: `x-render`
 
-Binds to click events to display components. Can set components via a syntax supporting names, paths, or URLs with parameters through `parsePath`.
+Binds to click events to display components. Can render components via a syntax supporting names, paths, or URLs with parameters through `parsePath`.
 Nothing happens in case the expression is empty. Event's default action is cancelled automatically.
+
+If the expression is URL like, i.e. `https://` or `/path` or `file.html` it will be retrieved from the server.
 
 All query parameters will be stored in the component's `params` object.
 
@@ -165,6 +167,11 @@ Special options include:
 
 - `$target` - to define a specific container for rendering, it is always set in the params even if empty
 - `$history` - to explicitly manage browser history.
+- `$name` - a name to be used to cache external templates
+
+Modifiers:
+ - `stop` - stop event propagation
+ - `cache` - cache external templates by name, the name is either the file name or special param `$name`
 
 ```html
 <a x-render="'hello/hi?reason=World'">Say Hello</a>
@@ -294,17 +301,15 @@ The examples/ folder contains more components to play around and a bundle.sh scr
 
 An example to show very simple way to bundle .html and .js files into a single file.
 
-It comes with pre-created bundle, to rebuild:
-- run `npm run demo`
-- it will generate examples/bundle.js file that includes all HTML and Javascript code
-- load it in the browser: `open examples/index.html`
+To run live example do `npm run watch`.
+
+Then go to http://localhost:8090/ to see the example with router and external rendering.
 
 ### Esbuild app plugin
 
 The `examples/build.js` script is an `esbuild` plugin that bundles templates from .html files to be used by the app.
 
 Running `node build.js` in the examples folder will generate the `bundle.js` which includes all .js and .html files used by the index.html
-
 
 ## API
 
@@ -313,10 +318,6 @@ Running `node build.js` in the examples folder will generate the `bundle.js` whi
 - `base: "/app/"`
 
   Defines the root path for the application, must be framed with slashes.
-
-- `main: "#app-main"`
-
-  Central app container for rendering main components.
 
 - `index: "index"`
 
@@ -334,26 +335,37 @@ Running `node build.js` in the examples folder will generate the `bundle.js` whi
   Component classes, this is the registry of all components logic to be used with corresponding templates.
   Only classed derived from `app.AlpineComponent` will be used, internally they are registered with `Alpine.data()` to be reused by name.
 
+- `$target: "#app-main"`
+
+  Central app container for rendering main components.
+
 ### Rendering
 
 - `app.render(options, dflt)`
 
   Show a component, `options` can be a string to be parsed by `parsePath` or an object `{ name, params }`.
-  if no `params.$target` provided a component will be shown inside the main element defined by `app.main`.
+
+  if no `params.$target` provided a component will be shown inside the main element defined by `app.$target`.
 
   It returns the resolved component as described in `resolve` method after rendering or nothing if nothing was shown.
 
   When showing main app the current component is asked to be deleted first by sending an event `prepare:delete`, a component that is not ready to be deleted yet
   must set the property `event.stop` in the event handler `onPrepareDelete(event)` in order to prevent rendering new component.
 
-  To explicitly disable history pass `options.nohistory` or `params.$nohistory` otherwise main components are saved automatically by sending
-  the `path:save` event. A component can globally disable history by creating a static property `$nohistory` in the class definition.
+  To explicitly disable history pass `options.$nohistory` or `params.$nohistory` otherwise main components are saved automatically by sending
+  the `path:save` event.
+
+  A component can globally disable history by creating a static property `$nohistory` in the class definition.
+
+  To disable history all together set `app.$nohistory = true`.
 
 - `app.resolve(path, dflt)`
 
   Returns an object with `template` and `component` properties: `{ name, params, template, component }`.
 
   Calls `app.parsePath` first to resolve component name and params.
+
+  Passing an object with `template` set will reuse it, for case when template is already resolved.
 
   The template property is set as:
    - try `app.templates[.name]`
@@ -401,7 +413,9 @@ Running `node build.js` in the examples folder will generate the `bundle.js` whi
 
 - `app.parsePath(path, dflt)`
 
-  Parses component path and returns an object `{ name, params }` ready for rendering. External urls are ignored.
+  Parses component path and returns an object with at least `{ name, params }` ready for rendering. External urls are ignored.
+
+  Passing an object will retun a shallow copy of it with name and params properties possibly set if not provided.
 
   The path can be:
    - component name
@@ -410,6 +424,8 @@ Running `node build.js` in the examples folder will generate the `bundle.js` whi
    - URL: https://host/app/name/param1/...
 
    All parts from the path and query parameters will be placed in the `params` object.
+
+   The `.html` extention will be stripped to support extrernal loading but other exts will be kept as is.
 
 
 ### DOM utilities
@@ -536,13 +552,17 @@ Methods:
 
 - `app.fetch(options, callback)`
 
-  Fetch remote content, wrapper around Fetch API, options are compatible to $.ajax:
+  Fetch remote content, wrapper around Fetch API, options can be a string URL or an object compatible with $.ajax:
    - type - GET,... POST is default
    - data - a body, can be a string, an object, FormData
    - dataType - explicit return type: text, blob, default is auto detected between text or json
    - headers - an object with additional headers to send
 
   The callback(err, data, info) - where info is an object { status, headers, type }
+
+- `app.afetch(options)`
+
+  Promisified `app.fetch` which returns a Promise, all exceptions are passed to the reject handler, no need to use try..catch
 
 - `app.trace(...)`
 

@@ -1,0 +1,59 @@
+
+<template id=chart>
+    <div class="fs-xs font-monospace resize-both overflow-auto">
+        <canvas></canvas>
+    </div>
+</template>
+
+<div class="dashboard">
+    <div class="d-flex flex-row">
+
+        <div class="bg-light p-3 h4 text-nowrap">
+
+            <div class="p-3" :class="tab=='charts'?'text-light bg-dark':''" @click="tab='charts'">Charts</div>
+
+            <div class="p-3" :class="tab=='other'?'text-light bg-dark':''" @click="tab='other'">Details</div>
+
+            <div class="p-3" :class="tab=='todo'?'text-light bg-dark':''" x-render="'todo?$target=#tabext'" @click="tab='todo'">Todo Tasks</div>
+
+            <div class="p-3" :class="tab=='ext'?'text-light bg-dark':''" x-render.cache="'ext.html?$target=#tabext'" @click="tab='ext'">External</div>
+
+            <div class="p-3" x-render="'hello/hi?reason=World'">Say Hello</div>
+
+        </div>
+
+        <div class="container" x-show="tab=='charts'">
+
+            <div class="d-flex justify-content-center">
+                <template x-for="item in charts">
+                    <app-chart x-data="{...item}"></app-chart>
+                </template>
+            </div>
+
+        </div>
+
+        <div class="p-3" x-show="tab=='other'">
+
+            <ul class="text-start">
+                <li>Each chart is a component defined in dashboard.js/.html files</li>
+
+                <li>Each chart component is rendered as custom element &lt;app-chart&gt;</li>
+
+                <li>
+                    The chart data is passed to each compoment via x-data directive<br>
+
+                    <div class="bg-light">
+                        &lt;template x-for="item in charts"&gt;<br>
+                        &nbsp;&nbsp; &lt;app-chart x-data="{...item}"&gt;&lt;/app-chart&gt;<br>
+                        &lt;/template&gt;
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="p-3" x-show="tab=='ext'||tab=='todo'" id="tabext">
+        </div>
+
+    </div>
+</div>
+

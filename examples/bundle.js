@@ -3,7 +3,7 @@
   (() => {
     var app2 = {
       base: "/app/",
-      main: "#app-main",
+      $target: "#app-main",
       index: "index",
       event: "component:event",
       templates: {},
@@ -82,19 +82,13 @@
         }
       }
     };
-    app2.$param = (name, dflt) => {
-      return new URLSearchParams(location.search).get(name) || dflt || "";
-    };
+    app2.$param = (name, dflt) => new URLSearchParams(location.search).get(name) || dflt || "";
     var esc = (selector) => selector.replace(/#([^\s"#']+)/g, (_, id) => `#${CSS.escape(id)}`);
     app2.$ = (selector, doc) => isString(selector) ? (isElement(doc) || document).querySelector(esc(selector)) : null;
     app2.$all = (selector, doc) => isString(selector) ? (isElement(doc) || document).querySelectorAll(esc(selector)) : null;
     app2.$event = (element, name, detail = {}) => element instanceof EventTarget && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true }));
-    app2.$on = (element, event, callback, ...arg) => {
-      return isFunction(callback) && element.addEventListener(event, callback, ...arg);
-    };
-    app2.$off = (element, event, callback, ...arg) => {
-      return isFunction(callback) && element.removeEventListener(event, callback, ...arg);
-    };
+    app2.$on = (element, event, callback, ...arg) => isFunction(callback) && element.addEventListener(event, callback, ...arg);
+    app2.$off = (element, event, callback, ...arg) => isFunction(callback) && element.removeEventListener(event, callback, ...arg);
     app2.$attr = (element, attr, value) => {
       if (isString(element)) element = app2.$(element);
       if (!isElement(element)) return;
@@ -168,10 +162,11 @@
     });
     app2.parsePath = (path) => {
       var rc = { name: "", params: {} }, query, loc = window.location;
+      if (isObj(path)) return Object.assign(rc, path);
       if (!isString(path)) return rc;
       var base = app2.base;
       if (path.startsWith(loc.origin)) path = path.substr(loc.origin.length);
-      if (path.includes("://")) path = path.replace(/^(.*:\/\/[^\/]*)/, "");
+      if (path.includes("://")) path = path.replace(/^(.*:\/\/[^/]*)/, "");
       if (path.startsWith(base)) path = path.substr(base.length);
       if (path.startsWith("/")) path = path.substr(1);
       if (path == base.slice(1, -1)) path = "";
@@ -180,8 +175,11 @@
         query = path.substr(q + 1, 1024);
         rc.name = path = path.substr(0, q);
       }
+      if (path.endsWith(".html")) {
+        path = path.slice(0, -5);
+      }
       if (path.includes("/")) {
-        path = path.split("/").slice(0, 5);
+        path = path.split("/").slice(0, 7);
         rc.name = path.shift();
         for (let i = 0; i < path.length; i++) {
           if (!path[i]) continue;
@@ -202,7 +200,7 @@
       if (!options?.name) return;
       var path = [options.name];
       if (options?.params) {
-        for (let i = 1; i < 5; i++) path.push(options.params[`param${i}`] || "");
+        for (let i = 1; i < 7; i++) path.push(options.params[`param${i}`] || "");
       }
       while (!path.at(-1)) path.length--;
       path = path.join("/");
@@ -246,39 +244,40 @@
       }
     };
     app2.resolve = (path, dflt) => {
-      const rc = app2.parsePath(path);
-      app2.trace("resolve:", path, dflt, rc);
-      var name = rc.name, templates = app2.templates, components = app2.components;
-      var template = templates[name] || document.getElementById(name);
+      const tmpl = app2.parsePath(path);
+      app2.trace("resolve:", path, dflt, tmpl);
+      var name = tmpl?.name, templates = app2.templates, components = app2.components;
+      var template = tmpl.template || templates[name] || document.getElementById(name);
       if (!template && dflt) {
         template = templates[dflt] || document.getElementById(dflt);
-        if (template) rc.name = dflt;
+        if (template) tmpl.name = dflt;
       }
       if (isString(template) && template.startsWith("#")) {
-        template = document.getElementById(template.substr(1));
+        template = document.getElementById(tmpl.otemplate = template.substr(1));
       } else if (isString(template) && template.startsWith("$")) {
-        template = templates[template.substr(1)];
+        template = templates[tmpl.otemplate = template.substr(1)];
       }
       if (!template) return;
-      rc.template = template;
-      var component = components[name] || components[rc.name];
-      if (isString(component)) component = components[component];
-      rc.component = component;
-      return rc;
+      tmpl.template = template;
+      var component = components[name] || components[tmpl.name];
+      if (isString(component)) {
+        component = components[tmpl.ocomponent = component];
+      }
+      tmpl.component = component;
+      return tmpl;
     };
     app2.render = (options, dflt) => {
-      var tmpl = app2.resolve(options?.name || options, dflt);
+      var tmpl = app2.resolve(options, dflt);
       if (!tmpl) return;
-      var params = tmpl.params;
-      Object.assign(params, options?.params);
-      params.$target = params.$target || app2.main;
+      var params = tmpl.params = Object.assign(tmpl.params || {}, options?.params);
+      params.$target = options.$target || params.$target || app2.$target;
       app2.trace("render:", options, tmpl.name, tmpl.params);
-      const element = app2.$(params.$target);
+      const element = isElement(params.$target) || app2.$(params.$target);
       if (!element) return;
       var plugin = tmpl.component?.$type || options?.plugin || params.$plugin;
       plugin = _plugins[plugin] || _default_plugin;
       if (!plugin?.render) return;
-      if (params.$target == app2.main) {
+      if (params.$target == app2.$target) {
         var ev = { name: tmpl.name, params };
         app2.emit(app2.event, "prepare:delete", ev);
         if (ev.stop) return;
@@ -286,7 +285,7 @@
         for (const p of plugins.filter((x) => x.cleanup)) {
           app2.call(p.cleanup, element);
         }
-        if (!(options?.nohistory || params.$nohistory || tmpl.component?.$nohistory)) {
+        if (!(options?.$nohistory || params.$nohistory || tmpl.component?.$nohistory || app2.$nohistory)) {
           queueMicrotask(() => {
             app2.emit("path:save", tmpl);
           });
@@ -381,7 +380,7 @@
       return options;
     }
     function data(element, level) {
-      if (!isElement(element)) element = app2.$(app2.main + " div");
+      if (!isElement(element)) element = app2.$(app2.$target + " div");
       if (!element) return;
       if (typeof level == "number") return element._x_dataStack?.at(level);
       return Alpine.closestDataStack(element)[0];
@@ -395,6 +394,21 @@
         Alpine.data(name, () => new obj(name));
       }
     }
+    function $render(options, cache) {
+      if (!options.url && !/^(https?:\/\/|\/|.+\.html(\?|$)).+/.test(options)) return;
+      app2.fetch(options, (err, text, info) => {
+        if (err || !isString(text)) {
+          return console.warn("$render: Text expected from", options, "got", err, text);
+        }
+        if (isString(options)) options = app2.parsePath(options);
+        options.template = text;
+        options.name = options.params?.$name || options.name;
+        if (cache) {
+          app2.templates[options.name] = text;
+        }
+        app2.render(options);
+      });
+    }
     app2.plugin(_alpine, { render, Component: AlpineComponent, data, init, default: 1 });
     app2.$on(document, "alpine:init", () => {
       app2.emit("alpine:init");
@@ -403,11 +417,15 @@
       Alpine.magic("parent", (el) => Alpine.closestDataStack(el).filter((x) => x.$type == _alpine && x.$name)[1]);
       Alpine.directive("render", (el, { modifiers, expression }, { evaluate, cleanup }) => {
         const click = (e) => {
-          const name = evaluate(expression);
-          if (!name) return;
+          const tmpl = evaluate(expression);
+          if (!tmpl) return;
           e.preventDefault();
-          e.stopPropagation();
-          app2.render(name);
+          if (modifiers.includes("stop")) {
+            e.stopPropagation();
+          }
+          if (tmpl.url || !app2.render(tmpl)) {
+            $render(tmpl, modifiers.includes("cache"));
+          }
         };
         app2.$on(el, "click", click);
         el.style.cursor = "pointer";
@@ -471,7 +489,7 @@
       var headers = options.headers || {};
       var opts = Object.assign({
         headers,
-        method: options.type || "POST",
+        method: options.type || "GET",
         cache: "default"
       }, options.fetchOptions);
       var data2 = options.data;
@@ -496,10 +514,12 @@
     };
     app2.fetch = function(options, callback) {
       try {
+        if (isString(options)) options = { url: options };
         const opts = app2.fetchOpts(options);
+        app2.trace("fetch:", opts, options);
         window.fetch(options.url, opts).then(async (res) => {
           var err, data2;
-          var info = { status: res.status, headers: {}, type: res.type };
+          var info = { status: res.status, headers: {}, type: res.type, url: res.url, redirected: res.redirected };
           for (const h of res.headers) info.headers[h[0].toLowerCase()] = h[1];
           if (!res.ok) {
             if (/\/json/.test(info.headers["content-type"])) {
@@ -528,6 +548,14 @@
       } catch (err) {
         app2.call(callback, err);
       }
+    };
+    app2.afetch = function(options) {
+      return new Promise((resolve, reject) => {
+        app2.fetch(options, (err, data2, info) => {
+          if (err) return reject(err, data2, info);
+          resolve(data2, info);
+        });
+      });
     };
     app2.Component = component_default;
     var src_default = app2;
@@ -562,6 +590,9 @@
       app.emit(app.event, "toggle", this.template);
     }
   };
+
+  // hello.html
+  app.templates.hello = `<h3>Alpinejs-app: This is the standalone <span x-text=$name></span> component</h3>Param: <span x-text="params.param1"></span><br>Reason: <span x-text="params.reason"></span><br><div class="border my-3" x-template.show.nonempty="template"></div><button class="btn btn-outline-dark m-2" @click="toggle">Toggle Subcomponent</button><button class="btn btn-outline-dark m-2" x-render="'index'">Back</button><template id="hello"><h4>Alpinejs-app: This is the <span x-text=$name></span> subcomponent</h4>Param: <span x-text="params.param1"></span><br>Reason: <span x-text="params.reason"></span><br></template>`;
 
   // dropdown.js
   app.components.dropdown = class extends app.AlpineComponent {
@@ -614,7 +645,87 @@
   };
 
   // todo.html
-  app.templates.todo = `<h3>Alpinejs-app: Todo component</h3><form @submit.prevent="add">    <input type="text" placeholder="Add a new task..." x-model="newTask" required>    <button class="btn btn-outline-dark" type="submit">Add</button></form><ul>    <template x-for="(task, index) in tasks" :key="index">        <li :style="{ 'text-decoration': task.done ? 'line-through': 'none' }">            <input type="checkbox" @change="toggle(task)" :checked="task.done">            <span x-text="task.descr"></span>            <button class="btn btn-outline-dark" @click="remove(index)">Remove</button>        </li>    </template></ul><button class="btn btn-outline-dark" x-render="'index'">Back</button>`;
+  app.templates.todo = `<h3>Todo component</h3><form @submit.prevent="add">    <div class="d-flex align-items-center py-1">        <input type="text" class="form-control" placeholder="Add a new task..." x-model="newTask" required>        <button class="btn btn-outline-dark mx-2" type="submit">Add</button>    </div></form><div class="text-start">    <template x-for="(task, index) in tasks" :key="index">        <div class="d-flex align-items-center justify-content-between py-1">            <div class="form-check">                <input class="form-check-input" type="checkbox" @change="toggle(task)" :checked="task.done">                <label class="form-check-label">                    <span class="h5" x-text="task.descr" :style="{ 'text-decoration': task.done ? 'line-through': 'none' }"></span>                </label>            </div>            <button class="btn btn-outline-dark px-2" @click="remove(index)">Remove</button>        </div>    </template></div>`;
+
+  // dashboard.js
+  app.components.dashboard = class extends app.AlpineComponent {
+    tab = "charts";
+    charts = [
+      {
+        type: "line",
+        data: {
+          labels: ["January", "February", "March", "April", "May", "June", "July"],
+          datasets: [{
+            label: "Sales Over Time",
+            data: [120, 190, 300, 500, 200, 300, 250],
+            backgroundColor: "rgba(74, 144, 226, 0.2)",
+            borderColor: "rgba(74, 144, 226, 1)",
+            borderWidth: 2,
+            tension: 0.4
+          }]
+        }
+      },
+      {
+        type: "bar",
+        data: {
+          labels: ["Chrome", "Firefox", "Safari", "Edge"],
+          datasets: [{
+            label: "Browser Usage",
+            data: [65, 59, 80, 81],
+            backgroundColor: [
+              "rgba(74, 144, 226, 0.8)",
+              "rgba(80, 227, 194, 0.8)",
+              "rgba(255, 205, 86, 0.8)",
+              "rgba(255, 99, 132, 0.8)"
+            ],
+            borderColor: [
+              "rgba(74, 144, 226, 1)",
+              "rgba(80, 227, 194, 1)",
+              "rgba(255, 205, 86, 1)",
+              "rgba(255, 99, 132, 1)"
+            ],
+            borderWidth: 1
+          }]
+        }
+      }
+    ];
+  };
+  app.components.chart = class extends app.AlpineComponent {
+    chart;
+    onCreate() {
+      const ctx = app.$("canvas", this.$el).getContext("2d");
+      this.chart = new Chart(ctx, {
+        type: this.type,
+        data: this.data,
+        options: {
+          responsive: true,
+          animation: {
+            easing: "easeInOutQuart"
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: "top"
+            }
+          },
+          scales: {
+            y: {
+              grid: {
+                color: "#eaeaea"
+              },
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+    onDelete() {
+      if (this.chart) this.chart.destroy();
+    }
+  };
+
+  // dashboard.html
+  app.templates.dashboard = `<template id=chart>    <div class="fs-xs font-monospace resize-both overflow-auto">        <canvas></canvas>    </div></template><div class="dashboard">    <div class="d-flex flex-row">        <div class="bg-light p-3 h4 text-nowrap">            <div class="p-3" :class="tab=='charts'?'text-light bg-dark':''" @click="tab='charts'">Charts</div>            <div class="p-3" :class="tab=='other'?'text-light bg-dark':''" @click="tab='other'">Details</div>            <div class="p-3" :class="tab=='todo'?'text-light bg-dark':''" x-render="'todo?$target=#tabext'" @click="tab='todo'">Todo Tasks</div>            <div class="p-3" :class="tab=='ext'?'text-light bg-dark':''" x-render.cache="'ext.html?$target=#tabext'" @click="tab='ext'">External</div>            <div class="p-3" x-render="'hello/hi?reason=World'">Say Hello</div>        </div>        <div class="container" x-show="tab=='charts'">            <div class="d-flex justify-content-center">                <template x-for="item in charts">                    <app-chart x-data="{...item}"></app-chart>                </template>            </div>        </div>        <div class="p-3" x-show="tab=='other'">            <ul class="text-start">                <li>Each chart is a component defined in dashboard.js/.html files</li>                <li>Each chart component is rendered as custom element &lt;app-chart&gt;</li>                <li>                    The chart data is passed to each compoment via x-data directive<br>                    <div class="bg-light">                        &lt;template x-for="item in charts"&gt;<br>                        &nbsp;&nbsp; &lt;app-chart x-data="{...item}"&gt;&lt;/app-chart&gt;<br>                        &lt;/template&gt;                    </div>                </li>            </ul>        </div>        <div class="p-3" x-show="tab=='ext'||tab=='todo'" id="tabext">        </div>    </div></div>`;
 
   // index.js
   app.debug = 1;
