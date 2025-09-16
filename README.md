@@ -4,21 +4,34 @@
 
 ### The Vision
 
-- to maintain a clear separation between HTML and JavaScript logic. This separation keeps presentation distinct from logic as much as possible. With Alpine.js, we now get efficient two-way data bindings and reactivity using even less code.
+- to maintain a clear separation between HTML and JavaScript logic.
+
+This separation keeps presentation distinct from logic as much as possible and have minimal number of abstractions.
+
+Develop layout with HTML/CSS and the logic with Alpine.js for two-way data bindings and reactivity.
 
 - to have some kind of central registry of HTML templates and Javascript classes and use it to register components.
 
 The registry is just 2 global Javascript objects, `templates` and `components`.
 
+Server-side rendering of templates (similar to `htmx`) is supported out of the box, same directives render bundled or
+remote HTML templates the same way without any external dependencies.
+
 How the registry is delivered to the browser depends on bundling or application, for example:
 
-- bundle everything into a single file by converting HTML files to strings: see `examples/build.js` for a simple `esbuild` plugin
+Native support:
+
+- esbuild: bundle everything into a single file by converting HTML files to strings: see `scripts/esbuild-html.js` for a simple `esbuild` plugin
+- server-side: maintain HTML files on the server to load individually on demand using the same directives, see `examples/dashboard.html`.
+
+More ideas:
+
 - keep HTML templates in JSON files to load separately via fetch on demand
-- maintain HTML files on the server to load individually on demand similar to `htmx`
+- include your .js files in the HTL for small apps and let the browser to handle caching
 
 ### Features
 
-- **Components**: These are the primary building blocks of the UI. They can be either standalone HTML templates or HTML backed by JavaScript logic, capable of nesting other components.
+- **Components**: These are the primary building blocks of the UI. They can be either standalone HTML templates or HTML backed by JavaScript classes, capable of nesting other components.
 
 - **Main Component**: Displays the current main page within the `#app-main` HTML element. It manages the navigation and saves the view to the browser history using `app.savePath`.
 
@@ -26,19 +39,24 @@ How the registry is delivered to the browser depends on bundling or application,
 
 - **Direct Deep-Linking**: For direct access, server-side routes must redirect to the main app HTML page, with the base path set as '/app/' by default.
 
+
+Live demo is available at [demo](https://vseryakov.github.io/alpinejs-app/examples/index.html).
+
+
 ## Installation
 
 ### npm
 
 ```bash
-npm install @vseryakov/alpinejs-app
+npm install @vseryakov/alpinejs-app --save
 ```
 
 ### cdn
 
+These must be placed before your bundle.
+
 ```html
 <script src="https://unpkg.com/alpinejs-app@1.x.x/dist/app.min.js"></script>
-
 <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 ```
 
@@ -48,15 +66,34 @@ npm install @vseryakov/alpinejs-app
 
 ## Getting Started
 
-Here's a simple hello world [example](examples/index.html).
+Here is how to build very simple Hello World app.
 
-Live demo is available at [demo](https://vseryakov.github.io/alpinejs-app/examples/index.html).
+    mkdir app && cd app
+
+    npm i alpinejs-app
+
+    ./node_modules/alpinejs-app/scripts/demo.sh
+
+The files shown below will be created in the app folder, this is to save you from copy/pasting. The classes and styles are stripped for
+brivity, the actual demo may contain some style to make it look nicer.
+
+The package.json is also created, now let's build our silly app see how it works.
+
+    npm run watch
+
+Point your browser to `http://localhost:8090/` to see it in action.
+
 
 ### index.html
 
 ```html
 <head>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://unpkg.com/alpinejs-app@1.x.x/dist/app.min.js"></script>
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
 <script src="bundle.js"></script>
+
 </head>
 
 <body>
@@ -71,26 +108,37 @@ Live demo is available at [demo](https://vseryakov.github.io/alpinejs-app/exampl
 
 <template id="hello">
     <h5>This is the <span x-text=$name></span> component</h5>
-    Param: <span x-text="params.param1"></span>
-    <br>
-    Reason: <span x-text="params.reason"></span>
-    <br>
+
+    <p>
+        First param from render url: <span x-text="params.param1"></span>
+    </p>
+
+    <p>
+        Named param reason: <span x-text="params.reason"></span>
+    </p>
 
     <div x-template.show="template"></div>
 
     <button @click="toggle">Toggle</button>
+
     <button x-render="'index'">Back</button>
 </template>
+
 ```
+
+### example.html
+
+```html
+<div>
+    This is the example template
+</div>
+ ```
 
 ### index.js
 
 ```javascript
-import '../dist/app.js'
 import './hello'
-import './dropdown'
-import "./dropdown.html"
-import "./example.html"
+import './example.html'
 
 app.debug = 1
 app.start();
@@ -122,9 +170,15 @@ Nothing much, all the work is done by Alpine.js actually.
 
 ## Directive: `x-template`
 
-Render a template or component inside the container from the expression which must return a template name or nothing to clear the container.
+Render a template or component inside the container from the expression which must return a template URL/name or nothing to clear the container.
 
-This can be an alternative to the `x-if` Alpine directive especially with multiple top elements because x-if only supports one top element.
+This is an alternative to the `x-if` Alpine directive especially with multiple top elements because x-if only supports one top element and
+ablity to render server-side templates.
+
+If the expression is URL like, i.e. `https?://` or `/path` or `file.html` it will be retrieved from the
+server first and then rendered into the target.
+
+To cache the HTML use the modifier `cache`.
 
 ```html
 <div x-template="template"></div>
@@ -139,12 +193,13 @@ Modifiers:
  - `inline` - set display to inline-block instead of block
  - `important` - apply !important similar to `x-show`
  - `params.opts` - pass an object `opts` in the current scope as the `params` to the component, similar to `app.render({ name, params: opts })`
+ - `cache` - cache external templates by name, the name is either the file name or special param `$name`
 
 The directive supports special parameters to be set in `this.params`, similar to `x-render`, for example:
 
-    <div x-template="'docs?$nohistory=1'">Show</div>
+    <div x-template="'docs?$nohistory=1&id=123'">Show</div>
 
-The component `docs` will have `this.params.$nohistory` set to 1 on creation.
+The component `docs` will have `this.params.$nohistory` set to 1 on creation and `params.id=123`
 
 The other way to pass params to be sure the component will not use by accident wrong data is to use modifier `.params.NAME`
 
@@ -154,14 +209,19 @@ The other way to pass params to be sure the component will not use by accident w
 
 The component docs will have `opts` as the `this.params`.
 
+For HTML only templates the params passed in the url can be accessed via the `$params` magic, see below for examples.
+
 ## Directive: `x-render`
 
-Binds to click events to display components. Can render components via a syntax supporting names, paths, or URLs with parameters through `parsePath`.
+Binds to click event to display components. Can render components by name, path, or URL with parameters using `app.parsePath`.
 Nothing happens in case the expression is empty. Event's default action is cancelled automatically.
 
-If the expression is URL like, i.e. `https://` or `/path` or `file.html` it will be retrieved from the server.
+If the expression is URL like, i.e. `https?://` or `/path` or `file.html` it will be retrieved from the
+server first and then rendered into the target.
 
-All query parameters will be stored in the component's `params` object.
+To cache the HTML use the modifier `cache`.
+
+All query parameters will be stored in the component's `params` object or template's `$params` magic.
 
 Special options include:
 
@@ -178,7 +238,9 @@ Modifiers:
 
 in the hello component `this.params.reason` will be set with 'World'
 
-<button x-render="'index?$target=#div'">Show</button>
+<button x-render="'index?$target=#div'">Show Bundled or Cached</button>
+
+<button x-render.cache="'/index.html?$target=#div'">Show External</button>
 ```
 
 ## Directive: `x-scope-level`
@@ -217,6 +279,21 @@ The `$parent` magic returns a parent component for the immediate component i.e. 
 
 ```html
 <a @click="$parent.method()">Parent Method</a>
+```
+
+## Magic: `$params`
+
+The `$params` magic returns the `params` object from the current or first parent element,
+it works for both components and HTML only templates.
+
+The params object is query parameters passed via URL or an object passed directly to `app.render`.
+
+```html
+<a x-render="'hello?$target=h&t='+Date.now()">Show</a>
+
+<template id="hello">
+    This template was rendered at <span x-text="new Date(parseInt($params.t))"></span>
+</div>
 ```
 
 ## Component Lifecycle and Event Handling
@@ -307,7 +384,7 @@ Then go to http://localhost:8090/ to see the example with router and external re
 
 ### Esbuild app plugin
 
-The `examples/build.js` script is an `esbuild` plugin that bundles templates from .html files to be used by the app.
+The `scripots/esbuild-html.js` script is an `esbuild` plugin that bundles templates from .html files to be used by the app.
 
 Running `node build.js` in the examples folder will generate the `bundle.js` which includes all .js and .html files used by the index.html
 

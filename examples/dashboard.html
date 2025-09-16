@@ -16,7 +16,7 @@
 
             <div class="p-3" :class="tab=='todo'?'text-light bg-dark':''" x-render="'todo?$target=#tabext'" @click="tab='todo'">Todo Tasks</div>
 
-            <div class="p-3" :class="tab=='ext'?'text-light bg-dark':''" x-render.cache="'ext.html?$target=#tabext'" @click="tab='ext'">External</div>
+            <div class="p-3" :class="tab=='ext'?'text-light bg-dark':''" x-render="'ext.html?$target=#tabext&t='+Date.now()" @click="tab='ext'">External</div>
 
             <div class="p-3" x-render="'hello/hi?reason=World'">Say Hello</div>
 

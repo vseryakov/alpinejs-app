@@ -84,3 +84,10 @@ app.afetch = function(options)
         });
     });
 }
+
+app.post = function(options, callback)
+{
+    if (isString(options)) options = { url: options };
+    if (isObj(options)) options.type = "POST";
+    app.fetch(options, callback);
+}

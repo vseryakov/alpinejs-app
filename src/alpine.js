@@ -12,7 +12,7 @@ class AlpineComponent extends Component {
     }
 
     init() {
-        super.init(this.$root._x_params);
+        super.init(this.$root.parentElement._x_params);
     }
 
 }
@@ -34,6 +34,7 @@ function render(element, options)
     }
 
     app.$empty(element);
+    element._x_params = Object.assign({}, options.params);
 
     if (!options.component) {
         Alpine.mutateDom(() => {
@@ -43,13 +44,12 @@ function render(element, options)
         // In case a component was loaded after alpine:init event
         Alpine.data(options.name, () => (new options.component(options.name)));
 
-        const node = app.$elem("div", "x-data", options.name, "._x_params", options.params);
+        const node = app.$elem("div", "x-data", options.name);
         app.$append(node, options.template);
 
         Alpine.mutateDom(() => {
             element.appendChild(node);
             Alpine.initTree(node);
-            delete node._x_params;
         });
     }
     return options;
@@ -73,22 +73,69 @@ function init()
     }
 }
 
-function $render(options, cache)
+function $render(el, value, modifiers, callback)
 {
-    if (!options.url && !/^(https?:\/\/|\/|.+\.html(\?|$)).+/.test(options)) return;
+    const cache = modifiers.includes("cache");
+    const method = modifiers.includes("post") ? app.post : app.fetch;
 
-    app.fetch(options, (err, text, info) => {
+    if (!value.url && !(!cache && /^(https?:\/\/|\/|.+\.html(\?|$)).+/.test(value))) {
+        if (callback(el, value)) return;
+    }
+    method(value, (err, text, info) => {
         if (err || !isString(text)) {
-            return console.warn("$render: Text expected from", options, "got", err, text);
+            return console.warn("$render: Text expected from", value, "got", err, text);
         }
-        if (isString(options)) options = app.parsePath(options);
-        options.template = text;
-        options.name = options.params?.$name || options.name;
+        const tmpl = isString(value) ? app.parsePath(value) : value;
+        tmpl.template = text;
         if (cache) {
-            app.templates[options.name] = text;
+            tmpl.name = tmpl.params?.$name || tmpl.name;
+            app.templates[tmpl.name] = text;
+        } else {
+            tmpl.name = "";
         }
-        app.render(options);
+        callback(el, tmpl);
     });
+}
+
+function $template(el, value, modifiers)
+{
+    const mods = {};
+
+    const toMods = (tmpl) => {
+        for (let i = 0; i < modifiers.length; i++) {
+            const mod = modifiers[i];
+            switch (mod) {
+            case "params":
+                var scope = Alpine.$data(el);
+                if (!isObj(scope[modifiers[i + 1]])) break;
+                tmpl.params = Object.assign(scope[modifiers[i + 1]], tmpl.params);
+                break;
+            case "inline":
+                mods.inline = "inline-block";
+                break;
+            default:
+                mods[mod] = mod;
+            }
+        }
+        return tmpl;
+    }
+
+    $render(el, value, modifiers, (el, tmpl) => {
+        tmpl = app.resolve(tmpl);
+        if (!tmpl) return;
+
+        if (!render(el, toMods(tmpl))) return;
+
+        if (mods.show) {
+            if (mods.nonempty && !el.firstChild) {
+                el.style.setProperty('display', "none", mods.important);
+            } else {
+                el.style.setProperty('display', mods.flex || mods.inline || "block", mods.important)
+            }
+        }
+        return true;
+    });
+
 }
 
 app.plugin(_alpine, { render, Component: AlpineComponent, data, init, default: 1 });
@@ -99,21 +146,26 @@ app.$on(document, "alpine:init", () => {
 
     Alpine.magic("app", (el) => app);
 
+    Alpine.magic("params", (el) => {
+        while (el) {
+            if (el._x_params) return el._x_params;
+            el = el.parentElement;
+        }
+    });
+
     Alpine.magic("component", (el) => (Alpine.closestDataStack(el).find(x => x.$type == _alpine && x.$name)));
 
     Alpine.magic("parent", (el) => (Alpine.closestDataStack(el).filter(x => x.$type == _alpine && x.$name)[1]));
 
     Alpine.directive("render", (el, { modifiers, expression }, { evaluate, cleanup }) => {
         const click = (e) => {
-            const tmpl = evaluate(expression);
-            if (!tmpl) return;
+            const value = evaluate(expression);
+            if (!value) return;
             e.preventDefault();
             if (modifiers.includes("stop")) {
                 e.stopPropagation();
             }
-            if (tmpl.url || !app.render(tmpl)) {
-                $render(tmpl, modifiers.includes("cache"));
-            }
+            $render(el, value, modifiers, (el, tmpl) => (app.render(tmpl)));
         }
         app.$on(el, "click", click)
         el.style.cursor = "pointer";
@@ -142,35 +194,7 @@ app.$on(document, "alpine:init", () => {
             if (!value) return empty();
 
             if (value !== template) {
-                const tmpl = app.resolve(value);
-                if (!tmpl) return;
-
-                const mods = {};
-                for (let i = 0; i < modifiers.length; i++) {
-                    const mod = modifiers[i];
-                    switch (mod) {
-                    case "params":
-                        var scope = Alpine.$data(el);
-                        if (!isObj(scope[modifiers[i + 1]])) break;
-                        tmpl.params = Object.assign(scope[modifiers[i + 1]], tmpl.params);
-                        break;
-                    case "inline":
-                        mods.inline = "inline-block";
-                        break;
-                    default:
-                        mods[mod] = mod;
-                    }
-                }
-
-                if (render(el, tmpl)) {
-                    if (mods.show) {
-                        if (mods.nonempty && !el.firstChild) {
-                            el.style.setProperty('display', "none", mods.important);
-                        } else {
-                            el.style.setProperty('display', mods.flex || mods.inline || "block", mods.important)
-                        }
-                    }
-                }
+                $template(el, value, modifiers);
             }
             template = value;
         }))

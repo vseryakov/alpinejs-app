@@ -14,12 +14,13 @@
   "files": [
     "dist/",
     "src/",
+    "scripts/",
     "builds/"
   ],
   "scripts": {
+    "demo": "scripts/demo.sh",
     "build": "node scripts/build.js",
     "devbuild": "node scripts/build.js",
-    "demo": "cd examples && npm run build",
     "watch": "cd examples && npm run watch"
   },
   "devDependencies": {

@@ -9,7 +9,8 @@ app.$ = (selector, doc) => (isString(selector) ? (isElement(doc) || document).qu
 app.$all = (selector, doc) => (isString(selector) ? (isElement(doc) || document).querySelectorAll(esc(selector)) : null)
 
 app.$event = (element, name, detail = {}) => (
-    element instanceof EventTarget && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true })))
+    element instanceof EventTarget && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true }))
+);
 
 app.$on = (element, event, callback, ...arg) => (isFunction(callback) && element.addEventListener(event, callback, ...arg));
 
@@ -75,9 +76,14 @@ app.$append = (element, template, setup) => {
     if (!isElement(element)) return;
 
     let doc;
-    if (isString(template)) doc = app.$parse(template, "doc"); else
-    if (template?.content?.nodeType == 11) doc = { body: template.content.cloneNode(true) }; else
-    return element;
+    if (isString(template)) {
+        doc = app.$parse(template, "doc");
+    } else
+    if (template?.content?.nodeType == 11) {
+        doc = { body: template.content.cloneNode(true) };
+    } else {
+        return element;
+    }
 
     let node;
     while (node = doc.head?.firstChild) {

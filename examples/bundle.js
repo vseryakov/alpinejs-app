@@ -137,10 +137,13 @@
       if (isString(element)) element = app2.$(element);
       if (!isElement(element)) return;
       let doc;
-      if (isString(template)) doc = app2.$parse(template, "doc");
-      else if (template?.content?.nodeType == 11) doc = { body: template.content.cloneNode(true) };
-      else
+      if (isString(template)) {
+        doc = app2.$parse(template, "doc");
+      } else if (template?.content?.nodeType == 11) {
+        doc = { body: template.content.cloneNode(true) };
+      } else {
         return element;
+      }
       let node;
       while (node = doc.head?.firstChild) {
         element.appendChild(node);
@@ -347,7 +350,7 @@
         this.$type = _alpine;
       }
       init() {
-        super.init(this.$root._x_params);
+        super.init(this.$root.parentElement._x_params);
       }
     };
     var Element = class extends HTMLElement {
@@ -363,18 +366,18 @@
         if (!options) return;
       }
       app2.$empty(element);
+      element._x_params = Object.assign({}, options.params);
       if (!options.component) {
         Alpine.mutateDom(() => {
           app2.$append(element, options.template, Alpine.initTree);
         });
       } else {
         Alpine.data(options.name, () => new options.component(options.name));
-        const node = app2.$elem("div", "x-data", options.name, "._x_params", options.params);
+        const node = app2.$elem("div", "x-data", options.name);
         app2.$append(node, options.template);
         Alpine.mutateDom(() => {
           element.appendChild(node);
           Alpine.initTree(node);
-          delete node._x_params;
         });
       }
       return options;
@@ -394,38 +397,82 @@
         Alpine.data(name, () => new obj(name));
       }
     }
-    function $render(options, cache) {
-      if (!options.url && !/^(https?:\/\/|\/|.+\.html(\?|$)).+/.test(options)) return;
-      app2.fetch(options, (err, text, info) => {
+    function $render(el, value, modifiers, callback) {
+      const cache = modifiers.includes("cache");
+      const method = modifiers.includes("post") ? app2.post : app2.fetch;
+      if (!value.url && !(!cache && /^(https?:\/\/|\/|.+\.html(\?|$)).+/.test(value))) {
+        if (callback(el, value)) return;
+      }
+      method(value, (err, text, info) => {
         if (err || !isString(text)) {
-          return console.warn("$render: Text expected from", options, "got", err, text);
+          return console.warn("$render: Text expected from", value, "got", err, text);
         }
-        if (isString(options)) options = app2.parsePath(options);
-        options.template = text;
-        options.name = options.params?.$name || options.name;
+        const tmpl = isString(value) ? app2.parsePath(value) : value;
+        tmpl.template = text;
         if (cache) {
-          app2.templates[options.name] = text;
+          tmpl.name = tmpl.params?.$name || tmpl.name;
+          app2.templates[tmpl.name] = text;
+        } else {
+          tmpl.name = "";
         }
-        app2.render(options);
+        callback(el, tmpl);
+      });
+    }
+    function $template(el, value, modifiers) {
+      const mods = {};
+      const toMods = (tmpl) => {
+        for (let i = 0; i < modifiers.length; i++) {
+          const mod = modifiers[i];
+          switch (mod) {
+            case "params":
+              var scope = Alpine.$data(el);
+              if (!isObj(scope[modifiers[i + 1]])) break;
+              tmpl.params = Object.assign(scope[modifiers[i + 1]], tmpl.params);
+              break;
+            case "inline":
+              mods.inline = "inline-block";
+              break;
+            default:
+              mods[mod] = mod;
+          }
+        }
+        return tmpl;
+      };
+      $render(el, value, modifiers, (el2, tmpl) => {
+        tmpl = app2.resolve(tmpl);
+        if (!tmpl) return;
+        if (!render(el2, toMods(tmpl))) return;
+        if (mods.show) {
+          if (mods.nonempty && !el2.firstChild) {
+            el2.style.setProperty("display", "none", mods.important);
+          } else {
+            el2.style.setProperty("display", mods.flex || mods.inline || "block", mods.important);
+          }
+        }
+        return true;
       });
     }
     app2.plugin(_alpine, { render, Component: AlpineComponent, data, init, default: 1 });
     app2.$on(document, "alpine:init", () => {
       app2.emit("alpine:init");
       Alpine.magic("app", (el) => app2);
+      Alpine.magic("params", (el) => {
+        while (el) {
+          if (el._x_params) return el._x_params;
+          el = el.parentElement;
+        }
+      });
       Alpine.magic("component", (el) => Alpine.closestDataStack(el).find((x) => x.$type == _alpine && x.$name));
       Alpine.magic("parent", (el) => Alpine.closestDataStack(el).filter((x) => x.$type == _alpine && x.$name)[1]);
       Alpine.directive("render", (el, { modifiers, expression }, { evaluate, cleanup }) => {
         const click = (e) => {
-          const tmpl = evaluate(expression);
-          if (!tmpl) return;
+          const value = evaluate(expression);
+          if (!value) return;
           e.preventDefault();
           if (modifiers.includes("stop")) {
             e.stopPropagation();
           }
-          if (tmpl.url || !app2.render(tmpl)) {
-            $render(tmpl, modifiers.includes("cache"));
-          }
+          $render(el, value, modifiers, (el2, tmpl) => app2.render(tmpl));
         };
         app2.$on(el, "click", click);
         el.style.cursor = "pointer";
@@ -448,33 +495,7 @@
         effect(() => evaluate((value) => {
           if (!value) return empty();
           if (value !== template) {
-            const tmpl = app2.resolve(value);
-            if (!tmpl) return;
-            const mods = {};
-            for (let i = 0; i < modifiers.length; i++) {
-              const mod = modifiers[i];
-              switch (mod) {
-                case "params":
-                  var scope = Alpine.$data(el);
-                  if (!isObj(scope[modifiers[i + 1]])) break;
-                  tmpl.params = Object.assign(scope[modifiers[i + 1]], tmpl.params);
-                  break;
-                case "inline":
-                  mods.inline = "inline-block";
-                  break;
-                default:
-                  mods[mod] = mod;
-              }
-            }
-            if (render(el, tmpl)) {
-              if (mods.show) {
-                if (mods.nonempty && !el.firstChild) {
-                  el.style.setProperty("display", "none", mods.important);
-                } else {
-                  el.style.setProperty("display", mods.flex || mods.inline || "block", mods.important);
-                }
-              }
-            }
+            $template(el, value, modifiers);
           }
           template = value;
         }));
@@ -556,6 +577,11 @@
           resolve(data2, info);
         });
       });
+    };
+    app2.post = function(options, callback) {
+      if (isString(options)) options = { url: options };
+      if (isObj(options)) options.type = "POST";
+      app2.fetch(options, callback);
     };
     app2.Component = component_default;
     var src_default = app2;
@@ -725,7 +751,7 @@
   };
 
   // dashboard.html
-  app.templates.dashboard = `<template id=chart>    <div class="fs-xs font-monospace resize-both overflow-auto">        <canvas></canvas>    </div></template><div class="dashboard">    <div class="d-flex flex-row">        <div class="bg-light p-3 h4 text-nowrap">            <div class="p-3" :class="tab=='charts'?'text-light bg-dark':''" @click="tab='charts'">Charts</div>            <div class="p-3" :class="tab=='other'?'text-light bg-dark':''" @click="tab='other'">Details</div>            <div class="p-3" :class="tab=='todo'?'text-light bg-dark':''" x-render="'todo?$target=#tabext'" @click="tab='todo'">Todo Tasks</div>            <div class="p-3" :class="tab=='ext'?'text-light bg-dark':''" x-render.cache="'ext.html?$target=#tabext'" @click="tab='ext'">External</div>            <div class="p-3" x-render="'hello/hi?reason=World'">Say Hello</div>        </div>        <div class="container" x-show="tab=='charts'">            <div class="d-flex justify-content-center">                <template x-for="item in charts">                    <app-chart x-data="{...item}"></app-chart>                </template>            </div>        </div>        <div class="p-3" x-show="tab=='other'">            <ul class="text-start">                <li>Each chart is a component defined in dashboard.js/.html files</li>                <li>Each chart component is rendered as custom element &lt;app-chart&gt;</li>                <li>                    The chart data is passed to each compoment via x-data directive<br>                    <div class="bg-light">                        &lt;template x-for="item in charts"&gt;<br>                        &nbsp;&nbsp; &lt;app-chart x-data="{...item}"&gt;&lt;/app-chart&gt;<br>                        &lt;/template&gt;                    </div>                </li>            </ul>        </div>        <div class="p-3" x-show="tab=='ext'||tab=='todo'" id="tabext">        </div>    </div></div>`;
+  app.templates.dashboard = `<template id=chart>    <div class="fs-xs font-monospace resize-both overflow-auto">        <canvas></canvas>    </div></template><div class="dashboard">    <div class="d-flex flex-row">        <div class="bg-light p-3 h4 text-nowrap">            <div class="p-3" :class="tab=='charts'?'text-light bg-dark':''" @click="tab='charts'">Charts</div>            <div class="p-3" :class="tab=='other'?'text-light bg-dark':''" @click="tab='other'">Details</div>            <div class="p-3" :class="tab=='todo'?'text-light bg-dark':''" x-render="'todo?$target=#tabext'" @click="tab='todo'">Todo Tasks</div>            <div class="p-3" :class="tab=='ext'?'text-light bg-dark':''" x-render="'ext.html?$target=#tabext&t='+Date.now()" @click="tab='ext'">External</div>            <div class="p-3" x-render="'hello/hi?reason=World'">Say Hello</div>        </div>        <div class="container" x-show="tab=='charts'">            <div class="d-flex justify-content-center">                <template x-for="item in charts">                    <app-chart x-data="{...item}"></app-chart>                </template>            </div>        </div>        <div class="p-3" x-show="tab=='other'">            <ul class="text-start">                <li>Each chart is a component defined in dashboard.js/.html files</li>                <li>Each chart component is rendered as custom element &lt;app-chart&gt;</li>                <li>                    The chart data is passed to each compoment via x-data directive<br>                    <div class="bg-light">                        &lt;template x-for="item in charts"&gt;<br>                        &nbsp;&nbsp; &lt;app-chart x-data="{...item}"&gt;&lt;/app-chart&gt;<br>                        &lt;/template&gt;                    </div>                </li>            </ul>        </div>        <div class="p-3" x-show="tab=='ext'||tab=='todo'" id="tabext">        </div>    </div></div>`;
 
   // index.js
   app.debug = 1;

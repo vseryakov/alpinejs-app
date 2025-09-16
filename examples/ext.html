@@ -1,31 +1,49 @@
 
-<div x-data="{ ext: false }">
+<div x-data="{ ext: false }" class="text-start">
 
-    <p>
-        This is external template inside <b>`<span x-text="$name"></span>`</b> component.
-    </p>
+    <ul class="list-group">
+        <li class="list-group-item">This is external template inside <b>`<span x-text="$name"></span>`</b> component.</li>
 
-    <p>
-        URL like templates are fetched from the server and rendered inside the target element.
-    </p>
+        <li class="list-group-item">Magic `$params` is <span x-text="JSON.stringify($params)"></span></li>
 
-    <p>
-        It is shown using directive <b>x-render</b> and cached so subsequent rendering is done in browser:
+        <li class="list-group-item">Render time from `$params.t` is <span x-text="new Date(parseInt($params.t))"></span></li>
 
-        <pre class="bg-light p-2">
-            &lt;div x-render.cache="'ext.html?$target=#tabext'"&gt;&lt;div&gt;
-        </pre>
-    </p>
+        <li class="list-group-item">URL like templates are fetched from the server and rendered inside the target element.
+            <p>
+                It is shown using directive <b>x-render</b> always retrieving it from the server:
 
-    <p>
-        <a class="btn btn-outline-dark" role="button" @click="ext=!ext">Toggle</a> ext.html inside the
-        div below on click using directive <b>x-template</b>
+                <div class="small bg-light font-monospace p-2">
+                    &lt;div x-render="'ext.html?$target=#tabext&t='+Date.now()"&gt;&lt;div&gt;
+                </div>
+            </p>
+        </li>
+    </ul>
 
-        <pre class="bg-light p-2">
-            &lt;div x-template="ext ? 'ext.html' : ''"&gt;
-        </pre>
-    </p>
+    <template x-if="!$params.toggle">
 
-    <div class="p-3 border rounded" x-template.nocache="ext ? 'ext.html' : ''"></div>
+        <div>
+            <p>
+                <a class="btn btn-outline-dark" role="button" @click="ext=!ext">Toggle</a> <b>cached</b> ext.html inside the
+                div below on click using directive <b>x-template</b><br><br>
+
+                <div class="small bg-light font-monospace p-2">
+                    &lt;div x-template.cache="ext ? 'ext.html?toggle=1' : ''"&gt;
+                </div>
+
+                <div class="small">
+                    Only show this section if `$params.toggle` is not set:
+
+                    <div class="bg-light font-monospace p-2">
+                        &lt;template x-if="!$params.toggle"&gt;
+                    </div>
+                </div>
+
+            </p>
+
+            <div class="p-3 border rounded" x-template.cache="ext ? 'ext.html?toggle=1' : ''"></div>
+
+        </div>
+
+    </template>
 
 </div>

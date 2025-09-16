@@ -1,28 +1,15 @@
-const fs = require("fs");
 const path = require("path");
 const http = require("http");
 const url = require("url");
 const esbuild = require("esbuild");
-
-let appPlugin = {
-    name: 'app',
-    setup(build) {
-        build.onLoad({ filter: /\.html$/ }, async (args) => {
-            let text = await fs.promises.readFile(args.path, 'utf8')
-            return {
-                contents: `app.templates.${path.basename(args.path, ".html")} = '${text.replace(/[\n\r]/g, "").replaceAll("'", "\\'")}'`,
-                loader: 'js',
-            }
-        })
-    },
-}
+const plugin = require(__dirname + "/esbuild-plugin");
 
 const opts = {
     entryPoints: ['index.js'],
     outfile: 'bundle.js',
     platform: 'browser',
     bundle: true,
-    plugins: [appPlugin],
+    plugins: [plugin],
     logLevel: 'info',
 };
 
