@@ -6,7 +6,7 @@
 
 - to maintain a clear separation between HTML and JavaScript logic.
 
-This separation keeps presentation distinct from logic as much as possible and have minimal number of abstractions.
+This separation keeps presentation distinct from logic as much as possible and have as few abstractions as possible.
 
 Develop layout with HTML/CSS and the logic with Alpine.js for two-way data bindings and reactivity.
 
@@ -27,7 +27,7 @@ Native support:
 More ideas:
 
 - keep HTML templates in JSON files to load separately via fetch on demand
-- include your .js files in the HTL for small apps and let the browser to handle caching
+- include your .js files in the HTML for small apps and let the browser to handle caching
 
 ### Features
 
@@ -40,7 +40,7 @@ More ideas:
 - **Direct Deep-Linking**: For direct access, server-side routes must redirect to the main app HTML page, with the base path set as '/app/' by default.
 
 
-Live demo is available at [demo](https://vseryakov.github.io/alpinejs-app/examples/index.html).
+Live demo is available at [demo](https://vseryakov.github.io/alpinejs-app/examples/index.html). External rendering is not working due pages only serving static contnt, local demo shows server-side rendering.
 
 
 ## Installation
