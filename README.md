@@ -4,30 +4,30 @@
 
 ### The Vision
 
-- to maintain a clear separation between HTML and JavaScript logic.
+- **_To maintain a clear separation between HTML and JavaScript logic._**
 
-This separation keeps presentation distinct from logic as much as possible and have as few abstractions as possible.
+  This separation keeps presentation distinct from logic as much as possible and have as few abstractions as possible.
 
-Develop layout with HTML/CSS and the logic with Alpine.js for two-way data bindings and reactivity.
+  Develop layout with HTML/CSS and the logic with Alpine.js for two-way data bindings and reactivity.
 
-- to have some kind of central registry of HTML templates and Javascript classes and use it to register components.
+- **_To have some kind of central registry of HTML templates and Javascript classes and use it to register components._**
 
-The registry is just 2 properties in the global `app` object, `app.templates` and `app.components`.
+  The registry is just 2 properties in the global `app` object, `app.templates` and `app.components`.
 
-Server-side rendering of templates (similar to `htmx`) is supported out of the box, same directives render bundled or
-remote HTML templates the same way without any external dependencies.
+  Server-side rendering of templates (similar to `htmx`) is supported out of the box, same directives render bundled or
+  remote HTML templates the same way without any external dependencies.
 
-How the registry is delivered to the browser depends on bundling or application, for example:
+  How the registry is delivered to the browser depends on bundling or application, for example:
 
-Native support:
+  Native support:
 
-- esbuild: bundle everything into a single file by converting HTML files to strings: see `scripts/build-app.js` for a simple `esbuild` plugin
-- server-side: maintain HTML files on the server to load individually on demand using the same directives, see `examples/dashboard.html`.
+   - esbuild: bundle everything into a single file by converting HTML files to strings: see `scripts/build-app.js` for a simple `esbuild` plugin
+   - server-side: maintain HTML files on the server to load individually on demand using the same directives, see `examples/dashboard.html`.
 
-More ideas:
+  More ideas:
 
-- keep HTML templates in JSON files to load separately via fetch on demand
-- include your .js files in the HTML for small apps and let the browser to handle caching
+   - keep HTML templates in JSON files to load separately via fetch on demand
+   - include your .js files in the HTML for small apps and let the browser to handle caching
 
 ### Features
 
@@ -171,7 +171,7 @@ Nothing much, all the work is done by Alpine.js actually.
 
 ## Directive: `x-template`
 
-Render a template or component inside the container from the expression which must return a template URL/name or nothing to clear the container.
+Render a template or component inside a container from the expression which must return a template URL/name or nothing to clear the container.
 
 This is an alternative to the `x-if` Alpine directive especially with multiple top elements because x-if only supports one top element and
 ablity to render server-side templates.
