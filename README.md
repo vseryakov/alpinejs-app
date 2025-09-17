@@ -1,6 +1,6 @@
 # alpinejs-app
 
-## A Simple Single Page Application (SPA) library for Alpine.js.
+## A Simplest Single Page Application (SPA) library for Alpine.js.
 
 ### The Vision
 
@@ -12,7 +12,7 @@ Develop layout with HTML/CSS and the logic with Alpine.js for two-way data bindi
 
 - to have some kind of central registry of HTML templates and Javascript classes and use it to register components.
 
-The registry is just 2 global Javascript objects, `templates` and `components`.
+The registry is just 2 properties in the global `app` object, `app.templates` and `app.components`.
 
 Server-side rendering of templates (similar to `htmx`) is supported out of the box, same directives render bundled or
 remote HTML templates the same way without any external dependencies.
@@ -21,7 +21,7 @@ How the registry is delivered to the browser depends on bundling or application,
 
 Native support:
 
-- esbuild: bundle everything into a single file by converting HTML files to strings: see `scripts/esbuild-html.js` for a simple `esbuild` plugin
+- esbuild: bundle everything into a single file by converting HTML files to strings: see `scripts/build-app.js` for a simple `esbuild` plugin
 - server-side: maintain HTML files on the server to load individually on demand using the same directives, see `examples/dashboard.html`.
 
 More ideas:
@@ -48,7 +48,7 @@ Live demo is available at [demo](https://vseryakov.github.io/alpinejs-app/exampl
 ### npm
 
 ```bash
-npm install @vseryakov/alpinejs-app --save
+npm install @vseryakov/alpinejs-app
 ```
 
 ### cdn
@@ -70,15 +70,16 @@ Here is how to build very simple Hello World app.
 
     mkdir app && cd app
 
-    npm i alpinejs-app
+    npm install alpinejs-app
 
-    ./node_modules/alpinejs-app/scripts/demo.sh
+    sh ./node_modules/alpinejs-app/scripts/demo.sh
 
 The files shown below will be created in the app folder, this is to save you from copy/pasting. The classes and styles are stripped for
-brivity, the actual demo may contain some style to make it look nicer.
+brivity, the actual demo may contain some styles to make it look nicer.
 
-The package.json is also created, now let's build our silly app see how it works.
+The package.json is also created, now let's build our silly app and see how it works.
 
+    npm install
     npm run watch
 
 Point your browser to `http://localhost:8090/` to see it in action.
@@ -89,7 +90,6 @@ Point your browser to `http://localhost:8090/` to see it in action.
 ```html
 <head>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://unpkg.com/alpinejs-app@1.x.x/dist/app.min.js"></script>
 <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
 <script src="bundle.js"></script>
@@ -137,6 +137,7 @@ Point your browser to `http://localhost:8090/` to see it in action.
 ### index.js
 
 ```javascript
+import 'alpinejs-app/dist/app.js'
 import './hello'
 import './example.html'
 
@@ -178,12 +179,14 @@ ablity to render server-side templates.
 If the expression is URL like, i.e. `https?://` or `/path` or `file.html` it will be retrieved from the
 server first and then rendered into the target.
 
-To cache the HTML use the modifier `cache`.
+To cache the HTML use the modifier `cache`, the path base name is used by default for cached template.
 
 ```html
 <div x-template="template"></div>
 
 <div x-template="show ? 'index' : ''"></div>
+
+<div x-template.cache="show ? '/path/index.html' : ''"></div>
 ```
 
 Modifiers:
@@ -194,6 +197,7 @@ Modifiers:
  - `important` - apply !important similar to `x-show`
  - `params.opts` - pass an object `opts` in the current scope as the `params` to the component, similar to `app.render({ name, params: opts })`
  - `cache` - cache external templates by name, the name is either the file name or special param `$name`
+ - `post` - use the POST method when retrieving external template
 
 The directive supports special parameters to be set in `this.params`, similar to `x-render`, for example:
 
@@ -232,6 +236,7 @@ Special options include:
 Modifiers:
  - `stop` - stop event propagation
  - `cache` - cache external templates by name, the name is either the file name or special param `$name`
+ - `post` - use the POST method when retrieving external template
 
 ```html
 <a x-render="'hello/hi?reason=World'">Say Hello</a>

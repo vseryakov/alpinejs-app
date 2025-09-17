@@ -17,6 +17,7 @@ const opts = {
     if (process.argv.includes("--watch")) {
         var ctx = await esbuild.context(opts);
         await ctx.watch();
+
         const { hosts, port } = await ctx.serve({ host: "127.0.0.1", servedir: '.', fallback: "index.html" });
 
         http.createServer((req, res) => {
@@ -28,6 +29,8 @@ const opts = {
             const preq = http.request(options, pres => { pres.pipe(res, { end: true }) });
             req.pipe(preq, { end: true });
         }).listen(8090);
+
+        console.log(" !! Please point your browser to http://127.0.0.1:8090/")
     } else {
         await esbuild.build(opts);
     }

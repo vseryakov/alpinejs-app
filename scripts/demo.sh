@@ -9,7 +9,10 @@ cat > package.json <<EOF
     "watch": "node node_modules/alpinejs-app/scripts/build-app.js --watch"
   },
   "dependencies": {
-    "alpinejs-app": "^1.3.0"
+    "alpinejs-app": "^1.4.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
   }
 }
 EOF
@@ -17,7 +20,6 @@ EOF
 cat > index.html <<EOF
 <head>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://unpkg.com/alpinejs-app@1.x.x/dist/app.min.js"></script>
 <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
 <script src="bundle.js"></script>
@@ -60,6 +62,7 @@ cat > example.html <<EOF
 EOF
 
 cat > index.js <<EOF
+import 'alpinejs-app/dist/app.js'
 import './hello'
 import './example.html'
 
