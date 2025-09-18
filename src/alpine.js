@@ -34,7 +34,9 @@ function render(element, options)
     }
 
     app.$empty(element);
+
     element._x_params = Object.assign({}, options.params);
+    Alpine.onElRemoved(element, () => { delete element._x_params });
 
     if (!options.component) {
         Alpine.mutateDom(() => {

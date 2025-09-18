@@ -22,7 +22,7 @@ const opts = {
 
         http.createServer((req, res) => {
             var u = url.parse(req.url);
-            if (/\.(js|html)$/.test(u.path)) {
+            if (/\.(js|html)(\?|$)/.test(u.path)) {
                 u.path = "/" + path.basename(u.path);
             }
             const options = { port, hostname: hosts[0], path: u.path, method: req.method, headers: req.headers }
