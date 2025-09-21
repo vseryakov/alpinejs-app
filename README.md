@@ -651,7 +651,7 @@ Methods:
   if `app.debug` is set then it will log arguments in the console
 
 
-### Advanced
+### Plugins
 
 - `app.plugin(name, options)`
 
@@ -663,7 +663,9 @@ Methods:
    - `Component` - optional base component constructor, it will be registered as app.{Type}Component, like AlpineComponent, KoComponent,... to easy create custom components
 
   The reason for plugins is that while this is designed for Alpine.js, the idea originated by using Knockout.js with this system,
-  the plugin can be found at [app.ko.js](https://github.com/vseryakov/backendjs/blob/master/web/js/app.ko.js).
+  the plugin can be found at [app.ko.js](https://github.com/vseryakov/backendjs/blob/c97ca152dfd55a3841d07b54701e9d2b8620c516/web/js/app.ko.js).
+
+  There is a simple plugin in `examples/simple.js` to show how to use it without any rendering engine with vanillla HTML, not very useful though.
 
 
 ## Author
