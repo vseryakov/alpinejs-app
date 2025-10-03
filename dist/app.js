@@ -413,21 +413,19 @@
   }
   function $render(el, value, modifiers, callback) {
     const cache = modifiers.includes("cache");
-    const method = modifiers.includes("post") ? app.post : app.fetch;
+    const opts = { url: value, type: modifiers.includes("post") && "POST" };
     if (!value.url && !(!cache && /^(https?:\/\/|\/|.+\.html(\?|$)).+/.test(value))) {
       if (callback(el, value)) return;
     }
-    method(value, (err, text, info) => {
+    app.fetch(opts, (err, text, info) => {
       if (err || !isString(text)) {
         return console.warn("$render: Text expected from", value, "got", err, text);
       }
       const tmpl = isString(value) ? app.parsePath(value) : value;
       tmpl.template = text;
+      tmpl.name = tmpl.params?.$name || tmpl.name;
       if (cache) {
-        tmpl.name = tmpl.params?.$name || tmpl.name;
         app.templates[tmpl.name] = text;
-      } else {
-        tmpl.name = "";
       }
       callback(el, tmpl);
     });

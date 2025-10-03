@@ -635,7 +635,7 @@ Methods:
 - `app.fetch(options, callback)`
 
   Fetch remote content, wrapper around Fetch API, options can be a string URL or an object compatible with $.ajax:
-   - type - GET,... POST is default
+   - type - GET, POST,...GET is default
    - data - a body, can be a string, an object, FormData
    - dataType - explicit return type: text, blob, default is auto detected between text or json
    - headers - an object with additional headers to send

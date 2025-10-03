@@ -402,11 +402,11 @@
     }
     function $render(el, value, modifiers, callback) {
       const cache = modifiers.includes("cache");
-      const method = modifiers.includes("post") ? app2.post : app2.fetch;
+      const opts = { url: value, type: modifiers.includes("post") && "POST" };
       if (!value.url && !(!cache && /^(https?:\/\/|\/|.+\.html(\?|$)).+/.test(value))) {
         if (callback(el, value)) return;
       }
-      method(value, (err, text, info) => {
+      app2.fetch(opts, (err, text, info) => {
         if (err || !isString(text)) {
           return console.warn("$render: Text expected from", value, "got", err, text);
         }
