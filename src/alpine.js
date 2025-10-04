@@ -78,7 +78,7 @@ function init()
 function $render(el, value, modifiers, callback)
 {
     const cache = modifiers.includes("cache");
-    const opts = { url: value, type: modifiers.includes("post") && "POST" };
+    const opts = { url: value, post: modifiers.includes("post") };
 
     if (!value.url && !(!cache && /^(https?:\/\/|\/|.+\.html(\?|$)).+/.test(value))) {
         if (callback(el, value)) return;

@@ -1,51 +1,53 @@
 import { app, isObj, isString } from "./app"
 
-app.fetchOpts = function(options)
+function parseOptions(options)
 {
-    var headers = options.headers || {};
+    var url = isString(options) ? options : options?.url || "";
+    var headers = options?.headers || {};
     var opts = Object.assign({
         headers: headers,
-        method: options.type || "GET",
+        method: options?.method || options?.post && "POST" || "GET",
         cache: "default",
-    }, options.fetchOptions);
+    }, options?.options);
 
-    var data = options.data;
+    var body = options?.body;
     if (opts.method == "GET" || opts.method == "HEAD") {
-        if (isObj(data)) {
-            options.url += "?" + new URLSearchParams(data).toString();
+        if (isObj(body)) {
+            url += "?" + new URLSearchParams(body).toString();
         }
     } else
-    if (isString(data)) {
-        opts.body = data;
-        headers["content-type"] = options.contentType || 'application/x-www-form-urlencoded; charset=UTF-8';
+    if (isString(body)) {
+        opts.body = body;
+        headers["content-type"] ??= 'application/x-www-form-urlencoded; charset=UTF-8';
     } else
-    if (data instanceof FormData) {
-        opts.body = data;
+    if (body instanceof FormData) {
+        opts.body = body;
         delete headers["content-type"];
     } else
-    if (isObj(data)) {
-        opts.body = JSON.stringify(data);
+    if (isObj(body)) {
+        opts.body = JSON.stringify(body);
         headers["content-type"] = "application/json; charset=UTF-8";
     } else
-    if (data) {
-        opts.body = data;
-        headers["content-type"] = options.contentType || "application/octet-stream";
+    if (body) {
+        opts.body = body;
+        headers["content-type"] ??= "application/octet-stream";
     }
-    return opts;
+    return [url, opts];
 }
 
 app.fetch = function(options, callback)
 {
     try {
-        if (isString(options)) options = { url: options };
-        const opts = app.fetchOpts(options);
-        app.trace("fetch:", opts, options);
+        const [url, opts] = parseOptions(options);
+        app.trace("fetch:", url, opts, options);
 
-        window.fetch(options.url, opts).
+        window.fetch(url, opts).
         then(async (res) => {
             var err, data;
             var info = { status: res.status, headers: {}, type: res.type, url: res.url, redirected: res.redirected };
-            for (const h of res.headers) info.headers[h[0].toLowerCase()] = h[1];
+            for (const h of res.headers) {
+                info.headers[h[0].toLowerCase()] = h[1];
+            }
             if (!res.ok) {
                 if (/\/json/.test(info.headers["content-type"])) {
                     const d = await res.json();
@@ -56,7 +58,7 @@ app.fetch = function(options, callback)
                 }
                 return app.call(callback, err, data, info);
             }
-            switch (options.dataType) {
+            switch (options?.dataType) {
             case "text":
                 data = await res.text();
                 break;
@@ -83,11 +85,4 @@ app.afetch = function(options)
             resolve(data, info);
         });
     });
-}
-
-app.post = function(options, callback)
-{
-    if (isString(options)) options = { url: options };
-    if (isObj(options)) options.type = "POST";
-    app.fetch(options, callback);
 }

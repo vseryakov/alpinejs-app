@@ -402,7 +402,7 @@
     }
     function $render(el, value, modifiers, callback) {
       const cache = modifiers.includes("cache");
-      const opts = { url: value, type: modifiers.includes("post") && "POST" };
+      const opts = { url: value, post: modifiers.includes("post") };
       if (!value.url && !(!cache && /^(https?:\/\/|\/|.+\.html(\?|$)).+/.test(value))) {
         if (callback(el, value)) return;
       }
@@ -412,11 +412,9 @@
         }
         const tmpl = isString(value) ? app2.parsePath(value) : value;
         tmpl.template = text;
+        tmpl.name = tmpl.params?.$name || tmpl.name;
         if (cache) {
-          tmpl.name = tmpl.params?.$name || tmpl.name;
           app2.templates[tmpl.name] = text;
-        } else {
-          tmpl.name = "";
         }
         callback(el, tmpl);
       });
@@ -509,42 +507,44 @@
         el._x_dataStack = scope.slice(0, parseInt(evaluate(expression || "")) || 0);
       });
     });
-    app2.fetchOpts = function(options) {
-      var headers = options.headers || {};
+    function parseOptions(options) {
+      var url = isString(options) ? options : options?.url || "";
+      var headers = options?.headers || {};
       var opts = Object.assign({
         headers,
-        method: options.type || "GET",
+        method: options?.method || options?.post && "POST" || "GET",
         cache: "default"
-      }, options.fetchOptions);
-      var data2 = options.data;
+      }, options?.options);
+      var body = options?.body;
       if (opts.method == "GET" || opts.method == "HEAD") {
-        if (isObj(data2)) {
-          options.url += "?" + new URLSearchParams(data2).toString();
+        if (isObj(body)) {
+          url += "?" + new URLSearchParams(body).toString();
         }
-      } else if (isString(data2)) {
-        opts.body = data2;
-        headers["content-type"] = options.contentType || "application/x-www-form-urlencoded; charset=UTF-8";
-      } else if (data2 instanceof FormData) {
-        opts.body = data2;
+      } else if (isString(body)) {
+        opts.body = body;
+        headers["content-type"] ??= "application/x-www-form-urlencoded; charset=UTF-8";
+      } else if (body instanceof FormData) {
+        opts.body = body;
         delete headers["content-type"];
-      } else if (isObj(data2)) {
-        opts.body = JSON.stringify(data2);
+      } else if (isObj(body)) {
+        opts.body = JSON.stringify(body);
         headers["content-type"] = "application/json; charset=UTF-8";
-      } else if (data2) {
-        opts.body = data2;
-        headers["content-type"] = options.contentType || "application/octet-stream";
+      } else if (body) {
+        opts.body = body;
+        headers["content-type"] ??= "application/octet-stream";
       }
-      return opts;
-    };
+      return [url, opts];
+    }
     app2.fetch = function(options, callback) {
       try {
-        if (isString(options)) options = { url: options };
-        const opts = app2.fetchOpts(options);
-        app2.trace("fetch:", opts, options);
-        window.fetch(options.url, opts).then(async (res) => {
+        const [url, opts] = parseOptions(options);
+        app2.trace("fetch:", url, opts, options);
+        window.fetch(url, opts).then(async (res) => {
           var err, data2;
           var info = { status: res.status, headers: {}, type: res.type, url: res.url, redirected: res.redirected };
-          for (const h of res.headers) info.headers[h[0].toLowerCase()] = h[1];
+          for (const h of res.headers) {
+            info.headers[h[0].toLowerCase()] = h[1];
+          }
           if (!res.ok) {
             if (/\/json/.test(info.headers["content-type"])) {
               const d = await res.json();
@@ -555,7 +555,7 @@
             }
             return app2.call(callback, err, data2, info);
           }
-          switch (options.dataType) {
+          switch (options?.dataType) {
             case "text":
               data2 = await res.text();
               break;
@@ -580,11 +580,6 @@
           resolve(data2, info);
         });
       });
-    };
-    app2.post = function(options, callback) {
-      if (isString(options)) options = { url: options };
-      if (isObj(options)) options.type = "POST";
-      app2.fetch(options, callback);
     };
     app2.Component = component_default;
     var src_default = app2;
