@@ -26,7 +26,7 @@
 
   More ideas:
 
-   - keep HTML templates in JSON files to load separately via fetch on demand
+   - keep HTML templates in JSON files to load separately via fetch on demand or via importmap
    - include your .js files in the HTML for small apps and let the browser to handle caching
 
 ### Features

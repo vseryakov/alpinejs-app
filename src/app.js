@@ -10,8 +10,11 @@ export var app = {
     isS: isString,
     isE: isElement,
     isO: isObj,
+    isN: isNumber,
     toCamel,
 }
+
+export function isNumber(num) { return typeof num == "number" ? num : undefined }
 
 export function isString(str) { return typeof str == "string" && str }
 

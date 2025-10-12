@@ -11,8 +11,12 @@
     isS: isString,
     isE: isElement,
     isO: isObj,
+    isN: isNumber,
     toCamel
   };
+  function isNumber(num) {
+    return typeof num == "number" ? num : void 0;
+  }
   function isString(str) {
     return typeof str == "string" && str;
   }
