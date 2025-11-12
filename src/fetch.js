@@ -81,7 +81,12 @@ app.afetch = function(options)
 {
     return new Promise((resolve, reject) => {
         app.fetch(options, (err, data, info) => {
-            if (err) return reject(err, data, info);
+            if (err && !options?.nocatch) {
+                return reject(err, data, info);
+            }
+            if (options?.nocatch) {
+                data = { err, data, info };
+            }
             resolve(data, info);
         });
     });

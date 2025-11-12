@@ -639,11 +639,14 @@ Methods:
    - body - a body, can be a string, an object, FormData
    - dataType - explicit return type: text, blob, default is auto detected between text or json
    - headers - an object with additional headers to send
-   - options - properties to pass to fetch options accordong to `RequestInit`
+   - options - properties to pass to fetch options according to `RequestInit`
 
   The callback(err, data, info) - where info is an object { status, headers, type }
 
 - `app.afetch(options)`
+
+   - options.nofetch - do not raise exception, return everything as an object `{ err, data, info }`,
+     this mode does not require try/catch around await
 
   Promisified `app.fetch` which returns a Promise, all exceptions are passed to the reject handler, no need to use try..catch
 

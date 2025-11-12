@@ -592,7 +592,12 @@ app.fetch = function(options, callback) {
 app.afetch = function(options) {
   return new Promise((resolve, reject) => {
     app.fetch(options, (err, data2, info) => {
-      if (err) return reject(err, data2, info);
+      if (err && !options?.nocatch) {
+        return reject(err, data2, info);
+      }
+      if (options?.nocatch) {
+        data2 = { err, data: data2, info };
+      }
       resolve(data2, info);
     });
   });
