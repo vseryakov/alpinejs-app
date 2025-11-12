@@ -48,7 +48,7 @@ Live demo is available at [demo](https://vseryakov.github.io/alpinejs-app/exampl
 ### npm
 
 ```bash
-npm install @vseryakov/alpinejs-app
+npm install alpinejs-app
 ```
 
 ### cdn
