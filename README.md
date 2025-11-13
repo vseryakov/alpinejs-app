@@ -645,8 +645,8 @@ Methods:
 
 - `app.afetch(options)`
 
-   - options.nofetch - do not raise exception, return everything as an object `{ err, data, info }`,
-     this mode does not require try/catch around await
+   - async/await version of fetch that do not raise exception, this function does not require try/catch around await
+     Return everything in an object `{ err, data, info }`.
 
   Promisified `app.fetch` which returns a Promise, all exceptions are passed to the reject handler, no need to use try..catch
 
