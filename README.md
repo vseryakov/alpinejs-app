@@ -645,10 +645,16 @@ Methods:
 
 - `app.afetch(options)`
 
-   - async/await version of fetch that do not raise exception, this function does not require try/catch around await
-     Return everything in an object `{ err, data, info }`.
-
   Promisified `app.fetch` which returns a Promise, all exceptions are passed to the reject handler, no need to use try..catch
+  Return everything in an object `{ ok, status, err, data, info }`.
+
+  ```const { err, data } = await app.afetch("https://localhost:8000")```
+
+  Compatibility with native fetch:
+  ```
+  const res = await app.afetch("https://localhost:8000")
+  if (!res.ok) console.log(res.status, res.err);
+  ```
 
 - `app.trace(...)`
 
