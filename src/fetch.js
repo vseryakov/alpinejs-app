@@ -35,6 +35,25 @@ function parseOptions(options)
     return [url, opts];
 }
 
+/**
+ * Fetch remote content, wrapper around Fetch API
+ *
+ * @param {string|object} options - can be full URL or an object with `url:`
+ * @param {string} [options.url] - URL to fetch
+ * @param {string} [options.method] - GET, POST,...GET is default (also can be specified as post: 1)
+ * @param {string|object|FormData} [options.body] - a body
+ * @param {string} [options.dataType] - explicit return type: text, blob, default is auto detected between text or json
+ * @param {object} [options.headers] - an object with additional headers to send
+ * @param {object} [options.options] - properties to pass to fetch options according to `RequestInit`
+ * @param {function} [callback] - callback as (err, data, info) where info is an object { status, headers, type }
+ *
+ * @example
+ * app.fetch("http://api.host.com/user/123", (err, data, info) => {
+ *    if (info.status == 200) console.log(data, info);
+ * });
+ * @memberof app
+ */
+
 app.fetch = function(options, callback)
 {
     try {
@@ -76,6 +95,20 @@ app.fetch = function(options, callback)
         app.call(callback, err);
     }
 }
+
+/**
+ * Promisified {@link app.fetch} which returns a Promise, all exceptions are passed to the reject handler, no need to use try..catch
+ * Return everything in an object `{ ok, status, err, data, info }`.
+ * @example
+ * const { err, data } = await app.afetch("https://localhost:8000")
+ *
+ * const { ok, err, status, data } = await app.afetch("https://localhost:8000")
+ * if (!ok) console.log(status, err);
+ *
+ * @param {string|object} options
+ * @memberof app
+ * @async
+ */
 
 app.afetch = function(options)
 {

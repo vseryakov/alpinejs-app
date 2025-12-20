@@ -3,6 +3,13 @@ import Component from './component';
 
 const _alpine = "alpine";
 
+/**
+ * Alpine.js component
+ * @param {string} name - component name
+ * @param {object} [params] - properties passed during creation
+ * @class
+ * @extends Component
+ */
 class AlpineComponent extends Component {
     static $type = _alpine;
 

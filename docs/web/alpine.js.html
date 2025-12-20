@@ -1,0 +1,300 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>alpine.js - Alpinejs-app Documentation</title>
+    
+    <meta name="description" content="A Simplest Single Page Application (SPA) library for Alpine.js." />
+    
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Tutorials</h3><ul><li><a href="tutorial-start.html">Getting Started</a><ul class='typedefs'></ul></li><li><a href="tutorial-components.html">Components</a><ul class='typedefs'></ul></li><li><a href="tutorial-directives.html">Directives</a><ul class='typedefs'></ul></li><li><a href="tutorial-magics.html">Magics</a><ul class='typedefs'></ul></li></ul><h3>Classes</h3><ul><li><a href="AlpineComponent.html">AlpineComponent</a><ul class='methods'><li data-type='method' style='display: none;'><a href="AlpineComponent.html#destroy">destroy</a></li><li data-type='method' style='display: none;'><a href="AlpineComponent.html#init">init</a></li></ul><ul class='typedefs'></ul></li><li><a href="Component.html">Component</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Component.html#destroy">destroy</a></li><li data-type='method' style='display: none;'><a href="Component.html#init">init</a></li></ul><ul class='typedefs'></ul></li></ul><h3>Namespaces</h3><ul><li><a href="app.html">app</a><ul class='methods'><li data-type='method' style='display: none;'><a href="app.html#.$">$</a></li><li data-type='method' style='display: none;'><a href="app.html#.$all">$all</a></li><li data-type='method' style='display: none;'><a href="app.html#.$append">$append</a></li><li data-type='method' style='display: none;'><a href="app.html#.$attr">$attr</a></li><li data-type='method' style='display: none;'><a href="app.html#.$data">$data</a></li><li data-type='method' style='display: none;'><a href="app.html#.$elem">$elem</a></li><li data-type='method' style='display: none;'><a href="app.html#.$empty">$empty</a></li><li data-type='method' style='display: none;'><a href="app.html#.$event">$event</a></li><li data-type='method' style='display: none;'><a href="app.html#.$off">$off</a></li><li data-type='method' style='display: none;'><a href="app.html#.$on">$on</a></li><li data-type='method' style='display: none;'><a href="app.html#.$param">$param</a></li><li data-type='method' style='display: none;'><a href="app.html#.$parse">$parse</a></li><li data-type='method' style='display: none;'><a href="app.html#.$ready">$ready</a></li><li data-type='method' style='display: none;'><a href="app.html#.afetch">afetch</a></li><li data-type='method' style='display: none;'><a href="app.html#.call">call</a></li><li data-type='method' style='display: none;'><a href="app.html#.emit">emit</a></li><li data-type='method' style='display: none;'><a href="app.html#.fetch">fetch</a></li><li data-type='method' style='display: none;'><a href="app.html#.isE">isE</a></li><li data-type='method' style='display: none;'><a href="app.html#.isF">isF</a></li><li data-type='method' style='display: none;'><a href="app.html#.isN">isN</a></li><li data-type='method' style='display: none;'><a href="app.html#.isO">isO</a></li><li data-type='method' style='display: none;'><a href="app.html#.isS">isS</a></li><li data-type='method' style='display: none;'><a href="app.html#.log">log</a></li><li data-type='method' style='display: none;'><a href="app.html#.noop">noop</a></li><li data-type='method' style='display: none;'><a href="app.html#.off">off</a></li><li data-type='method' style='display: none;'><a href="app.html#.on">on</a></li><li data-type='method' style='display: none;'><a href="app.html#.once">once</a></li><li data-type='method' style='display: none;'><a href="app.html#.only">only</a></li><li data-type='method' style='display: none;'><a href="app.html#.parsePath">parsePath</a></li><li data-type='method' style='display: none;'><a href="app.html#.plugin">plugin</a></li><li data-type='method' style='display: none;'><a href="app.html#.render">render</a></li><li data-type='method' style='display: none;'><a href="app.html#.resolve">resolve</a></li><li data-type='method' style='display: none;'><a href="app.html#.restorePath">restorePath</a></li><li data-type='method' style='display: none;'><a href="app.html#.savePath">savePath</a></li><li data-type='method' style='display: none;'><a href="app.html#.start">start</a></li><li data-type='method' style='display: none;'><a href="app.html#.toCamel">toCamel</a></li><li data-type='method' style='display: none;'><a href="app.html#.trace">trace</a></li></ul><ul class='typedefs'></ul></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">alpine.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { app, isElement, isObj, isString } from './app';
+import Component from './component';
+
+const _alpine = "alpine";
+
+/**
+ * Alpine.js component
+ * @param {string} name - component name
+ * @param {object} [params] - properties passed during creation
+ * @class
+ * @extends Component
+ */
+class AlpineComponent extends Component {
+    static $type = _alpine;
+
+    constructor(name, params) {
+        super(name, params);
+        this.$type = _alpine;
+    }
+
+    init() {
+        super.init(this.$root.parentElement._x_params);
+    }
+
+}
+
+class Element extends HTMLElement {
+
+    connectedCallback() {
+        queueMicrotask(() => {
+            render(this, this.localName.substr(4));
+        });
+    }
+}
+
+function render(element, options)
+{
+    if (isString(options)) {
+        options = app.resolve(options);
+        if (!options) return;
+    }
+
+    app.$empty(element);
+
+    element._x_params = Object.assign({}, options.params);
+    Alpine.onElRemoved(element, () => { delete element._x_params });
+
+    if (!options.component) {
+        Alpine.mutateDom(() => {
+            app.$append(element, options.template, Alpine.initTree);
+        });
+    } else {
+        // In case a component was loaded after alpine:init event
+        Alpine.data(options.name, () => (new options.component(options.name)));
+
+        const node = app.$elem("div", "x-data", options.name);
+        app.$append(node, options.template);
+
+        Alpine.mutateDom(() => {
+            element.appendChild(node);
+            Alpine.initTree(node);
+        });
+    }
+    return options;
+}
+
+function data(element, level)
+{
+    if (!isElement(element)) element = app.$(app.$target + " div");
+    if (!element) return;
+    if (typeof level == "number") return element._x_dataStack?.at(level);
+    return Alpine.closestDataStack(element)[0];
+}
+
+function init()
+{
+    for (const [name, obj] of Object.entries(app.components)) {
+        const tag = `app-${obj?.$tag || name}`;
+        if (obj?.$type != _alpine || customElements.get(tag)) continue;
+        customElements.define(tag, class extends Element {});
+        Alpine.data(name, () => (new obj(name)));
+    }
+}
+
+function $render(el, value, modifiers, callback)
+{
+    const cache = modifiers.includes("cache");
+    const opts = { url: value, post: modifiers.includes("post") };
+
+    if (!value.url &amp;&amp; !(!cache &amp;&amp; /^(https?:\/\/|\/|.+\.html(\?|$)).+/.test(value))) {
+        if (callback(el, value)) return;
+    }
+    app.fetch(opts, (err, text, info) => {
+        if (err || !isString(text)) {
+            return console.warn("$render: Text expected from", value, "got", err, text);
+        }
+        const tmpl = isString(value) ? app.parsePath(value) : value;
+        tmpl.template = text;
+        tmpl.name = tmpl.params?.$name || tmpl.name;
+        if (cache) {
+            app.templates[tmpl.name] = text;
+        }
+        callback(el, tmpl);
+    });
+}
+
+function $template(el, value, modifiers)
+{
+    const mods = {};
+
+    const toMods = (tmpl) => {
+        for (let i = 0; i &lt; modifiers.length; i++) {
+            const mod = modifiers[i];
+            switch (mod) {
+            case "params":
+                var scope = Alpine.$data(el);
+                if (!isObj(scope[modifiers[i + 1]])) break;
+                tmpl.params = Object.assign(scope[modifiers[i + 1]], tmpl.params);
+                break;
+            case "inline":
+                mods.inline = "inline-block";
+                break;
+            default:
+                mods[mod] = mod;
+            }
+        }
+        return tmpl;
+    }
+
+    $render(el, value, modifiers, (el, tmpl) => {
+        tmpl = app.resolve(tmpl);
+        if (!tmpl) return;
+
+        if (!render(el, toMods(tmpl))) return;
+
+        if (mods.show) {
+            if (mods.nonempty &amp;&amp; !el.firstChild) {
+                el.style.setProperty('display', "none", mods.important);
+            } else {
+                el.style.setProperty('display', mods.flex || mods.inline || "block", mods.important)
+            }
+        }
+        return true;
+    });
+
+}
+
+app.plugin(_alpine, { render, Component: AlpineComponent, data, init, default: 1 });
+
+app.$on(document, "alpine:init", () => {
+
+    app.emit("alpine:init");
+
+    Alpine.magic("app", (el) => app);
+
+    Alpine.magic("params", (el) => {
+        while (el) {
+            if (el._x_params) return el._x_params;
+            el = el.parentElement;
+        }
+    });
+
+    Alpine.magic("component", (el) => (Alpine.closestDataStack(el).find(x => x.$type == _alpine &amp;&amp; x.$name)));
+
+    Alpine.magic("parent", (el) => (Alpine.closestDataStack(el).filter(x => x.$type == _alpine &amp;&amp; x.$name)[1]));
+
+    Alpine.directive("render", (el, { modifiers, expression }, { evaluate, cleanup }) => {
+        const click = (e) => {
+            const value = evaluate(expression);
+            if (!value) return;
+            e.preventDefault();
+            if (modifiers.includes("stop")) {
+                e.stopPropagation();
+            }
+            $render(el, value, modifiers, (el, tmpl) => (app.render(tmpl)));
+        }
+        app.$on(el, "click", click)
+        el.style.cursor = "pointer";
+
+        cleanup(() => {
+            app.$off(el, 'click', click)
+        })
+    });
+
+    Alpine.directive('template', (el, { modifiers, expression }, { effect, cleanup }) => {
+        const evaluate = Alpine.evaluateLater(el, expression);
+        var template;
+
+        const empty = () => {
+            template = null;
+            Alpine.mutateDom(() => {
+                app.$empty(el, (node) => Alpine.destroyTree(node));
+
+                if (modifiers.includes("show")) {
+                    el.style.setProperty('display', "none", modifiers.includes('important') ? 'important' : undefined);
+                }
+            })
+        }
+
+        effect(() => evaluate(value => {
+            if (!value) return empty();
+
+            if (value !== template) {
+                $template(el, value, modifiers);
+            }
+            template = value;
+        }))
+
+        cleanup(empty);
+    });
+
+    Alpine.directive("scope-level", (el, { expression }, { evaluate }) => {
+        const scope = Alpine.closestDataStack(el);
+        el._x_dataStack = scope.slice(0, parseInt(evaluate(expression || "")) || 0);
+    });
+
+});
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a> using the <a href="https://github.com/vseryakov/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

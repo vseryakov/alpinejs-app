@@ -1,26 +1,59 @@
 import { app, isFunction, isString } from "./app"
 
+/**
+ * Empty function
+ */
 app.noop = () => {}
 
+/**
+ * Alias to console.log
+ */
 app.log = (...args) => console.log(...args)
 
+/**
+ * if __app.debug__ is set then it will log arguments in the console otherwise it is no-op
+ * @param {...any} args
+ */
 app.trace = (...args) => { app.debug && app.log(...args) }
 
-app.call = (obj, method, ...arg) => {
-    if (isFunction(obj)) return obj(method, ...arg);
+/**
+ * Call a function safely with context and arguments:
+ * @param {object|function} obj
+ * @param {string|function} [method]
+ * @param {any} [...args]
+ * @example
+ * app.call(func,..)
+ * app.call(obj, func, ...)
+ * app.call(obj, method, ...)
+ */
+app.call = (obj, method, ...args) => {
+    if (isFunction(obj)) return obj(method, ...args);
     if (typeof obj != "object") return;
-    if (isFunction(method)) return method.call(obj, ...arg);
-    if (obj && isFunction(obj[method])) return obj[method].call(obj, ...arg);
+    if (isFunction(method)) return method.call(obj, ...args);
+    if (obj && isFunction(obj[method])) return obj[method].call(obj, ...args);
 }
 
 var _events = {}
 
+/**
+ * Listen on event, the callback is called synchronously, optional namespace allows deleting callbacks later easier by not providing
+ * exact function by just namespace.
+ * @param {string} event
+ * @param {function} callback
+ * @param {string} [namespace]
+ */
 app.on = (event, callback, namespace) => {
     if (!isFunction(callback)) return;
     if (!_events[event]) _events[event] = [];
     _events[event].push([callback, isString(namespace)]);
 }
 
+/**
+ * Listen on event, the callback is called only once
+ * @param {string} event
+ * @param {function} callback
+ * @param {string} [namespace]
+ */
 app.once = (event, callback, namespace) => {
     if (!isFunction(callback)) return;
     const cb = (...args) => {
@@ -30,10 +63,29 @@ app.once = (event, callback, namespace) => {
     app.on(event, cb, namespace);
 }
 
+/**
+ * Remove all current listeners for the given event, if a callback is given make it the **only** listener.
+ * @param {string} event
+ * @param {function} callback
+ * @param {string} [namespace]
+ */
 app.only = (event, callback, namespace) => {
     _events[event] = isFunction(callback) ? [callback, isString(namespace)] : [];
 }
 
+/**
+ * Remove all event listeners for the event name and exact callback or namespace
+ * @param {string} event|namespace
+ * - event name if callback is not empty
+ * - namespace if no callback
+ * @param {function|string} [callback]
+ * - function - exact callback to remove for the event
+ * - string - namespace for the event
+ * @example
+ * app.on("component:*", (ev) => { ... }, "myapp")
+ * ...
+ * app.off("myapp")
+ */
 app.off = (event, callback) => {
     if (event && callback) {
         if (!_events[event]) return;
@@ -47,6 +99,15 @@ app.off = (event, callback) => {
     }
 }
 
+/**
+ * Send an event to all listeners at once, one by one.
+ *
+ * If the event ends with **_:*_** it means notify all listeners that match the beginning of the given pattern, for example:
+ * @param {string} event
+ * @param {...any} args
+ * @example <caption>notify topic:event1, topic:event2, ...</caption>
+ * app.emit("topic:*",....)
+ */
 app.emit = (event, ...args) => {
     app.trace("emit:", event, ...args, app.debug > 1 && _events[event]);
     if (_events[event]) {

@@ -1,5 +1,24 @@
 import { app, isObj, isString } from "./app"
 
+
+ /**
+  * Parses component path and returns an object with at least **{ name, params }** ready for rendering. External urls are ignored.
+  *
+  * Passing an object will retun a shallow copy of it with name and params properties possibly set if not provided.
+  *
+  * The path can be:
+  * - component name
+  * - relative path: name/param1/param2/param3/....
+  * - absolute path: /app/name/param1/param2/...
+  * - URL: https://host/app/name/param1/...
+  *
+  *  All parts from the path and query parameters will be placed in the **params** object.
+  *
+  * The **.html** extention will be stripped to support extrernal loading but other exts will be kept as is.
+  *
+  * @param {string|object} path
+  * @returns {Object} in format { name, params }
+  */
 app.parsePath = (path) => {
     var rc = { name: "", params: {} }, query, loc = window.location;
 
@@ -40,6 +59,14 @@ app.parsePath = (path) => {
     return rc;
 }
 
+/**
+ * Saves the given component in the history as ** /name/param1/param2/param3/.. **
+ *
+ * It is called on every **component:create** event for main components as a microtask,
+ * meaning immediate callbacks have a chance to modify the behaviour.
+ * @param {Object} options
+ *
+ */
 app.savePath = (options) => {
     if (isString(options)) options = { name: options };
     if (!options?.name) return;
@@ -55,11 +82,26 @@ app.savePath = (options) => {
     window.history.pushState(null, "", window.location.origin + app.base + path);
 }
 
+/**
+ * Show a component by path, it is called on **path:restore** event by default from {@link app.start} and is used
+ * to show first component on initial page load. If the path is not recognized or no component is
+ * found then the default {@link app.index} component is shown.
+ * @param {string} path
+ */
 app.restorePath = (path) => {
     app.trace("restorePath:", path, app.index);
     app.render(path, app.index);
 }
 
+/**
+ * Setup default handlers:
+ * - on **path:restore** event call {@link app.restorePath} to render a component from the history
+ * - on **path:save** call {@link app.savePath} to save the current component in the history
+ * - on page ready call {@link app.restorePath} to render the initial page
+ *
+ * **If not called then no browser history will not be handled, up to the app to do it some other way.**. One good
+ * reason is to create your own handlers to build different path and then save/restore.
+ */
 app.start = () => {
     app.on("path:save", app.savePath);
     app.on("path:restore", app.restorePath);

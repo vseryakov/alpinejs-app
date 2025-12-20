@@ -1,5 +1,5 @@
 {
-  "version": "1.4.3",
+  "version": "1.4.4",
   "name": "alpinejs-app",
   "description": "Simple SPA plugin for Alpinejs",
   "repository": {
@@ -19,12 +19,14 @@
   ],
   "scripts": {
     "demo": "sh scripts/demo.sh",
-    "build": "node scripts/build.js",
+    "build": "node scripts/build.js && npm run docs",
     "devbuild": "node scripts/build.js",
-    "watch": "cd examples && npm run watch"
+    "watch": "cd examples && npm run watch",
+    "docs": "rm -rf docs/web && jsdoc -c docs/jsdoc.js"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.27.0",
+    "docdash": "github:vseryakov/docdash"
   },
   "eslintConfig": {
     "root": true,

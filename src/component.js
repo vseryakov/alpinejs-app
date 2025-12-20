@@ -1,5 +1,12 @@
-import { app, isString, isElement, toCamel } from './app';
 
+import { app, isString, toCamel } from './app';
+
+/**
+ * Base class for components
+ * @param {string} name - component name
+ * @param {object} [params] - properties passed during creation
+ * @class
+ */
 class Component {
     params = {};
 
@@ -11,6 +18,11 @@ class Component {
         this._onDelete = this.onDelete || null;
     }
 
+    /**
+     * Called immediately after creation, after event handler setup it calls the class
+     * method __onCreate__ to let custom class perform its own initialization
+     * @param {object} params - properties passed
+     */
     init(params) {
         app.trace("init:", this.$type, this.$name);
         Object.assign(this.params, params);
@@ -21,6 +33,9 @@ class Component {
         app.call(this._onCreate?.bind(this, this.params));
     }
 
+    /**
+     * Called when a component is about to be destroyed, calls __onDelete__ class method for custom cleanup
+     */
     destroy() {
         app.trace("destroy:", this.$type, this.$name);
         app.off(app.event, this._handleEvent);
@@ -31,6 +46,8 @@ class Component {
     }
 
 }
+
+/* eslint-disable no-invalid-this */
 
 function handleEvent(event, ...args)
 {

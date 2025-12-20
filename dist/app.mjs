@@ -1,10 +1,35 @@
 // src/app.js
 var app = {
+  /**
+   * @var {string} - Defines the root path for the application, must be framed with slashes.
+   * @default
+   */
   base: "/app/",
+  /**
+   * @var {object} - Central app HTML element for rendering main components.
+   * @default
+   */
   $target: "#app-main",
+  /**
+   * @var {string} - Specifies a fallback component for unrecognized paths on initial load, it is used by {@link app.restorePath}.
+   * @default
+   */
   index: "index",
+  /**
+   * @var {string} - Event name components listen
+   * @default
+   */
   event: "component:event",
+  /**
+   * @var {object} - HTML templates, this is the central registry of HTML templates to be rendered on demand,
+   * this is an alternative to using **&lt;template&gt;** tags which are kept in the DOM all the time even if not used.
+   * This object can be populated in the bundle or loaded later as JSON, this all depends on the application environment.
+   */
   templates: {},
+  /**
+   * @var {string} - Component classes, this is the registry of all components logic to be used with corresponding templates.
+   * Only classed derived from **app.AlpineComponent** will be used, internally they are registered with **Alpine.data()** to be reused by name.
+   */
   components: {},
   isF: isFunction,
   isS: isString,
@@ -28,8 +53,8 @@ function isObj(obj) {
 function isElement(element) {
   return element instanceof HTMLElement && element;
 }
-function toCamel(key) {
-  return isString(key) ? key.toLowerCase().replace(/[.:_-](\w)/g, (_, c) => c.toUpperCase()) : "";
+function toCamel(str) {
+  return isString(str) ? str.toLowerCase().replace(/[.:_-](\w)/g, (_, c) => c.toUpperCase()) : "";
 }
 
 // src/util.js
@@ -39,11 +64,11 @@ app.log = (...args) => console.log(...args);
 app.trace = (...args) => {
   app.debug && app.log(...args);
 };
-app.call = (obj, method, ...arg) => {
-  if (isFunction(obj)) return obj(method, ...arg);
+app.call = (obj, method, ...args) => {
+  if (isFunction(obj)) return obj(method, ...args);
   if (typeof obj != "object") return;
-  if (isFunction(method)) return method.call(obj, ...arg);
-  if (obj && isFunction(obj[method])) return obj[method].call(obj, ...arg);
+  if (isFunction(method)) return method.call(obj, ...args);
+  if (obj && isFunction(obj[method])) return obj[method].call(obj, ...args);
 };
 var _events = {};
 app.on = (event, callback, namespace) => {
@@ -110,14 +135,14 @@ app.$empty = (element, cleanup) => {
   }
   return element;
 };
-app.$elem = (name, ...arg) => {
+app.$elem = (name, ...args) => {
   var element = document.createElement(name), key, val, opts;
-  if (isObj(arg[0])) {
-    arg = Object.entries(arg[0]).flatMap((x) => x);
-    opts = arg[1];
+  if (isObj(args[0])) {
+    args = Object.entries(args[0]).flatMap((x) => x);
+    opts = args[1];
   }
-  for (let i = 0; i < arg.length - 1; i += 2) {
-    key = arg[i], val = arg[i + 1];
+  for (let i = 0; i < args.length - 1; i += 2) {
+    key = args[i], val = args[i + 1];
     if (!isString(key)) continue;
     if (isFunction(val)) {
       app.$on(element, key, val, { capture: opts?.capture, passive: opts?.passive, once: opts?.once, signal: opts?.signal });
@@ -324,6 +349,11 @@ var Component = class {
     this._onCreate = this.onCreate || null;
     this._onDelete = this.onDelete || null;
   }
+  /**
+   * Called immediately after creation, after event handler setup it calls the class
+   * method __onCreate__ to let custom class perform its own initialization
+   * @param {object} params - properties passed
+   */
   init(params) {
     app.trace("init:", this.$type, this.$name);
     Object.assign(this.params, params);
@@ -333,6 +363,9 @@ var Component = class {
     }
     app.call(this._onCreate?.bind(this, this.params));
   }
+  /**
+   * Called when a component is about to be destroyed, calls __onDelete__ class method for custom cleanup
+   */
   destroy() {
     app.trace("destroy:", this.$type, this.$name);
     app.off(app.event, this._handleEvent);

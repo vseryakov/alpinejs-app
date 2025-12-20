@@ -1,0 +1,194 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>router.js - Alpinejs-app Documentation</title>
+    
+    <meta name="description" content="A Simplest Single Page Application (SPA) library for Alpine.js." />
+    
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Tutorials</h3><ul><li><a href="tutorial-start.html">Getting Started</a><ul class='typedefs'></ul></li><li><a href="tutorial-components.html">Components</a><ul class='typedefs'></ul></li><li><a href="tutorial-directives.html">Directives</a><ul class='typedefs'></ul></li><li><a href="tutorial-magics.html">Magics</a><ul class='typedefs'></ul></li></ul><h3>Classes</h3><ul><li><a href="AlpineComponent.html">AlpineComponent</a><ul class='methods'><li data-type='method' style='display: none;'><a href="AlpineComponent.html#destroy">destroy</a></li><li data-type='method' style='display: none;'><a href="AlpineComponent.html#init">init</a></li></ul><ul class='typedefs'></ul></li><li><a href="Component.html">Component</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Component.html#destroy">destroy</a></li><li data-type='method' style='display: none;'><a href="Component.html#init">init</a></li></ul><ul class='typedefs'></ul></li></ul><h3>Namespaces</h3><ul><li><a href="app.html">app</a><ul class='methods'><li data-type='method' style='display: none;'><a href="app.html#.$">$</a></li><li data-type='method' style='display: none;'><a href="app.html#.$all">$all</a></li><li data-type='method' style='display: none;'><a href="app.html#.$append">$append</a></li><li data-type='method' style='display: none;'><a href="app.html#.$attr">$attr</a></li><li data-type='method' style='display: none;'><a href="app.html#.$data">$data</a></li><li data-type='method' style='display: none;'><a href="app.html#.$elem">$elem</a></li><li data-type='method' style='display: none;'><a href="app.html#.$empty">$empty</a></li><li data-type='method' style='display: none;'><a href="app.html#.$event">$event</a></li><li data-type='method' style='display: none;'><a href="app.html#.$off">$off</a></li><li data-type='method' style='display: none;'><a href="app.html#.$on">$on</a></li><li data-type='method' style='display: none;'><a href="app.html#.$param">$param</a></li><li data-type='method' style='display: none;'><a href="app.html#.$parse">$parse</a></li><li data-type='method' style='display: none;'><a href="app.html#.$ready">$ready</a></li><li data-type='method' style='display: none;'><a href="app.html#.afetch">afetch</a></li><li data-type='method' style='display: none;'><a href="app.html#.call">call</a></li><li data-type='method' style='display: none;'><a href="app.html#.emit">emit</a></li><li data-type='method' style='display: none;'><a href="app.html#.fetch">fetch</a></li><li data-type='method' style='display: none;'><a href="app.html#.isE">isE</a></li><li data-type='method' style='display: none;'><a href="app.html#.isF">isF</a></li><li data-type='method' style='display: none;'><a href="app.html#.isN">isN</a></li><li data-type='method' style='display: none;'><a href="app.html#.isO">isO</a></li><li data-type='method' style='display: none;'><a href="app.html#.isS">isS</a></li><li data-type='method' style='display: none;'><a href="app.html#.log">log</a></li><li data-type='method' style='display: none;'><a href="app.html#.noop">noop</a></li><li data-type='method' style='display: none;'><a href="app.html#.off">off</a></li><li data-type='method' style='display: none;'><a href="app.html#.on">on</a></li><li data-type='method' style='display: none;'><a href="app.html#.once">once</a></li><li data-type='method' style='display: none;'><a href="app.html#.only">only</a></li><li data-type='method' style='display: none;'><a href="app.html#.parsePath">parsePath</a></li><li data-type='method' style='display: none;'><a href="app.html#.plugin">plugin</a></li><li data-type='method' style='display: none;'><a href="app.html#.render">render</a></li><li data-type='method' style='display: none;'><a href="app.html#.resolve">resolve</a></li><li data-type='method' style='display: none;'><a href="app.html#.restorePath">restorePath</a></li><li data-type='method' style='display: none;'><a href="app.html#.savePath">savePath</a></li><li data-type='method' style='display: none;'><a href="app.html#.start">start</a></li><li data-type='method' style='display: none;'><a href="app.html#.toCamel">toCamel</a></li><li data-type='method' style='display: none;'><a href="app.html#.trace">trace</a></li></ul><ul class='typedefs'></ul></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">router.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { app, isObj, isString } from "./app"
+
+
+ /**
+  * Parses component path and returns an object with at least **{ name, params }** ready for rendering. External urls are ignored.
+  *
+  * Passing an object will retun a shallow copy of it with name and params properties possibly set if not provided.
+  *
+  * The path can be:
+  * - component name
+  * - relative path: name/param1/param2/param3/....
+  * - absolute path: /app/name/param1/param2/...
+  * - URL: https://host/app/name/param1/...
+  *
+  *  All parts from the path and query parameters will be placed in the **params** object.
+  *
+  * The **.html** extention will be stripped to support extrernal loading but other exts will be kept as is.
+  *
+  * @param {string|object} path
+  * @returns {Object} in format { name, params }
+  */
+app.parsePath = (path) => {
+    var rc = { name: "", params: {} }, query, loc = window.location;
+
+    if (isObj(path)) return Object.assign(rc, path);
+    if (!isString(path)) return rc;
+
+    // Custom parser b/c this is not always url
+    var base = app.base;
+    if (path.startsWith(loc.origin)) path = path.substr(loc.origin.length);
+    if (path.includes("://")) path = path.replace(/^(.*:\/\/[^/]*)/, "");
+    if (path.startsWith(base)) path = path.substr(base.length);
+    if (path.startsWith("/")) path = path.substr(1);
+    if (path == base.slice(1, -1)) path = "";
+
+    const q = path.indexOf("?");
+    if (q > 0) {
+        query = path.substr(q + 1, 1024);
+        rc.name = path = path.substr(0, q);
+    }
+    if (path.endsWith(".html")) {
+        path = path.slice(0, -5);
+    }
+    if (path.includes("/")) {
+        path = path.split("/").slice(0, 7);
+        rc.name = path.shift();
+        for (let i = 0; i &lt; path.length; i++) {
+            if (!path[i]) continue;
+            rc.params[`param${i + 1}`] = path[i];
+        }
+    } else {
+        rc.name = path || "";
+    }
+    if (query) {
+        for (const [key, value] of new URLSearchParams(query).entries()) {
+            rc.params[key] = value;
+        }
+    }
+    return rc;
+}
+
+/**
+ * Saves the given component in the history as ** /name/param1/param2/param3/.. **
+ *
+ * It is called on every **component:create** event for main components as a microtask,
+ * meaning immediate callbacks have a chance to modify the behaviour.
+ * @param {Object} options
+ *
+ */
+app.savePath = (options) => {
+    if (isString(options)) options = { name: options };
+    if (!options?.name) return;
+    var path = [options.name];
+    if (options?.params) {
+        for (let i = 1; i &lt; 7; i++) path.push(options.params[`param${i}`] || "");
+    }
+    while (!path.at(-1)) path.length--;
+    path = path.join("/");
+    app.trace("savePath:", path, options);
+    if (!path) return;
+    app.emit("path:push", window.location.origin + app.base + path);
+    window.history.pushState(null, "", window.location.origin + app.base + path);
+}
+
+/**
+ * Show a component by path, it is called on **path:restore** event by default from {@link app.start} and is used
+ * to show first component on initial page load. If the path is not recognized or no component is
+ * found then the default {@link app.index} component is shown.
+ * @param {string} path
+ */
+app.restorePath = (path) => {
+    app.trace("restorePath:", path, app.index);
+    app.render(path, app.index);
+}
+
+/**
+ * Setup default handlers:
+ * - on **path:restore** event call {@link app.restorePath} to render a component from the history
+ * - on **path:save** call {@link app.savePath} to save the current component in the history
+ * - on page ready call {@link app.restorePath} to render the initial page
+ *
+ * **If not called then no browser history will not be handled, up to the app to do it some other way.**. One good
+ * reason is to create your own handlers to build different path and then save/restore.
+ */
+app.start = () => {
+    app.on("path:save", app.savePath);
+    app.on("path:restore", app.restorePath);
+    app.$ready(app.restorePath.bind(app, window.location.href));
+}
+
+app.$on(window, "popstate", () => app.emit("path:restore", window.location.href));
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a> using the <a href="https://github.com/vseryakov/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>
