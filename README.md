@@ -42,7 +42,7 @@
 
 ## Getting started
 
-Visit the tutorial {@tutorial start}.
+Visit the [tutorial](https://vseryakov.github.io/alpinejs-app/docs/web/tutorial-start.html).
 
 ## Full documentation
 
