@@ -9,6 +9,23 @@ const _alpine = "alpine";
  * @param {object} [params] - properties passed during creation
  * @class
  * @extends Component
+ * @example <caption>Component code</caption>
+ * app.components.items = class extends app.AlpineComponent {
+ *   items = []
+ *
+ *   onCreate() {
+ *       app.fetch("host/items", (err, items) => {
+ *           this.items = items;
+ *       })
+ *   }
+ *}
+ * @example <caption>Component template</caption>
+ * <div x-show="!list.length">
+ *   Your basket is empty
+ * </div>
+ * <template x-for="item in items">
+ *   ID: <div x-text="item.id"></div>
+ * </template>
  */
 class AlpineComponent extends Component {
     static $type = _alpine;

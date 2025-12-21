@@ -11,13 +11,15 @@
     
     
     
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
     <link type="text/css" rel="stylesheet" href="styles/prettify.css">
     <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
     <script src="scripts/nav.js" defer></script>
+
     
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
@@ -60,6 +62,23 @@ const _alpine = "alpine";
  * @param {object} [params] - properties passed during creation
  * @class
  * @extends Component
+ * @example &lt;caption>Component code&lt;/caption>
+ * app.components.items = class extends app.AlpineComponent {
+ *   items = []
+ *
+ *   onCreate() {
+ *       app.fetch("host/items", (err, items) => {
+ *           this.items = items;
+ *       })
+ *   }
+ *}
+ * @example &lt;caption>Component template&lt;/caption>
+ * &lt;div x-show="!list.length">
+ *   Your basket is empty
+ * &lt;/div>
+ * &lt;template x-for="item in items">
+ *   ID: &lt;div x-text="item.id">&lt;/div>
+ * &lt;/template>
  */
 class AlpineComponent extends Component {
     static $type = _alpine;

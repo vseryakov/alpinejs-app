@@ -9,13 +9,15 @@
     
     
     
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
     <link type="text/css" rel="stylesheet" href="styles/prettify.css">
     <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
     <script src="scripts/nav.js" defer></script>
+
     
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
@@ -85,7 +87,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="alpine.js.html">alpine.js</a>, <a href="alpine.js.html#line13">line 13</a>
+        <a href="alpine.js.html">alpine.js</a>, <a href="alpine.js.html#line30">line 30</a>
     </li></ul></dd>
     
 
@@ -240,6 +242,30 @@
 
 
 
+
+
+    <h5 class="h5-examples">Examples</h5>
+    
+        <p class="code-caption">Component code</p>
+    
+    <pre class="prettyprint"><code>app.components.items = class extends app.AlpineComponent {
+  items = []
+
+  onCreate() {
+      app.fetch("host/items", (err, items) => {
+          this.items = items;
+      })
+  }
+}</code></pre>
+
+        <p class="code-caption">Component template</p>
+    
+    <pre class="prettyprint"><code>&lt;div x-show="!list.length">
+  Your basket is empty
+&lt;/div>
+&lt;template x-for="item in items">
+  ID: &lt;div x-text="item.id">&lt;/div>
+&lt;/template></code></pre>
 
 
 
