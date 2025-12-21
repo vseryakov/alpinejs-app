@@ -3,14 +3,18 @@
   "name": "alpinejs-app",
   "description": "Simple SPA plugin for Alpinejs",
   "repository": {
-        "type": "git",
-        "url": "https://github.com/vseryakov/alpinejs-app.git"
+    "type": "git",
+    "url": "git+https://github.com/vseryakov/alpinejs-app.git"
   },
   "author": "Vlad Seryakov",
   "license": "MIT",
-  "keywords": [ "Alpine JS", "Alpine JS SPA", "esbuild-jsdoc" ],
+  "keywords": [
+    "Alpine JS",
+    "Alpine JS SPA",
+    "esbuild-jsdoc"
+  ],
   "module": "dist/app.mjs",
-  "unpkg": "dist/app.min.js",  
+  "unpkg": "dist/app.min.js",
   "files": [
     "dist/",
     "src/",
@@ -31,8 +35,8 @@
   "eslintConfig": {
     "root": true,
     "parserOptions": {
-        "ecmaVersion": 2022,
-        "sourceType": "module"
+      "ecmaVersion": 2022,
+      "sourceType": "module"
     }
   }
 }
