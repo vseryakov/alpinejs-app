@@ -8,7 +8,7 @@
   },
   "author": "Vlad Seryakov",
   "license": "MIT",
-  "keywords": [ "Alpine JS", "Alpine JS SPA" ],
+  "keywords": [ "Alpine JS", "Alpine JS SPA", "esbuild-jsdoc" ],
   "module": "dist/app.mjs",
   "unpkg": "dist/app.min.js",  
   "files": [

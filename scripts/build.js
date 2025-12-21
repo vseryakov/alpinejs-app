@@ -1,10 +1,15 @@
+
 const esbuild = require("esbuild");
+const jsdoc = require(__dirname + "/esbuild-jsdoc");
 
 esbuild.build({
     entryPoints: ['builds/cdn.js'],
     outfile: 'dist/app.js',
     platform: 'browser',
     bundle: true,
+    metafile: true,
+    legalComments: 'inline',
+    plugins: [jsdoc],
 }).catch(() => process.exit(1))
 
 esbuild.build({
@@ -13,6 +18,7 @@ esbuild.build({
     platform: 'browser',
     minify: true,
     bundle: true,
+    legalComments: 'none',
 }).catch(() => process.exit(1))
 
 esbuild.build({
@@ -20,6 +26,9 @@ esbuild.build({
     outfile: 'dist/app.mjs',
     platform: 'neutral',
     bundle: true,
+    metafile: true,
+    legalComments: 'inline',
+    plugins: [jsdoc],
 }).catch(() => process.exit(1))
 
 esbuild.build({
@@ -28,4 +37,5 @@ esbuild.build({
     platform: 'neutral',
     minify: true,
     bundle: true,
+    legalComments: 'none',
 }).catch(() => process.exit(1))

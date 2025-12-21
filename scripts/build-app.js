@@ -2,7 +2,7 @@ const path = require("path");
 const http = require("http");
 const url = require("url");
 const esbuild = require("esbuild");
-const plugin = require(__dirname + "/esbuild-plugin");
+const plugin = require(__dirname + "/esbuild-app");
 
 const opts = {
     entryPoints: ['index.js'],
