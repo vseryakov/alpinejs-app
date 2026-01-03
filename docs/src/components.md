@@ -73,6 +73,8 @@ There are predefined system events:
 
  - **alpine:init** - is sent on document alpine:init event from Alpine. Initializes custom elements at the moment, in case some components were loaded after
     app and Alpine loaded it is necessary to emit it again via **app.emit('alpine:init')**
+ - **dom:changed** - fired on start and on every resize or color scheme change, the event is an object: **{ breakPoint, colorScheme }** where
+   breakPoint is one of **xs, sm, md, lg, xl, xxl** and  colorScheme is one of **dark, light**
  - **path:restore** - is sent by the window **popstate** event from **app.start**
  - **path:save** - is sent by **app.render** for main components only
  - **path:push** - is sent just before calling **history.pushState** with the path to be pushed

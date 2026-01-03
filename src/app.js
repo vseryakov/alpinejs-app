@@ -42,14 +42,60 @@ export var app = {
      */
     components: {},
 
+    /**
+     * global defaults for the {@link app.fetch} will be used if not passed
+     * @var {object} app.fetchOptions
+     */
+
     isF: isFunction,
     isS: isString,
     isE: isElement,
     isO: isObj,
     isN: isNumber,
+    isA: isArray,
+
     toCamel,
+    call,
+    escape,
+    noop,
+    __,
+
+
+    /**
+     * Alias to console.log
+     */
+    log: (...args) => console.log(...args),
+
+    /**
+     * if __app.debug__ is set then it will log arguments in the console otherwise it is no-op
+     * @param {...any} args
+     */
+    trace: (...args) => { app.debug && app.log(...args) },
+
 };
 
+/**
+ * Empty function
+ */
+export function noop() {}
+
+/**
+ * Empty locale translator
+ * @param {...any} args
+ * @returns {string}
+ * @func __
+ * @memberof app
+ */
+export function __(...args) { return args.join("") };
+
+/**
+ * Returns the array if the value is non empty array or dflt value if given or undefined
+ * @param {any} val
+ * @returns {any|any[]}
+ * @func isA
+ * @memberof app
+ */
+export function isArray(val, dflt) { return Array.isArray(val) && val.length ? val : dflt }
 
 /**
  * Returns the num itself if it is a number
@@ -104,4 +150,39 @@ export function isElement(element) { return element instanceof HTMLElement && el
  * @func toCamel
  * @memberof app
  */
-export function toCamel(str) { return isString(str) ? str.toLowerCase().replace(/[.:_-](\w)/g, (_, c) => c.toUpperCase()) : "" }
+export function toCamel(str)
+{
+    return isString(str) ? str.toLowerCase().replace(/[.:_-](\w)/g, (_, c) => c.toUpperCase()) : ""
+}
+
+
+/**
+ * Call a function safely with context and arguments:
+ * @param {object|function} obj
+ * @param {string|function} [method]
+ * @param {any} [...args]
+ * @example
+ * app.call(func,..)
+ * app.call(obj, func, ...)
+ * app.call(obj, method, ...)
+ */
+export function call(obj, method, ...args)
+{
+    if (isFunction(obj)) return obj(method, ...args);
+    if (typeof obj != "object") return;
+    if (isFunction(method)) return method.call(obj, ...args);
+    if (obj && isFunction(obj[method])) return obj[method].call(obj, ...args);
+}
+
+const _entities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' };
+
+/**
+ * Convert common special symbols into xml entities
+ * @param {string} str
+ * @returns {string}
+ */
+export function escape(str)
+{
+    if (typeof str != "string") return "";
+    return str.replace(/([&<>'":])/g, (_, x) => (_entities[x] || x));
+}

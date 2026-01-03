@@ -1,15 +1,27 @@
-import { app, isObj, isString } from "./app"
+import { app, isFunction, isObj, isString } from "./app"
 
-function parseOptions(options)
+const fetchOptions = app.fetchOptions = {
+    method: "GET",
+    cache: "default",
+    headers: {},
+};
+
+function parseOptions(url, options)
 {
-    var url = isString(options) ? options : options?.url || "";
-    var headers = options?.headers || {};
-    var opts = Object.assign({
-        headers: headers,
-        method: options?.method || options?.post && "POST" || "GET",
-        cache: "default",
-    }, options?.options);
+    const headers = options?.headers || {};
+    const opts = Object.assign({
+        headers,
+        method: options?.method || options?.post && "POST" || undefined,
+    }, options?.request);
 
+    for (const p in fetchOptions.headers) {
+        headers[p] ??= fetchOptions.headers[p];
+    }
+    for (const p of ["method","cache","credentials","duplex","integrity","keepalive","mode","priority","redirect","referrer","referrerPolicy","signal"]) {
+        if (fetchOptions[p] !== undefined) {
+            opts[p] ??= fetchOptions[p];
+        }
+    }
     var body = options?.body;
     if (opts.method == "GET" || opts.method == "HEAD") {
         if (isObj(body)) {
@@ -35,16 +47,37 @@ function parseOptions(options)
     return [url, opts];
 }
 
+
+function parseResponse(res)
+{
+    const info = { status: res.status, headers: {}, type: res.type, url: res.url, redirected: res.redirected };
+    for (const h of res.headers) {
+        info.headers[h[0].toLowerCase()] = h[1];
+    }
+    const h_csrf = fetchOptions.csrfHeader || "x-csrf-token";
+    const v_csrf = info?.headers[h_csrf];
+    if (v_csrf) {
+        if (v_csrf <= 0) {
+            delete fetchOptions.headers[h_csrf];
+        } else {
+            fetchOptions.headers[h_csrf] = v_csrf;
+        }
+    }
+    return info;
+}
+
 /**
  * Fetch remote content, wrapper around Fetch API
  *
- * @param {string|object} options - can be full URL or an object with `url:`
- * @param {string} [options.url] - URL to fetch
- * @param {string} [options.method] - GET, POST,...GET is default (also can be specified as post: 1)
- * @param {string|object|FormData} [options.body] - a body
+ * __NOTE: Saves X-CSRF-Token header and sends it back with subsequent requests__
+ * @param {string} url - URL to fetch
+ * @param {object} [options]
+ * @param {string} [options.method] - GET, POST,...GET is default or from app.fetchOptions.method
+ * @param {boolean} [options.post] - set method to POST
+ * @param {string|object|FormData} [options.body] - a body accepted by window.fetch
  * @param {string} [options.dataType] - explicit return type: text, blob, default is auto detected between text or json
- * @param {object} [options.headers] - an object with additional headers to send
- * @param {object} [options.options] - properties to pass to fetch options according to `RequestInit`
+ * @param {object} [options.headers] - an object with additional headers to send, all global headers from app.fetchOptions.headers also are merged
+ * @param {object} [options.request] - properties to pass to fetch options according to Web API `RequestInit`
  * @param {function} [callback] - callback as (err, data, info) where info is an object { status, headers, type }
  *
  * @example
@@ -54,19 +87,17 @@ function parseOptions(options)
  * @memberof app
  */
 
-app.fetch = function(options, callback)
+app.fetch = function(url, options, callback)
 {
-    try {
-        const [url, opts] = parseOptions(options);
-        app.trace("fetch:", url, opts, options);
+    if (isFunction(options)) callback = options, options = null;
 
-        window.fetch(url, opts).
+    try {
+        const [uri, opts] = parseOptions(url, options);
+        app.trace("fetch:", uri, opts, options);
+
+        window.fetch(uri, opts).
         then(async (res) => {
-            var err, data;
-            var info = { status: res.status, headers: {}, type: res.type, url: res.url, redirected: res.redirected };
-            for (const h of res.headers) {
-                info.headers[h[0].toLowerCase()] = h[1];
-            }
+            var err, data, info = parseResponse(res);
             if (!res.ok) {
                 if (/\/json/.test(info.headers["content-type"])) {
                     const d = await res.json();
@@ -104,16 +135,16 @@ app.fetch = function(options, callback)
  *
  * const { ok, err, status, data } = await app.afetch("https://localhost:8000")
  * if (!ok) console.log(status, err);
- *
- * @param {string|object} options
+ * @param {string} url
+ * @param {object} [options]
  * @memberof app
  * @async
  */
 
-app.afetch = function(options)
+app.afetch = function(url, options)
 {
     return new Promise((resolve, reject) => {
-        app.fetch(options, (err, data, info) => {
+        app.fetch(url, options, (err, data, info) => {
             resolve({ ok: !err, status: info.status, err, data, info });
         });
     });

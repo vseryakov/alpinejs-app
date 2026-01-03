@@ -5,7 +5,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>app.js - Alpinejs-app Documentation</title>
+    <title>events.js - Alpinejs-app Documentation</title>
     
     <meta name="description" content="A Simplest Single Page Application (SPA) library for Alpine.js." />
     
@@ -41,7 +41,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">app.js</h1>
+    <h1 class="page-title">events.js</h1>
     
 
     
@@ -51,194 +51,98 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * Global application object
- * @namespace
- */
+            <pre class="prettyprint source linenums"><code>import { app, isFunction, isString } from "./app"
 
-export var app = {
-
-    /**
-     * @var {string} - Defines the root path for the application, must be framed with slashes.
-     * @default
-     */
-    base: "/app/",
-
-    /**
-     * @var {object} - Central app HTML element for rendering main components.
-     * @default
-     */
-    $target: "#app-main",
-
-    /**
-     * @var {string} - Specifies a fallback component for unrecognized paths on initial load, it is used by {@link app.restorePath}.
-     * @default
-     */
-    index: "index",
-
-    /**
-     * @var {string} - Event name components listen
-     * @default
-     */
-    event: "component:event",
-
-    /**
-     * @var {object} - HTML templates, this is the central registry of HTML templates to be rendered on demand,
-     * this is an alternative to using **&amp;lt;template&amp;gt;** tags which are kept in the DOM all the time even if not used.
-     * This object can be populated in the bundle or loaded later as JSON, this all depends on the application environment.
-     */
-    templates: {},
-
-    /**
-     * @var {string} - Component classes, this is the registry of all components logic to be used with corresponding templates.
-     * Only classed derived from **app.AlpineComponent** will be used, internally they are registered with **Alpine.data()** to be reused by name.
-     */
-    components: {},
-
-    /**
-     * global defaults for the {@link app.fetch} will be used if not passed
-     * @var {object} app.fetchOptions
-     */
-
-    isF: isFunction,
-    isS: isString,
-    isE: isElement,
-    isO: isObj,
-    isN: isNumber,
-    isA: isArray,
-
-    toCamel,
-    call,
-    escape,
-    noop,
-    __,
-
-
-    /**
-     * Alias to console.log
-     */
-    log: (...args) => console.log(...args),
-
-    /**
-     * if __app.debug__ is set then it will log arguments in the console otherwise it is no-op
-     * @param {...any} args
-     */
-    trace: (...args) => { app.debug &amp;&amp; app.log(...args) },
-
-};
+var _events = {}
 
 /**
- * Empty function
+ * Listen on event, the callback is called synchronously, optional namespace allows deleting callbacks later easier by not providing
+ * exact function by just namespace.
+ * @param {string} event
+ * @param {function} callback
+ * @param {string} [namespace]
  */
-export function noop() {}
-
-/**
- * Empty locale translator
- * @param {...any} args
- * @returns {string}
- * @func __
- * @memberof app
- */
-export function __(...args) { return args.join("") };
-
-/**
- * Returns the array if the value is non empty array or dflt value if given or undefined
- * @param {any} val
- * @returns {any|any[]}
- * @func isA
- * @memberof app
- */
-export function isArray(val, dflt) { return Array.isArray(val) &amp;&amp; val.length ? val : dflt }
-
-/**
- * Returns the num itself if it is a number
- * @param {any} num
- * @returns {number|undefined}
- * @func isN
- * @memberof app
- */
-export function isNumber(num) { return typeof num == "number" ? num : undefined }
-
-/**
- * Returns the str itself if it is not empty or ""
- * @param {any} str
- * @returns {string}
- * @func isS
- * @memberof app
- */
-export function isString(str) { return typeof str == "string" &amp;&amp; str }
-
-/**
- * Returns the callback is it is a function
- * @param {any} callback
- * @returns {function|undefined}
- * @func isF
- * @memberof app
- */
-
-export function isFunction(callback) { return typeof callback == "function" &amp;&amp; callback }
-
-/**
- * Returns the obj itself if it is a not null object
- * @param {any} obj
- * @returns {object|undefined}
- * @func isO
- * @memberof app
- */
-export function isObj(obj) { return typeof obj == "object" &amp;&amp; obj }
-
-/**
- * Returns the element itself if it is a HTMLElement
- * @param {any} element
- * @returns {HTMLElement|undefined}
- * @func isE
- * @memberof app
- */
-export function isElement(element) { return element instanceof HTMLElement &amp;&amp; element }
-
-/**
- * Convert a string into camelized format
- * @param {string} str
- * @returns {string}
- * @func toCamel
- * @memberof app
- */
-export function toCamel(str)
-{
-    return isString(str) ? str.toLowerCase().replace(/[.:_-](\w)/g, (_, c) => c.toUpperCase()) : ""
+app.on = (event, callback, namespace) => {
+    if (!isFunction(callback)) return;
+    if (!_events[event]) _events[event] = [];
+    _events[event].push([callback, isString(namespace)]);
 }
 
+/**
+ * Listen on event, the callback is called only once
+ * @param {string} event
+ * @param {function} callback
+ * @param {string} [namespace]
+ */
+app.once = (event, callback, namespace) => {
+    if (!isFunction(callback)) return;
+    const cb = (...args) => {
+        app.off(event, cb);
+        callback(...args);
+    }
+    app.on(event, cb, namespace);
+}
 
 /**
- * Call a function safely with context and arguments:
- * @param {object|function} obj
- * @param {string|function} [method]
- * @param {any} [...args]
+ * Remove all current listeners for the given event, if a callback is given make it the **only** listener.
+ * @param {string} event
+ * @param {function} callback
+ * @param {string} [namespace]
+ */
+app.only = (event, callback, namespace) => {
+    _events[event] = isFunction(callback) ? [callback, isString(namespace)] : [];
+}
+
+/**
+ * Remove all event listeners for the event name and exact callback or namespace
+ * @param {string} event|namespace
+ * - event name if callback is not empty
+ * - namespace if no callback
+ * @param {function|string} [callback]
+ * - function - exact callback to remove for the event
+ * - string - namespace for the event
  * @example
- * app.call(func,..)
- * app.call(obj, func, ...)
- * app.call(obj, method, ...)
+ * app.on("component:*", (ev) => { ... }, "myapp")
+ * ...
+ * app.off("myapp")
  */
-export function call(obj, method, ...args)
-{
-    if (isFunction(obj)) return obj(method, ...args);
-    if (typeof obj != "object") return;
-    if (isFunction(method)) return method.call(obj, ...args);
-    if (obj &amp;&amp; isFunction(obj[method])) return obj[method].call(obj, ...args);
+app.off = (event, callback) => {
+    if (event &amp;&amp; callback) {
+        if (!_events[event]) return;
+        const i = isFunction(callback) ? 0 : isString(callback) ? 1 : -1;
+        if (i >= 0) _events[event] = _events[event].filter(x => x[i] !== callback);
+    } else
+    if (isString(event)) {
+        for (const ev in _events) {
+            _events[ev] = _events[ev].filter(x => x[1] !== event);
+        }
+    }
 }
-
-const _entities = { '&amp;': '&amp;amp;', '&lt;': '&amp;lt;', '>': '&amp;gt;', '"': '&amp;quot;', "'": '&amp;apos;' };
 
 /**
- * Convert common special symbols into xml entities
- * @param {string} str
- * @returns {string}
+ * Send an event to all listeners at once, one by one.
+ *
+ * If the event ends with **_:*_** it means notify all listeners that match the beginning of the given pattern, for example:
+ * @param {string} event
+ * @param {...any} args
+ * @example &lt;caption>notify topic:event1, topic:event2, ...&lt;/caption>
+ * app.emit("topic:*",....)
  */
-export function escape(str)
-{
-    if (typeof str != "string") return "";
-    return str.replace(/([&amp;&lt;>'":])/g, (_, x) => (_entities[x] || x));
+app.emit = (event, ...args) => {
+    app.trace("emit:", event, ...args, app.debug > 1 &amp;&amp; _events[event]);
+    if (_events[event]) {
+        for (const cb of _events[event]) cb[0](...args);
+    } else
+    if (isString(event) &amp;&amp; event.endsWith(":*")) {
+        event = event.slice(0, -1);
+        for (const p in _events) {
+            if (p.startsWith(event)) {
+                for (const cb of _events[p]) cb[0](...args);
+            }
+        }
+    }
 }
+
 </code></pre>
         </article>
     </section>

@@ -207,3 +207,22 @@ app.$on(window, "DOMContentLoaded", () => {
     while (_ready.length) setTimeout(app.call, 0, _ready.shift());
 });
 
+function domChanged()
+{
+    var w = document.documentElement.clientWidth;
+    app.emit("dom:changed", {
+        breakPoint: w < 576 ? 'xs' : w < 768 ? 'sm' : w < 992 ? 'md' : w < 1200 ? 'lg' : w < 1400 ? 'xl' : 'xxl',
+        colorScheme: window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light",
+    });
+}
+
+app.$ready(() => {
+    domChanged();
+    app.$on(window.matchMedia('(prefers-color-scheme: dark)'), 'change', domChanged);
+
+    var _resize;
+    app.$on(window, "resize", () => {
+        clearTimeout(_resize);
+        _resize = setTimeout(domChanged, 250);
+    });
+});

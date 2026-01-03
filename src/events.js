@@ -1,38 +1,5 @@
 import { app, isFunction, isString } from "./app"
 
-/**
- * Empty function
- */
-app.noop = () => {}
-
-/**
- * Alias to console.log
- */
-app.log = (...args) => console.log(...args)
-
-/**
- * if __app.debug__ is set then it will log arguments in the console otherwise it is no-op
- * @param {...any} args
- */
-app.trace = (...args) => { app.debug && app.log(...args) }
-
-/**
- * Call a function safely with context and arguments:
- * @param {object|function} obj
- * @param {string|function} [method]
- * @param {any} [...args]
- * @example
- * app.call(func,..)
- * app.call(obj, func, ...)
- * app.call(obj, method, ...)
- */
-app.call = (obj, method, ...args) => {
-    if (isFunction(obj)) return obj(method, ...args);
-    if (typeof obj != "object") return;
-    if (isFunction(method)) return method.call(obj, ...args);
-    if (obj && isFunction(obj[method])) return obj[method].call(obj, ...args);
-}
-
 var _events = {}
 
 /**

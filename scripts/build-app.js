@@ -33,5 +33,10 @@ const opts = {
         console.log(" !! Please point your browser to http://127.0.0.1:8090/")
     } else {
         await esbuild.build(opts);
+
+        opts.entryPoints = ['index.mjs'];
+        opts.platform = "neutral"
+        opts.outfile = 'bundle.mjs'
+        await esbuild.build(opts);
     }
 })();

@@ -102,12 +102,12 @@ function init()
 function $render(el, value, modifiers, callback)
 {
     const cache = modifiers.includes("cache");
-    const opts = { url: value, post: modifiers.includes("post") };
+    const opts = { post: modifiers.includes("post") };
 
     if (!value.url && !(!cache && /^(https?:\/\/|\/|.+\.html(\?|$)).+/.test(value))) {
         if (callback(el, value)) return;
     }
-    app.fetch(opts, (err, text, info) => {
+    app.fetch(value, opts, (err, text, info) => {
         if (err || !isString(text)) {
             return console.warn("$render: Text expected from", value, "got", err, text);
         }

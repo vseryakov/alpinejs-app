@@ -1,13 +1,14 @@
 import { app } from './app'
 
-import './util'
+import './events'
 import './dom'
 import './router'
 import './render'
-import './alpine'
 import './fetch'
-
+import './alpine'
 import Component from './component';
 app.Component = Component;
 
-export default app;
+import * as lib from "./lib"
+
+export { app, lib };
