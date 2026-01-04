@@ -1,10 +1,4 @@
 (() => {
-  var __defProp = Object.defineProperty;
-  var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
-  };
-
   // src/app.js
   /**
    * Global application object
@@ -49,30 +43,34 @@
     isF: isFunction,
     isS: isString,
     isE: isElement,
-    isO: isObj,
+    isO: isObject,
     isN: isNumber,
     isA: isArray,
     toCamel,
     call,
     escape,
     noop,
-    __,
-    /**
-     * Alias to console.log
-     */
-    log: (...args) => console.log(...args),
-    /**
-     * if __app.debug__ is set then it will log arguments in the console otherwise it is no-op
-     * @param {...any} args
-     */
-    trace: (...args) => {
-      app.debug && app.log(...args);
-    }
+    log,
+    trace,
+    __
   };
   /**
    * Empty function
    */
   function noop() {
+  }
+  /**
+     * if __app.debug__ is set then it will log arguments in the console otherwise it is no-op
+     * @param {...any} args
+     */
+  function trace(...args) {
+    app.debug && app.log(...args);
+  }
+  /**
+   * Alias to console.log
+   */
+  function log(...args) {
+    console.log(...args);
   }
   /**
    * Empty locale translator
@@ -131,7 +129,7 @@
    * @func isO
    * @memberof app
    */
-  function isObj(obj) {
+  function isObject(obj) {
     return typeof obj == "object" && obj;
   }
   /**
@@ -364,7 +362,7 @@
    */
   app.$elem = (name, ...args) => {
     var element = document.createElement(name), key, val, opts;
-    if (isObj(args[0])) {
+    if (isObject(args[0])) {
       args = Object.entries(args[0]).flatMap((x) => x);
       opts = args[1];
     }
@@ -484,7 +482,7 @@
    */
   app.parsePath = (path) => {
     var rc = { name: "", params: {} }, query, loc = window.location;
-    if (isObj(path)) return Object.assign(rc, path);
+    if (isObject(path)) return Object.assign(rc, path);
     if (!isString(path)) return rc;
     var base = app.base;
     if (path.startsWith(loc.origin)) path = path.substr(loc.origin.length);
@@ -569,7 +567,7 @@
   var _plugins = {};
   var _default_plugin;
   /**
-   *   Register a render plugin, at least 2 functions must be defined in the options object:
+   * Register a render plugin, at least 2 functions must be defined in the options object:
    * @param {string} name
    * @param {object} options
    * @param {function} render - (element, options) to show a component, called by {@link app.render}
@@ -715,10 +713,30 @@
     plugin.render(element, tmpl);
     return tmpl;
   };
+  /**
+   * Add a callback to process classes for new components, all registered callbacks will be called on component:create
+   * event with top HTMLElement as parameter. This is for UI frameworks intergation to apply logic to added elements
+   * @param {function} callback
+   * @example
+   * app.stylePlugin((el) => {
+   *     app.$all(".carousel", element).forEach(el => (bootstrap.Carousel.getOrCreateInstance(el)));
+   * })
+   */
+  app.stylePlugin = function(callback) {
+    if (isFunction(callback)) _stylePlugins.push(callback);
+  };
+  var _stylePlugins = [];
+  function applyStylePlugins(element) {
+    if (!(element instanceof HTMLElement)) return;
+    for (const cb of _stylePlugins) cb(element);
+  }
   app.on("alpine:init", () => {
     for (const p in _plugins) {
       app.call(_plugins[p], "init");
     }
+    app.on("component:create", (ev) => {
+      if (isElement(ev?.element)) applyStylePlugins(ev.element);
+    });
   });
 
   // src/fetch.js
@@ -743,7 +761,7 @@
     }
     var body = options?.body;
     if (opts.method == "GET" || opts.method == "HEAD") {
-      if (isObj(body)) {
+      if (isObject(body)) {
         url += "?" + new URLSearchParams(body).toString();
       }
     } else if (isString(body)) {
@@ -752,7 +770,7 @@
     } else if (body instanceof FormData) {
       opts.body = body;
       delete headers["content-type"];
-    } else if (isObj(body)) {
+    } else if (isObject(body)) {
       opts.body = JSON.stringify(body);
       headers["content-type"] = "application/json; charset=UTF-8";
     } else if (body) {
@@ -812,7 +830,7 @@
           } else {
             err = { message: await res.text(), status: res.status };
           }
-          return app.call(callback, err, data2, info);
+          return call(callback, err, data2, info);
         }
         switch (options?.dataType) {
           case "text":
@@ -824,12 +842,12 @@
           default:
             data2 = /\/json/.test(info.headers["content-type"]) ? await res.json() : await res.text();
         }
-        app.call(callback, null, data2, info);
+        call(callback, null, data2, info);
       }).catch((err) => {
-        app.call(callback, err);
+        call(callback, err);
       });
     } catch (err) {
-      app.call(callback, err);
+      call(callback, err);
     }
   };
   /**
@@ -1018,7 +1036,7 @@
         switch (mod) {
           case "params":
             var scope = Alpine.$data(el);
-            if (!isObj(scope[modifiers[i + 1]])) break;
+            if (!isObject(scope[modifiers[i + 1]])) break;
             tmpl.params = Object.assign(scope[modifiers[i + 1]], tmpl.params);
             break;
           case "inline":
@@ -1099,603 +1117,10 @@
     });
   });
 
-  // src/lib.js
-  var lib_exports = {};
-  __export(lib_exports, {
-    forEach: () => forEach,
-    forEachSeries: () => forEachSeries,
-    isFlag: () => isFlag,
-    loadResources: () => loadResources,
-    parallel: () => parallel,
-    sanitizer: () => sanitizer,
-    sendFile: () => sendFile,
-    series: () => series,
-    split: () => split,
-    toAge: () => toAge,
-    toBool: () => toBool,
-    toDate: () => toDate,
-    toDuration: () => toDuration,
-    toNumber: () => toNumber,
-    toPrice: () => toPrice,
-    toSize: () => toSize,
-    toTitle: () => toTitle
-  });
-  /**
-   * @param {any[]} list
-   * @param {any|any[]} item
-   * @return {boolean} true if `item` exists in the array `list`, search is case sensitive. if `item` is an array it will return true if
-   * any element in the array exists in the `list`.
-   */
-  function isFlag(list, item) {
-    return Array.isArray(list) && (Array.isArray(item) ? item.some((x) => list.includes(x)) : list.includes(item));
-  }
-  /**
-   * Apply an iterator function to each item in an array serially. Execute a callback when all items
-   * have been completed or immediately if there is is an error provided.
-   * @param {any[]} list
-   * @param {function} iterator
-   * @param {function} [callback]
-   * @param {boolean} [direct=true]
-   * @example
-   * app.forEachSeries([ 1, 2, 3 ], function (i, next, data) {
-   *    console.log(i, data);
-   *    next(null, data);
-   * }, (err, data) => {
-   *    console.log('done', data);
-   * });
-   */
-  function forEachSeries(list, iterator, callback, direct = true) {
-    callback = isFunction(callback) || noop;
-    if (!Array.isArray(list) || !list.length) return callback();
-    function iterate(i, ...args) {
-      if (i >= list.length) return direct ? callback(null, ...args) : setTimeout(callback, 0, null, ...args);
-      iterator(list[i], (...args2) => {
-        if (args2[0]) {
-          if (direct) callback(...args2);
-          else setTimeout(callback, 0, ...args2);
-          callback = noop;
-        } else {
-          iterate(++i, ...args2.slice(1));
-        }
-      }, ...args);
-    }
-    iterate(0);
-  }
-  /**
-   * Execute a list of functions serially and execute a callback upon completion or occurance of an error. Each function will be passed
-   * a callback to signal completion. The callback accepts either an error for the first argument in which case the flow will be aborted
-   * and the final callback will be called immediately or some optional data to be passed to thr next iterator function as a second argument.
-   *
-   * The iterator and callback will be called via setImmediate function to allow the main loop to process I/O unless the `direct` argument is true
-   * @param {function[]} tasks
-   * @param {function} [callback]
-   * @param {boolean} [direct]
-   * @example
-   * app.series([
-   *    function(next) {
-   *        next(null, "data");
-   *    },
-   *    function(next, data) {
-   *       setTimeout(function () { next(null, data); }, 100);
-   *    },
-   * ], (err, data) => {
-   *    console.log(err, data);
-   * });
-   */
-  function series(tasks, callback, direct = true) {
-    forEachSeries(tasks, (task, next, ...args) => {
-      if (direct) task(next, ...args);
-      else setTimeout(task, 0, next, ...args);
-    }, callback, direct);
-  }
-  /**
-   * Apply an iterator function to each item in an array in parallel. Execute a callback when all items
-   * have been completed or immediately if there is an error provided.
-   * @param {any[]} list
-   * @param {function} iterator
-   * @param {function} callback
-   * @param {boolean} direct - controls how the final callback is called, if true it is called directly otherwisde via setImmediate
-   * @example
-   * app.forEach([ 1, 2, 3 ], function (i, next) {
-   *   console.log(i);
-   *   next();
-   * }, (err) => {
-   *   console.log('done');
-   * });
-   */
-  function forEach(list, iterator, callback, direct = true) {
-    callback = isFunction(callback) || noop;
-    if (!Array.isArray(list) || !list.length) return callback();
-    var count = list.length;
-    for (let i = 0; i < list.length; i++) {
-      iterator(list[i], (err) => {
-        if (err) {
-          if (direct) callback(err);
-          else setTimeout(callback, 0, err);
-          callback = noop;
-          i = list.length + 1;
-        } else if (--count == 0) {
-          if (direct) callback();
-          else setTimeout(callback, 0);
-          callback = noop;
-        }
-      });
-    }
-  }
-  /**
-   * Execute a list of functions in parallel and execute a callback upon completion or occurance of an error. Each function will be passed
-   * a callback to signal completion. The callback accepts an error for the first argument. The iterator and callback will be
-   * called via setImmediate function to allow the main loop to process I/O unless the `direct` argument is true
-   * @param {function[]} tasks
-   * @param {function} [callback]
-   * @param {boolean} [direct=true]
-   */
-  function parallel(tasks, callback, direct = true) {
-    forEach(tasks, (task, next) => {
-      task(next);
-    }, callback, direct);
-  }
-  /**
-   * Return Date object for given text or numeric date representation, for invalid date returns 1969 unless `invalid` parameter is given,
-   * in this case invalid date returned as null. If `dflt` is NaN, null or 0 returns null as well.
-   * @param {string|Date|number} val
-   * @param {any} [dflt]
-   * @param {boolean} [invalid]
-   * @return {Date}
-   */
-  function toDate(val, dflt, invalid) {
-    if (isFunction(val?.getTime)) return val;
-    var d = NaN;
-    if (isString(val)) {
-      val = /^[0-9.]+$/.test(val) ? toNumber(val) : val.replace(/([0-9])(AM|PM)/i, "$1 $2");
-    }
-    if (isNumber(val)) {
-      if (val > 2147485547e3) val = Math.round(val / 1e3);
-      if (val < 2147483647) val *= 1e3;
-    }
-    if (!isString(val) && !isNumber(val)) val = d;
-    if (val) try {
-      d = new Date(val);
-    } catch (e) {
-    }
-    return !isNaN(d) ? d : invalid || dflt !== void 0 && isNaN(dflt) || dflt === null || dflt === 0 ? null : new Date(dflt || 0);
-  }
-  /**
-   * Given time in msecs, return how long ago it happened
-   * @param {number} mtime
-   * @param {object} [options]
-   * @param {boolean} [options.short] - if true use first letters only
-   * @param {boolean} [options.round] - a number, 1 return only 1st part, 2 - 1st and 2nd parts
-   * @return {string}
-   */
-  function toAge(mtime) {
-    var str = "";
-    mtime = isNumber(mtime) ?? toNumber(mtime);
-    if (mtime > 0) {
-      var secs = Math.floor((Date.now() - mtime) / 1e3);
-      var d = Math.floor(secs / 86400);
-      var mm = Math.floor(d / 30);
-      var w = Math.floor(d / 7);
-      var h = Math.floor((secs - d * 86400) / 3600);
-      var m = Math.floor((secs - d * 86400 - h * 3600) / 60);
-      var s = Math.floor(secs - d * 86400 - h * 3600 - m * 60);
-      if (mm > 0) {
-        str = mm > 1 ? __(mm, " months") : __("1 month");
-        if (d > 0) str += " " + (d > 1 ? __(d, " days") : __("1 day"));
-        if (h > 0) str += " " + (h > 1 ? __(h, " hours") : __("1 hour"));
-      } else if (w > 0) {
-        str = w > 1 ? __(w, " weeks") : __("1 week");
-        if (d > 0) str += " " + (d > 1 ? __(d, " days") : __("1 day"));
-        if (h > 0) str += " " + (h > 1 ? __(h, " hours") : __("1 hour"));
-      } else if (d > 0) {
-        str = d > 1 ? __(d, " days") : __("1 day");
-        if (h > 0) str += " " + (h > 1 ? __(h, " hours") : __("1 hour"));
-        if (m > 0) str += " " + (m > 1 ? __(m, " minutes") : __("1 minute"));
-      } else if (h > 0) {
-        str = h > 1 ? __(h, " hours") : __("1 hour");
-        if (m > 0) str += " " + (m > 1 ? __(m, " minutes") : __("1 minute"));
-      } else if (m > 0) {
-        str = m > 1 ? __(m, " minutes") : __("1 minute");
-        if (s > 0) str += " " + (s > 1 ? __(s, " seconds") : __("1 second"));
-      } else {
-        str = secs > 1 ? __(secs, " seconds") : __("1 second");
-      }
-    }
-    return str;
-  }
-  /**
-   * Return duration in human format, mtime is msecs
-   * @param {number} mtime
-   * @param {object} [options]
-   * @param {boolean} [options.short] - if true use first letters only
-   * @param {boolean} [options.round] - a number, 1 return only 1st part, 2 - 1st and 2nd parts
-   * @param {string}
-   */
-  function toDuration(mtime) {
-    var str = "";
-    mtime = isNumber(mtime) ?? toNumber(mtime);
-    if (mtime > 0) {
-      var seconds = Math.floor(mtime / 1e3);
-      var d = Math.floor(seconds / 86400);
-      var h = Math.floor((seconds - d * 86400) / 3600);
-      var m = Math.floor((seconds - d * 86400 - h * 3600) / 60);
-      var s = Math.floor(seconds - d * 86400 - h * 3600 - m * 60);
-      if (d > 0) {
-        str = d > 1 ? __(d, " days") : __("1 day");
-        if (h > 0) str += " " + (h > 1 ? __(h, " hours") : __("1 hour"));
-        if (m > 0) str += " " + (m > 1 ? __(m, " minutes") : __("1 minute"));
-      } else if (h > 0) {
-        str = h > 1 ? __(h, " hours") : __("1 hour");
-        if (m > 0) str += " " + (m > 1 ? __(m, " minutes") : __("1 minute"));
-      } else if (m > 0) {
-        str = m > 1 ? __(m, " minutes") : __("1 minute");
-        if (s > 0) str += " " + (s > 1 ? __(s, " seconds") : __("1 second"));
-      } else {
-        str = seconds > 1 ? __(seconds, " seconds") : __("1 second");
-      }
-    }
-    return str;
-  }
-  /**
-   * Return size human readable format
-   * @param {number} size
-   * @param {boolean} [decimals=2]
-   */
-  function toSize(size, decimals = 2) {
-    var i = size > 0 ? Math.floor(Math.log(size) / Math.log(1024)) : 0;
-    return (size / Math.pow(1024, i)).toFixed(isNumber(decimals) ?? 2) * 1 + " " + [__("Bytes"), __("KBytes"), __("MBytes"), __("GBytes"), __("TBytes")][i];
-  }
-  /**
-   * Convert text into capitalized words, if it is less or equal than minlen leave it as is
-   * @param {string} name
-   * @param {int} [minlen]
-   * @return {string}
-   */
-  function toTitle(name, minlen) {
-    return isString(name) ? minlen > 0 && name.length <= minlen ? name : name.replace(/_/g, " ").split(/[ ]+/).reduce((x, y) => x + y.substr(0, 1).toUpperCase() + y.substr(1) + " ", "").trim() : "";
-  }
-  /**
-   * Return true if value represents true condition, i.e. non empty value incuding yes, ok, t
-   * @param {string|number|boolean} val
-   * @param {any} [dflt]
-   * @return {boolean}
-   */
-  function toBool(val, dflt) {
-    if (typeof val == "boolean") return val;
-    if (typeof val == "number") return !!val;
-    if (val === void 0) val = dflt;
-    return /^(true|on|yes|1|t)$/i.test(val);
-  }
-  /**
-   * Safe convertion to a number, no expections, uses 0 instead of NaN, handle booleans, if float specified, returns as float.
-   * @param {any} val - to be converted to a number
-   * @param {object} [options]
-   * @param {int} [options.dflt] - default value
-   * @param {int} [options.float] - treat as floating number
-   * @param {int} [options.min] - minimal value, clip
-   * @param {int} [options.max] - maximum value, clip
-   * @param {int} [options.incr] - a number to add before checking for other conditions
-   * @param {int} [options.mult] - a number to multiply before checking for other conditions
-   * @param {int} [options.novalue] - replace this number with default
-   * @param {int} [options.zero] - replace with this number if result is 0
-   * @param {int} [options.digits] - how many digits to keep after the floating point
-   * @param {int} [options.bigint] - return BigInt if not a safe integer
-   * @return {number}
-   * @example
-   * app.toNumber("123")
-   * app.toNumber("1.23", { float: 1, dflt: 0, min: 0, max: 2 })
-   */
-  function toNumber(val, options) {
-    var n = 0;
-    if (typeof val == "number") {
-      n = val;
-    } else if (typeof val == "boolean") {
-      n = val ? 1 : 0;
-    } else {
-      if (typeof val != "string") {
-        n = options?.dflt || 0;
-      } else {
-        var f = typeof options?.float == "undefined" || options?.float == null ? /^(-|\+)?([0-9]+)?\.[0-9]+$/.test(val) : options?.float;
-        n = val[0] == "t" ? 1 : val[0] == "f" ? 0 : val == "infinity" ? Infinity : f ? parseFloat(val, 10) : parseInt(val, 10);
-      }
-    }
-    n = isNaN(n) ? options?.dflt || 0 : n;
-    if (options) {
-      if (typeof options.novalue == "number" && n === options.novalue) n = options.dflt || 0;
-      if (typeof options.incr == "number") n += options.incr;
-      if (typeof options.mult == "number") n *= options.mult;
-      if (isNaN(n)) n = options.dflt || 0;
-      if (typeof options.min == "number" && n < options.min) n = options.min;
-      if (typeof options.max == "number" && n > options.max) n = options.max;
-      if (typeof options.float != "undefined" && !options.float) n = Math.round(n);
-      if (typeof options.zero == "number" && !n) n = options.zero;
-      if (typeof options.digits == "number") n = parseFloat(n.toFixed(options.digits));
-      if (options.bigint && typeof n == "number" && !Number.isSafeInteger(n)) n = BigInt(n);
-    }
-    return n;
-  }
-  /**
-   * Return a test representation of a number according to the money formatting rules,
-   * @param {number} num
-   * @param {object} [options]
-   * @param {string} [options.locale=en-US]
-   * @param {string} [options.currency=USD]
-   * @param {string} [options.display=symbol]
-   * @param {string} [options.sign=standard]
-   * @param {int} [options.min=2]
-   * @param {int} [options.max=3]
-   * @memberof module:lib
-   * @method toPrice
-   */
-  function toPrice(num, options) {
-    try {
-      return toNumber(num).toLocaleString(options?.locale || "en-US", {
-        style: "currency",
-        currency: options?.currency || "USD",
-        currencyDisplay: options?.display || "symbol",
-        currencySign: options?.sign || "standard",
-        minimumFractionDigits: options?.min || 2,
-        maximumFractionDigits: options?.max || 5
-      });
-    } catch (e) {
-      console.error("toPrice:", e, num, options);
-      return "";
-    }
-  }
-  /**
-   * Split string into array, ignore empty items by default
-   * @param {string} str
-   * If str is an array and type is not specified then all non-string items will be returned as is.
-   * @param {RegExp|string} [sep=,|] - separator
-   * @param {object} [options]
-   * @param {boolean} [options.keepempty] - will preserve empty items, by default empty strings are ignored
-   * @param {boolean} [options.notrim] - will skip trimming strings, trim is the default
-   * @param {int} [options.max] - will skip strings over the specificed size if no `trunc`
-   * @param {boolean} [options.trunc] - will truncate strings longer than `max`
-   * @param {regexp} [options.regexp] - will skip string if not matching
-   * @param {regexp} [options.noregexp] - will skip string if matching
-   * @param {boolean} [options.number] - convert into a number
-   * @param {boolean} [options.cap] - capitalize
-   * @param {boolean} [options.camel] - camelize
-   * @param {boolean} [options.lower] - lowercase
-   * @param {boolean} [options.upper] - uppercase
-   * @param {string|regexp} [options.strip] - remove occurences
-   * @param {object} [options.replace] - an object map which characters to replace with new values
-   * @param {boolean} [options.range] - will parse numeric ranges in the format `NUM-NUM` and add all numbers in between, invalid ranges are skipped
-   * @param {boolean} [options.unique] - remove duplicate entries
-   * @return {string[]}
-   */
-  function split(str, sep, options) {
-    if (!str) return [];
-    var list = Array.isArray(str) ? str : (isString(str) ? str : String(str)).split(sep || /[,|]/), len = list.length;
-    if (!len) return list;
-    var rc = [], keys = isObj(options) ? Object.reys(options) : [], v;
-    for (let i = 0; i < len; ++i) {
-      v = list[i];
-      if (v === "" && !options?.keepempty) continue;
-      if (!isString(v)) {
-        rc.push(v);
-        continue;
-      }
-      if (!options?.notrim) v = v.trim();
-      for (let k = 0; k < keys.length; ++k) {
-        switch (keys[k]) {
-          case "range":
-            var dash = v.indexOf("-", 1);
-            if (dash == -1) break;
-            var s = toNumber(v.substr(0, dash));
-            var e = toNumber(v.substr(dash + 1));
-            for (; s <= e; s++) rc.push(s.toString());
-            v = "";
-            break;
-          case "max":
-            if (v.length > options.max) {
-              v = options.trunc ? v.substr(0, options.max) : "";
-            }
-            break;
-          case "regexp":
-            if (!options.regexp.test(v)) v = "";
-            break;
-          case "noregexp":
-            if (options.regexp.test(v)) v = "";
-            break;
-          case "lower":
-            v = v.toLowerCase();
-            break;
-          case "upper":
-            v = v.toUpperCase();
-            break;
-          case "strip":
-            v = v.replace(options.strip, "");
-            break;
-          case "replace":
-            for (const p in options.replace) {
-              v = v.replaceAll(p, options.replace[p]);
-            }
-            break;
-          case "camel":
-            v = toCamel(v, options);
-            break;
-          case "cap":
-            v = toTitle(v, options.cap);
-            break;
-          case "number":
-            v = toNumber(v, options);
-            break;
-        }
-      }
-      if (!v.length && !options?.keepempty) continue;
-      rc.push(v);
-    }
-    if (options?.unique) {
-      rc = Array.from(new Set(rc));
-    }
-    return rc;
-  }
-  /**
-   * Inject CSS/Script resources into the current page, all urls are loaded at the same time by default.
-   * @param {string[]|string} urls - list of urls to load
-   * @param {object} [options]
-   * @param {boolean} [options.series] - load urls one after another
-   * @paarm {boolean} [options.async] if set then scripts executed as soon as loaded otherwise executing scripts will be in the order provided
-   * @param {function} [options.callback] will be called with (el, opts) args for customizations after loading each url or on error
-   * @param {object} [options.attrs] is an object with attributes to set like nonce, ...
-   * @param {int} [options.timeout] - call the callback after timeout
-   */
-  function loadResources(urls, options, callback) {
-    if (typeof options == "function") callback = options, options = null;
-    if (typeof urls == "string") urls = [urls];
-    app[`forEach${options?.series ? "Series" : ""}`](urls, (url, next) => {
-      let el;
-      const ev = () => {
-        call(options?.callback, el, options);
-        next();
-      };
-      if (/\.css/.test(url)) {
-        el = app.$elem("link", "rel", "stylesheet", "type", "text/css", "href", url, "load", ev, "error", ev);
-      } else {
-        el = app.$elem("script", "async", !!options?.async, "src", url, "load", ev, "error", ev);
-      }
-      for (const p in options?.attrs) app.$attr(el, p, options.attrs[p]);
-      document.head.appendChild(el);
-    }, options?.timeout > 0 ? () => {
-      setTimeout(callback, options.timeout);
-    } : callback);
-  }
-  /**
-   * Send file(s) and forms
-   * @param {string} url
-   * @param {object} options
-   * @param {object} [options.files] - name/File pairs to be sent as multi-part
-   * @param {object} [options.body] - simple form properties
-   * @param {object} [options.json] - send as JSON blobs
-   * @param {function} [callback]
-   */
-  function sendFile(url, options, callback) {
-    var body = new FormData();
-    for (const p in options.files) {
-      const file = options.files[p];
-      if (!file?.files?.length) continue;
-      body.append(p, file.files[0]);
-    }
-    const add = (k, v) => {
-      body.append(k, isFunction(v) ? v() : v === null || v === true ? "" : v);
-    };
-    const build = (key, val) => {
-      if (val === void 0) return;
-      if (Array.isArray(val)) {
-        for (const i in val) build(`${key}[${app.isO(val[i]) ? i : ""}]`, val[i]);
-      } else if (isObj(val)) {
-        for (const n in val) build(`${key}[${n}]`, val[n]);
-      } else {
-        add(key, val);
-      }
-    };
-    for (const p in options.body) {
-      build(p, options.body[p]);
-    }
-    for (const p in options.json) {
-      const blob = new Blob([JSON.stringify(options.json[p])], { type: "application/json" });
-      body.append(p, blob);
-    }
-    var req = { body };
-    for (const p in options) {
-      req[p] ??= options[p];
-    }
-    app.fetch(url, req, callback);
-  }
-  function isattr(attr, list) {
-    const name = attr.nodeName.toLowerCase();
-    if (list.includes(name)) {
-      if (sanitizer._attrs.has(name)) {
-        return sanitizer._urls.test(attr.nodeValue) || sanitizer._data.test(attr.nodeValue);
-      }
-      return true;
-    }
-    return list.some((x) => x instanceof RegExp && x.test(name));
-  }
-  /**
-   * HTML sanitizer, based on Bootstrap internal sanitizer
-   * @param {strings} html
-   * @param {boolean} list - if true return a list of Nodes
-   * @return {Node[]|string}
-   */
-  function sanitizer(html, list) {
-    if (!isString(html)) return list ? [] : html;
-    const body = app.$parse(html);
-    const elements = [...body.querySelectorAll("*")];
-    for (const el of elements) {
-      const name = el.nodeName.toLowerCase();
-      if (sanitizer._tags[name]) {
-        const allow = [...sanitizer._tags["*"], ...sanitizer._tags[name] || []];
-        for (const attr of [...el.attributes]) {
-          if (!isattr(attr, allow)) el.removeAttribute(attr.nodeName);
-        }
-      } else {
-        el.remove();
-      }
-    }
-    return list ? Array.from(body.childNodes) : body.innerHTML;
-  }
-  sanitizer._attrs = /* @__PURE__ */ new Set(["background", "cite", "href", "itemtype", "longdesc", "poster", "src", "xlink:href"]);
-  sanitizer._urls = /^(?:(?:https?|mailto|ftp|tel|file|sms):|[^#&/:?]*(?:[#/?]|$))/i;
-  sanitizer._data = /^data:(?:image\/(?:bmp|gif|jpeg|jpg|png|tiff|webp)|video\/(?:mpeg|mp4|ogg|webm)|audio\/(?:mp3|oga|ogg|opus));base64,[\d+/a-z]+=*$/i;
-  sanitizer._tags = {
-    "*": [
-      "class",
-      "dir",
-      "id",
-      "lang",
-      "role",
-      /^aria-[\w-]*$/i,
-      "data-bs-toggle",
-      "data-bs-target",
-      "data-bs-dismiss",
-      "data-bs-parent"
-    ],
-    a: ["target", "href", "title", "rel"],
-    area: [],
-    b: [],
-    blockquote: [],
-    br: [],
-    button: [],
-    col: [],
-    code: [],
-    div: [],
-    em: [],
-    hr: [],
-    img: ["src", "srcset", "alt", "title", "width", "height", "style"],
-    h1: [],
-    h2: [],
-    h3: [],
-    h4: [],
-    h5: [],
-    h6: [],
-    i: [],
-    li: [],
-    ol: [],
-    p: [],
-    pre: [],
-    s: [],
-    small: [],
-    span: [],
-    sub: [],
-    sup: [],
-    strong: [],
-    table: [],
-    thead: [],
-    tbody: [],
-    th: [],
-    tr: [],
-    td: [],
-    u: [],
-    ul: []
-  };
-
   // src/index.js
   app.Component = component_default;
+  var src_default = app;
 
   // builds/cdn.js
-  window.app = app;
-  app.lib = lib_exports;
+  window.app = src_default;
 })();

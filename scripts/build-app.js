@@ -34,7 +34,7 @@ const opts = {
     } else {
         await esbuild.build(opts);
 
-        opts.entryPoints = ['index.mjs'];
+        opts.entryPoints = ['index.esm.js'];
         opts.platform = "neutral"
         opts.outfile = 'bundle.mjs'
         await esbuild.build(opts);

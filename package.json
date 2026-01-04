@@ -18,8 +18,7 @@
   "files": [
     "dist/",
     "src/",
-    "scripts/",
-    "builds/"
+    "scripts/"
   ],
   "scripts": {
     "demo": "sh scripts/demo.sh",

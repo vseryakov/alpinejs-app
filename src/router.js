@@ -1,4 +1,4 @@
-import { app, isObj, isString } from "./app"
+import { app, isObject, isString } from "./app"
 
 
  /**
@@ -22,7 +22,7 @@ import { app, isObj, isString } from "./app"
 app.parsePath = (path) => {
     var rc = { name: "", params: {} }, query, loc = window.location;
 
-    if (isObj(path)) return Object.assign(rc, path);
+    if (isObject(path)) return Object.assign(rc, path);
     if (!isString(path)) return rc;
 
     // Custom parser b/c this is not always url

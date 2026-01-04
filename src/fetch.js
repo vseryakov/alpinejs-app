@@ -1,4 +1,4 @@
-import { app, isFunction, isObj, isString } from "./app"
+import { app, call, isFunction, isObject, isString } from "./app"
 
 const fetchOptions = app.fetchOptions = {
     method: "GET",
@@ -24,7 +24,7 @@ function parseOptions(url, options)
     }
     var body = options?.body;
     if (opts.method == "GET" || opts.method == "HEAD") {
-        if (isObj(body)) {
+        if (isObject(body)) {
             url += "?" + new URLSearchParams(body).toString();
         }
     } else
@@ -36,7 +36,7 @@ function parseOptions(url, options)
         opts.body = body;
         delete headers["content-type"];
     } else
-    if (isObj(body)) {
+    if (isObject(body)) {
         opts.body = JSON.stringify(body);
         headers["content-type"] = "application/json; charset=UTF-8";
     } else
@@ -106,7 +106,7 @@ app.fetch = function(url, options, callback)
                 } else {
                     err = { message: await res.text(), status: res.status };
                 }
-                return app.call(callback, err, data, info);
+                return call(callback, err, data, info);
             }
             switch (options?.dataType) {
             case "text":
@@ -118,12 +118,12 @@ app.fetch = function(url, options, callback)
             default:
                 data = /\/json/.test(info.headers["content-type"]) ? await res.json() : await res.text();
             }
-            app.call(callback, null, data, info);
+            call(callback, null, data, info);
         }).catch (err => {
-            app.call(callback, err);
+            call(callback, err);
         });
     } catch (err) {
-        app.call(callback, err);
+        call(callback, err);
     }
 }
 

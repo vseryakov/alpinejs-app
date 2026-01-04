@@ -1,4 +1,4 @@
-import { app, isElement, isFunction, isObj, isString, toCamel } from "./app"
+import { app, isElement, isFunction, isObject, isString, toCamel } from "./app"
 
 /**
  * Returns a query parameter value from the current document location
@@ -111,7 +111,7 @@ app.$empty = (element, cleanup) => {
  */
 app.$elem = (name, ...args) => {
     var element = document.createElement(name), key, val, opts;
-    if (isObj(args[0])) {
+    if (isObject(args[0])) {
         args = Object.entries(args[0]).flatMap(x => x);
         opts = args[1];
     }

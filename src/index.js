@@ -9,6 +9,6 @@ import './alpine'
 import Component from './component';
 app.Component = Component;
 
-import * as lib from "./lib"
+export { app }
 
-export { app, lib };
+export default app;

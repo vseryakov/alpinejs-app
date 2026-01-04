@@ -1,4 +1,4 @@
-import { app, isElement, isObj, isString } from './app';
+import { app, isElement, isObject, isString } from './app';
 import Component from './component';
 
 const _alpine = "alpine";
@@ -131,7 +131,7 @@ function $template(el, value, modifiers)
             switch (mod) {
             case "params":
                 var scope = Alpine.$data(el);
-                if (!isObj(scope[modifiers[i + 1]])) break;
+                if (!isObject(scope[modifiers[i + 1]])) break;
                 tmpl.params = Object.assign(scope[modifiers[i + 1]], tmpl.params);
                 break;
             case "inline":

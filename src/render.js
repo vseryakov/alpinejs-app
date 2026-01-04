@@ -4,7 +4,7 @@ var _plugins = {}
 var _default_plugin;
 
 /**
- *   Register a render plugin, at least 2 functions must be defined in the options object:
+ * Register a render plugin, at least 2 functions must be defined in the options object:
  * @param {string} name
  * @param {object} options
  * @param {function} render - (element, options) to show a component, called by {@link app.render}
@@ -167,9 +167,35 @@ app.render = (options, dflt) => {
     return tmpl;
 }
 
+
+/**
+ * Add a callback to process classes for new components, all registered callbacks will be called on component:create
+ * event with top HTMLElement as parameter. This is for UI frameworks intergation to apply logic to added elements
+ * @param {function} callback
+ * @example
+ * app.stylePlugin((el) => {
+ *     app.$all(".carousel", element).forEach(el => (bootstrap.Carousel.getOrCreateInstance(el)));
+ * })
+ */
+app.stylePlugin = function(callback)
+{
+    if (isFunction(callback)) _stylePlugins.push(callback);
+}
+
+var _stylePlugins = [];
+
+function applyStylePlugins(element)
+{
+    if (!(element instanceof HTMLElement)) return;
+    for (const cb of _stylePlugins) cb(element);
+}
+
 app.on("alpine:init", () => {
     for (const p in _plugins) {
         app.call(_plugins[p], "init");
     }
+    app.on("component:create", (ev) => {
+        if (isElement(ev?.element)) applyStylePlugins(ev.element);
+    });
 });
 

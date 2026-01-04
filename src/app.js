@@ -50,7 +50,7 @@ export var app = {
     isF: isFunction,
     isS: isString,
     isE: isElement,
-    isO: isObj,
+    isO: isObject,
     isN: isNumber,
     isA: isArray,
 
@@ -58,26 +58,26 @@ export var app = {
     call,
     escape,
     noop,
+    log,
+    trace,
     __,
-
-
-    /**
-     * Alias to console.log
-     */
-    log: (...args) => console.log(...args),
-
-    /**
-     * if __app.debug__ is set then it will log arguments in the console otherwise it is no-op
-     * @param {...any} args
-     */
-    trace: (...args) => { app.debug && app.log(...args) },
-
 };
 
 /**
  * Empty function
  */
 export function noop() {}
+
+/**
+   * if __app.debug__ is set then it will log arguments in the console otherwise it is no-op
+   * @param {...any} args
+   */
+export function trace(...args) { app.debug && app.log(...args) }
+
+/**
+ * Alias to console.log
+ */
+export function log(...args) { console.log(...args) }
 
 /**
  * Empty locale translator
@@ -132,7 +132,7 @@ export function isFunction(callback) { return typeof callback == "function" && c
  * @func isO
  * @memberof app
  */
-export function isObj(obj) { return typeof obj == "object" && obj }
+export function isObject(obj) { return typeof obj == "object" && obj }
 
 /**
  * Returns the element itself if it is a HTMLElement

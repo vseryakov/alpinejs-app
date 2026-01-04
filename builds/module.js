@@ -1,3 +1,5 @@
-import { app, lib } from '../src/index.js'
+import app from './../src/index'
 
-export { app, lib }
+export default app
+
+export { app }

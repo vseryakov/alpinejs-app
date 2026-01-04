@@ -1,5 +1,5 @@
 
-import { __, app, call, isFunction, isNumber, isObj, isString, noop, toCamel } from "./app"
+import { __, app, call, isFunction, isNumber, isObject, isString, noop, toCamel } from "./app"
 
 /**
  * @param {any[]} list
@@ -150,19 +150,18 @@ export function toDate(val, dflt, invalid)
 }
 
 /**
- * Given time in msecs, return how long ago it happened
+ * Return duration in human format, mtime is msecs
  * @param {number} mtime
- * @param {object} [options]
- * @param {boolean} [options.short] - if true use first letters only
- * @param {boolean} [options.round] - a number, 1 return only 1st part, 2 - 1st and 2nd parts
+ * @param {boolean} [age] - if true duration from now, as age
  * @return {string}
  */
-export function toAge(mtime)
+export function toDuration(mtime, age)
 {
     var str = "";
     mtime = isNumber(mtime) ?? toNumber(mtime);
     if (mtime > 0) {
-        var secs = Math.floor((Date.now() - mtime)/1000);
+        if (age) mtime = Date.now() - mtime;
+        var secs = Math.floor(mtime/1000);
         var d = Math.floor(secs / 86400);
         var mm = Math.floor(d / 30);
         var w = Math.floor(d / 7);
@@ -199,44 +198,6 @@ export function toAge(mtime)
 }
 
 /**
- * Return duration in human format, mtime is msecs
- * @param {number} mtime
- * @param {object} [options]
- * @param {boolean} [options.short] - if true use first letters only
- * @param {boolean} [options.round] - a number, 1 return only 1st part, 2 - 1st and 2nd parts
- * @param {string}
- */
-export function toDuration(mtime)
-{
-    var str = "";
-    mtime = isNumber(mtime) ?? toNumber(mtime);
-    if (mtime > 0) {
-        var seconds = Math.floor(mtime/1000);
-        var d = Math.floor(seconds / 86400);
-        var h = Math.floor((seconds - d * 86400) / 3600);
-        var m = Math.floor((seconds - d * 86400 - h * 3600) / 60);
-        var s = Math.floor(seconds - d * 86400 - h * 3600 - m * 60);
-        if (d > 0) {
-            str = d > 1 ? __(d, " days") :
-            __("1 day");
-            if (h > 0) str += " " + (h > 1 ? __(h, " hours") : __("1 hour"));
-            if (m > 0) str += " " + (m > 1 ? __(m, " minutes") : __("1 minute"));
-        } else
-        if (h > 0) {
-            str = h > 1 ? __(h, " hours") : __("1 hour");
-            if (m > 0) str += " " + (m > 1 ? __(m, " minutes") : __("1 minute"));
-        } else
-        if (m > 0) {
-            str = m > 1 ? __(m, " minutes") : __("1 minute");
-            if (s > 0) str += " " + (s > 1 ? __(s, " seconds") : __("1 second"));
-        } else {
-            str = seconds > 1 ? __(seconds, " seconds") : __("1 second");
-        }
-    }
-    return str;
-}
-
-/**
  * Return size human readable format
  * @param {number} size
  * @param {boolean} [decimals=2]
@@ -262,20 +223,6 @@ export function toTitle(name, minlen)
            split(/[ ]+/).
            reduce((x,y) => (x + y.substr(0,1).toUpperCase() + y.substr(1) + " "), "").
            trim() : "";
-}
-
-/**
- * Return true if value represents true condition, i.e. non empty value incuding yes, ok, t
- * @param {string|number|boolean} val
- * @param {any} [dflt]
- * @return {boolean}
- */
-export function toBool(val, dflt)
-{
-    if (typeof val == "boolean") return val;
-    if (typeof val == "number") return !!val;
-    if (val === undefined) val = dflt;
-    return /^(true|on|yes|1|t)$/i.test(val);
 }
 
 /**
@@ -388,7 +335,7 @@ export function split(str, sep, options)
     var list = (Array.isArray(str) ? str : (isString(str) ? str : String(str)).split(sep || /[,|]/)), len = list.length;
     if (!len) return list;
 
-    var rc = [], keys = isObj(options) ? Object.reys(options) : [], v;
+    var rc = [], keys = isObject(options) ? Object.reys(options) : [], v;
     for (let i = 0; i < len; ++i) {
         v = list[i];
         if (v === "" && !options?.keepempty) continue;
@@ -485,7 +432,9 @@ export function loadResources(urls, options, callback)
         } else {
             el = app.$elem('script', "async", !!options?.async, "src", url, "load", ev, "error", ev)
         }
-        for (const p in options?.attrs) app.$attr(el, p, options.attrs[p]);
+        for (const p in options?.attrs) {
+            app.$attr(el, p, options.attrs[p]);
+        }
         document.head.appendChild(el);
     }, options?.timeout > 0 ? () => { setTimeout(callback, options.timeout) } : callback);
 }
@@ -501,13 +450,6 @@ export function loadResources(urls, options, callback)
  */
 export function sendFile(url, options, callback)
 {
-    var body = new FormData();
-    for (const p in options.files) {
-        const file = options.files[p];
-        if (!file?.files?.length) continue;
-        body.append(p, file.files[0]);
-    }
-
     const add = (k, v) => {
        body.append(k, isFunction(v) ? v() : v === null || v === true ? "" : v);
     }
@@ -517,22 +459,33 @@ export function sendFile(url, options, callback)
         if (Array.isArray(val)) {
             for (const i in val) build(`${key}[${app.isO(val[i]) ? i : ""}]`, val[i]);
         } else
-        if (isObj(val)) {
+        if (isObject(val)) {
             for (const n in val) build(`${key}[${n}]`, val[n]);
         } else {
             add(key, val);
         }
     }
+
+    var body = new FormData();
     for (const p in options.body) {
         build(p, options.body[p]);
+    }
+    for (const p in options.files) {
+        const file = options.files[p];
+        if (!file?.files?.length) continue;
+        body.append(p, file.files[0]);
     }
     for (const p in options.json) {
         const blob = new Blob([JSON.stringify(options.json[p])], { type: "application/json" });
         body.append(p, blob);
     }
 
-    var req = { body };
+    var req = {
+        body,
+        method: options.method || "POST",
+    };
     for (const p in options) {
+        if (p == "json" || p == "files") continue;
         req[p] ??= options[p];
     }
     app.fetch(url, req, callback);

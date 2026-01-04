@@ -1,0 +1,325 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>bootstrap.js - Alpinejs-app Documentation</title>
+    
+    <meta name="description" content="A Simplest Single Page Application (SPA) library for Alpine.js." />
+    
+    
+    
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+
+    
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Tutorials</h3><ul><li><a href="tutorial-start.html">Getting Started</a><ul class='members'><li data-type='method' style='display: none;'><a href="tutorial-start.html#installation">Installation</a></li><li data-type='method' style='display: none;'><a href="tutorial-start.html#first-app">First app</a></li></ul></li><li><a href="tutorial-components.html">Components</a><ul class='members'><li data-type='method' style='display: none;'><a href="tutorial-components.html#component-lifecycle-and-event-handling">Component Lifecycle and Event Handling</a></li><li data-type='method' style='display: none;'><a href="tutorial-components.html#event-emitter">Event emitter</a></li><li data-type='method' style='display: none;'><a href="tutorial-components.html#custom-elements">Custom Elements</a></li><li data-type='method' style='display: none;'><a href="tutorial-components.html#examples">Examples</a></li></ul></li><li><a href="tutorial-directives.html">Directives</a><ul class='members'><li data-type='method' style='display: none;'><a href="tutorial-directives.html#directive-x-template">Directive: **x-template**</a></li><li data-type='method' style='display: none;'><a href="tutorial-directives.html#directive-x-render">Directive: **x-render**</a></li><li data-type='method' style='display: none;'><a href="tutorial-directives.html#directive-x-scope-level">Directive: **x-scope-level**</a></li></ul></li><li><a href="tutorial-magics.html">Magics</a><ul class='members'><li data-type='method' style='display: none;'><a href="tutorial-magics.html#magic-app">Magic: **$app**</a></li><li data-type='method' style='display: none;'><a href="tutorial-magics.html#magic-component">Magic: **$component**</a></li><li data-type='method' style='display: none;'><a href="tutorial-magics.html#magic-parent">Magic: **$parent**</a></li><li data-type='method' style='display: none;'><a href="tutorial-magics.html#magic-params">Magic: **$params**</a></li></ul></li></ul><h3>Classes</h3><ul><li><a href="AlpineComponent.html">AlpineComponent</a><ul class='methods'><li data-type='method' style='display: none;'><a href="AlpineComponent.html#destroy">destroy</a></li><li data-type='method' style='display: none;'><a href="AlpineComponent.html#init">init</a></li></ul></li><li><a href="Component.html">Component</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Component.html#destroy">destroy</a></li><li data-type='method' style='display: none;'><a href="Component.html#init">init</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="app.html">app</a><ul class='methods'><li data-type='method' style='display: none;'><a href="app.html#.$">$</a></li><li data-type='method' style='display: none;'><a href="app.html#.$all">$all</a></li><li data-type='method' style='display: none;'><a href="app.html#.$append">$append</a></li><li data-type='method' style='display: none;'><a href="app.html#.$attr">$attr</a></li><li data-type='method' style='display: none;'><a href="app.html#.$data">$data</a></li><li data-type='method' style='display: none;'><a href="app.html#.$elem">$elem</a></li><li data-type='method' style='display: none;'><a href="app.html#.$empty">$empty</a></li><li data-type='method' style='display: none;'><a href="app.html#.$event">$event</a></li><li data-type='method' style='display: none;'><a href="app.html#.$off">$off</a></li><li data-type='method' style='display: none;'><a href="app.html#.$on">$on</a></li><li data-type='method' style='display: none;'><a href="app.html#.$param">$param</a></li><li data-type='method' style='display: none;'><a href="app.html#.$parse">$parse</a></li><li data-type='method' style='display: none;'><a href="app.html#.$ready">$ready</a></li><li data-type='method' style='display: none;'><a href="app.html#.__">__</a></li><li data-type='method' style='display: none;'><a href="app.html#.afetch">afetch</a></li><li data-type='method' style='display: none;'><a href="app.html#.emit">emit</a></li><li data-type='method' style='display: none;'><a href="app.html#.fetch">fetch</a></li><li data-type='method' style='display: none;'><a href="app.html#.isA">isA</a></li><li data-type='method' style='display: none;'><a href="app.html#.isE">isE</a></li><li data-type='method' style='display: none;'><a href="app.html#.isF">isF</a></li><li data-type='method' style='display: none;'><a href="app.html#.isN">isN</a></li><li data-type='method' style='display: none;'><a href="app.html#.isO">isO</a></li><li data-type='method' style='display: none;'><a href="app.html#.isS">isS</a></li><li data-type='method' style='display: none;'><a href="app.html#.off">off</a></li><li data-type='method' style='display: none;'><a href="app.html#.on">on</a></li><li data-type='method' style='display: none;'><a href="app.html#.once">once</a></li><li data-type='method' style='display: none;'><a href="app.html#.only">only</a></li><li data-type='method' style='display: none;'><a href="app.html#.parsePath">parsePath</a></li><li data-type='method' style='display: none;'><a href="app.html#.plugin">plugin</a></li><li data-type='method' style='display: none;'><a href="app.html#.render">render</a></li><li data-type='method' style='display: none;'><a href="app.html#.resolve">resolve</a></li><li data-type='method' style='display: none;'><a href="app.html#.restorePath">restorePath</a></li><li data-type='method' style='display: none;'><a href="app.html#.savePath">savePath</a></li><li data-type='method' style='display: none;'><a href="app.html#.start">start</a></li><li data-type='method' style='display: none;'><a href="app.html#.stylePlugin">stylePlugin</a></li><li data-type='method' style='display: none;'><a href="app.html#.toCamel">toCamel</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#call">call</a></li><li><a href="global.html#escape">escape</a></li><li><a href="global.html#forEach">forEach</a></li><li><a href="global.html#forEachSeries">forEachSeries</a></li><li><a href="global.html#hideAlert">hideAlert</a></li><li><a href="global.html#hideToast">hideToast</a></li><li><a href="global.html#isFlag">isFlag</a></li><li><a href="global.html#loadResources">loadResources</a></li><li><a href="global.html#log">log</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#parallel">parallel</a></li><li><a href="global.html#sanitizer">sanitizer</a></li><li><a href="global.html#sendFile">sendFile</a></li><li><a href="global.html#series">series</a></li><li><a href="global.html#showAlert">showAlert</a></li><li><a href="global.html#showLogin">showLogin</a></li><li><a href="global.html#showToast">showToast</a></li><li><a href="global.html#split">split</a></li><li><a href="global.html#toDate">toDate</a></li><li><a href="global.html#toDuration">toDuration</a></li><li><a href="global.html#toNumber">toNumber</a></li><li><a href="global.html#toSize">toSize</a></li><li><a href="global.html#toTitle">toTitle</a></li><li><a href="global.html#trace">trace</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">bootstrap.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>//
+//  Author: Vlad Seryakov vseryakov@gmail.com
+//  backendjs 2018
+//
+
+/* global bootstrap */
+
+import { app, call, escape, isElement, isObject } from "./app"
+
+import { sanitizer, toDuration, toTitle } from "./lib"
+
+/**
+ * Show Bootstrap alert
+ * @param {HTMLElement} [container] - show inside container or document.body
+ * @param {string} type - type of alert: error, danger, warning, info, success, primary
+ * @param {string} text - text to show
+ * @param {Object} [options]
+ */
+export function showAlert(container, type, text, options)
+{
+    if (typeof container == "string") options = text, text = type, type = container, container = document.body;
+    if (!text) return;
+    var o = Object.assign({}, options, { type });
+    o.type = o.type == "error" ? "danger" : o.type || "info";
+
+    var element = o.element || ".alerts";
+    var alerts = app.$(element, isElement(container) || document.body);
+    if (!alerts) return;
+
+    var html = `
+        &lt;div class="alert alert-dismissible alert-${o.type} show fade" role="alert">
+        ${o.icon ? `&lt;i class="fa fa-fw ${o.icon}">&lt;/i>` : ""}
+            ${alertText(text, o)}
+            &lt;button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">&lt;/button>
+        &lt;/div>`;
+    if (o.hide || alerts.style.display == "none") {
+        alerts.dataset.alert = "hide";
+        alerts.style.display = "block";
+    }
+    if (o.css) alerts.classList.add(o.css);
+    if (o.clear) app.$empty(alerts);
+    var alert = app.$parse(html).firstElementChild;
+    var instance = bootstrap.Alert.getOrCreateInstance(alert);
+    alerts.prepend(alert);
+    if (o.delay) {
+        setTimeout(() => { instance.close() }, o.delay);
+    }
+    app.$on(alert, 'closed.bs.alert', (ev) => { cleanupAlerts(alerts, o) });
+    if (o.scroll) alerts.scrollIntoView();
+    return alert;
+}
+
+/**
+ * Hide active Bootstrap alert
+ * @param {HTMLElement} container
+ * @param {Object} [options]
+ */
+export function hideAlert(container, options)
+{
+    var alerts = app.$(options?.element || ".alerts", container);
+    if (!alerts) return;
+    app.$empty(alerts);
+    cleanupAlerts(alerts, options);
+}
+
+/**
+ * @param {HTMLElement} [container] - show inside container or document.body
+ * @param {string} type - type of alert: error, danger, warning, info, success, primary
+ * @param {string} text - text to show
+ * @param {Object} [options]
+ */
+export function showToast(container, type, text, options)
+{
+    if (typeof container == "string") options = text, text = type, type = container, container = null;
+    if (!text) return;
+    var o = Object.assign({
+        type: type == "error" ? "danger" : typeof type == "string" &amp;&amp; type || "info",
+        now: Date.now(),
+        delay: 5000,
+        role: "alert"
+    }, isObject(options));
+
+    var t = o.type[0];
+    var delay = o.delay * (t == "d" || t == "w" ? 3 : t == "i" ? 2 : 1);
+    var icon = o.icon || t == "s" ? "fa-check-circle" : t == "d" ? "fa-exclamation-circle" : t == "w" ? "fa-exclamation-triangle": "fa-info-circle";
+    var fmt = Intl.DateTimeFormat({ timeStyle: "short" });
+    var html = `
+    &lt;div class="toast fade show ${o.type} ${o.css || ""}" role="${o.role}" aria-live="polite" aria-atomic="true" data-bs-autohide="${!o.dismiss}" data-bs-delay="${delay}">
+      &lt;div class="toast-header ${o.css_header || ""}">
+        &lt;span class="fa fa-fw ${icon} me-2 text-${o.type}" aria-hidden="true">&lt;/span>
+        &lt;strong class="me-auto toast-title">${o.title || toTitle(type)}&lt;/strong>
+        &lt;small class="timer px-1" aria-hidden="true">${o.countdown ? Math.round(delay/1000)+"s" : !o.notimer ? "just now" : ""}&lt;/small>
+        &lt;small>(${fmt.format(o.now)})&lt;/small>
+        &lt;button type="button" class="btn-close ms-2" data-bs-dismiss="toast" aria-label="Close">&lt;/button>
+      &lt;/div>
+      &lt;div class="toast-body ${o.css_body || ""}">
+        ${alertText(text, o)}
+      &lt;/div>
+    &lt;/div>`;
+
+    if (!container) {
+        container = app.$(".toast-container");
+        if (!container) {
+            container = app.$elem("div", "aria-live", "polite");
+            document.body.append(container);
+        }
+        var pos = o.pos == "tl" ? "top-0 start-0" :
+        o.pos == "tr" ? "top-0 end-0" :
+        o.pos == "ml" ? "top-50 start-0  translate-middle-y" :
+        o.pos == "mc" ? "top-50 start-50 translate-middle" :
+        o.pos == "mr" ? "top-50 end-0 translate-middle-y" :
+        o.pos == "bl" ? "bottom-0 start-0" :
+        o.pos == "bc" ? "bottom-0 start-50 translate-middle-x" :
+        o.pos == "br" ? "bottom-0 end-0" : "top-0 start-50 translate-middle-x";
+        container.className = `toast-container position-fixed ${pos} p-3`;
+    }
+    if (o.clear) app.$empty(container);
+    var toast = app.$parse(html).firstElementChild;
+    bootstrap.Toast.getOrCreateInstance(toast).show();
+    container.prepend(toast);
+    toast._timer = o.notimer ? "" : setInterval(() => {
+        if (!toast.parentElement) return clearInterval(toast._timer);
+        app.$(".timer", toast).textContent = o.countdown ? toDuration(delay - (Date.now() - o.now)) : toDuration(o.now, 1) + " ago";
+    }, o.countdown ? o.delay/2 : o.delay);
+    app.$on(toast, "hidden.bs.toast", (ev) => { clearInterval(ev.target._timer); ev.target.remove() });
+    return toast;
+}
+
+/**
+ * Hide active toasts inside first .toast-container
+ */
+export function hideToast()
+{
+    app.$empty(app.$(".toast-container"));
+}
+
+/**
+ * Login modal popup, generic enough but built for backendjs in mind
+ */
+export function showLogin(options, callback)
+{
+    if (typeof options == "function") callback = options, options = null;
+
+    const html = `
+&lt;div class="modal fade" tabindex="-1" aria-labelledby="hdr" aria-modal="true" role="dialog">
+&lt;div class="modal-dialog" role="document">
+    &lt;div class="modal-content">
+    &lt;div class="modal-body">
+        &lt;form class="form-horizontal" role="form">
+            &lt;h4 class="text-center py-4" id="hdr" >
+            &lt;img src="${options?.logo || "/img/logo.png"}" style="max-height: 3rem;"> ${options?.title || 'Please Sign In'}&lt;/h4>
+            &lt;div class="mb-3 row">
+                &lt;label for="login" class=" col-form-label col-sm-4">${options?.login || "Login"}&lt;/label>
+                &lt;div class="col-sm-8">
+                    &lt;input id="login" type="text" class="form-control">
+                &lt;/div>
+            &lt;/div>
+            &lt;div class="mb-3 row">
+                &lt;label for="secret" class=" col-form-label col-sm-4">${options?.password || "Password"}&lt;/label>
+                &lt;div class="col-sm-8">
+                    &lt;input id="secret" placeholder="Password" type="password" class="form-control">
+                &lt;/div>
+            &lt;/div>
+        &lt;/form>
+    &lt;/div>
+    &lt;div class="modal-footer">
+        &lt;button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel&lt;/button>
+        &lt;button type="button" id="submit" class="btn btn-outline-secondary">Login&lt;/button>
+    &lt;/div>
+    &lt;/div>
+&lt;/div>
+&lt;/div>`;
+    var modal = app.$parse(html).firstChild;
+
+    var login = app.$("#login", modal);
+    app.$on(login, "keyup", (ev) => {
+        if (ev.which == 13) { secret.focus(); ev.preventDefault() }
+    });
+
+    var secret = app.$("#secret", modal);
+    app.$on(secret, "keyup", (ev) => {
+        if (ev.which == 13) { submit.click(); ev.preventDefault() }
+    });
+
+    var submit = app.$("#submit", modal);
+    app.$on(submit, "click", (ev) => {
+        var body = { login: login.value, secret: secret.value }
+        app.fetch(options?.url || "/login", { post: 1, body }, (err, rc, info) => {
+            if (err) return showAlert("error", err);
+            Object.assign(app.user, rc);
+            call(callback, err);
+            app.emit("user:login", rc, info);
+            instance.hide();
+        });
+    });
+
+    app.$on(modal, "shown.bs.modal", (e) => {
+        queueMicrotask(() => { login.focus() });
+    });
+    app.$on(modal, "hide.bs.modal", (e) => {
+        if (isElement(document.activeElement)) {
+            document.activeElement.blur();
+        }
+    });
+    app.$on(modal, "hidden.bs.modal", (e) => {
+        modal.remove();
+        instance.dispose();
+    });
+    document.body.append(modal);
+    var instance = bootstrap.Modal.getOrCreateInstance(modal);
+    instance.show();
+    return modal;
+}
+
+function alertText(text, options)
+{
+    text = text?.message || text?.text || text?.msg || text;
+    text = typeof text == "string" ? options?.safe ? text :
+           escape(text.replaceAll("&lt;br>", "\n")) :
+           escape(JSON.stringify(text, null, " ").replace(/["{}[\]]/g, ""));
+    return sanitizer(text).replace(/\n/g, "&lt;br>");
+}
+
+function cleanupAlerts(alerts, options)
+{
+    if (alerts.firstElementChild) return;
+    if (options?.css) alerts.classList.remove(options.css);
+    if (options?.hide || alerts.dataset.alert == "hide") alerts.style.display = "none";
+    delete alerts.dataset.alert;
+}
+
+function applyPlugins(element)
+{
+    app.$all(".carousel", element).forEach(el => (bootstrap.Carousel.getOrCreateInstance(el)));
+    app.$all(`[data-bs-toggle="popover"]`, element).forEach(el => (bootstrap.Popover.getOrCreateInstance(el)));
+}
+
+app.$ready(() => {
+    app.stylePlugin(applyPlugins);
+    app.on("dom:changed", (ev) => {
+        document.documentElement.setAttribute("data-bs-theme", ev.colorScheme);
+    });
+    app.on("alert", showAlert);
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a> using the <a href="https://github.com/vseryakov/docdash">docdash</a> theme.
+</footer>
+
+
+<script src="scripts/search.js" defer></script>
+
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+
+</body>
+</html>
