@@ -254,7 +254,13 @@ module.exports = {
             "error",
             "last"
         ],
-        "sort-imports": "error",
+        "sort-imports": [
+            "error",
+            {
+                "ignoreCase": true,
+                "ignoreDeclarationSort": true
+            }
+        ],
         "sort-keys": "off",
         "sort-vars": "off",
         "space-before-blocks": "error",

@@ -1,6 +1,13 @@
-import { app, call, isFunction, isObject, isString } from "./app"
 
-const fetchOptions = app.fetchOptions = {
+import { call, isFunction, isObject, isString, trace } from "./app"
+
+/**
+ * Global object to customize {@link fetch} and {@link afetch}
+ * @example <caption>make POST default method</caption>
+ * fetchOptions.method = "POST"
+ * await afetch("url.com")
+ */
+export var fetchOptions = {
     method: "GET",
     cache: "default",
     headers: {},
@@ -81,19 +88,18 @@ function parseResponse(res)
  * @param {function} [callback] - callback as (err, data, info) where info is an object { status, headers, type }
  *
  * @example
- * app.fetch("http://api.host.com/user/123", (err, data, info) => {
+ * fetch("http://api.host.com/user/123", (err, data, info) => {
  *    if (info.status == 200) console.log(data, info);
  * });
- * @memberof app
  */
 
-app.fetch = function(url, options, callback)
+export function fetch(url, options, callback)
 {
     if (isFunction(options)) callback = options, options = null;
 
     try {
         const [uri, opts] = parseOptions(url, options);
-        app.trace("fetch:", uri, opts, options);
+        trace("fetch:", uri, opts, options);
 
         window.fetch(uri, opts).
         then(async (res) => {
@@ -128,23 +134,22 @@ app.fetch = function(url, options, callback)
 }
 
 /**
- * Promisified {@link app.fetch} which returns a Promise, all exceptions are passed to the reject handler, no need to use try..catch
+ * Promisified {@link fetch} which returns a Promise, all exceptions are passed to the reject handler, no need to use try..catch
  * Return everything in an object `{ ok, status, err, data, info }`.
  * @example
- * const { err, data } = await app.afetch("https://localhost:8000")
+ * const { err, data } = await afetch("https://localhost:8000")
  *
- * const { ok, err, status, data } = await app.afetch("https://localhost:8000")
+ * const { ok, err, status, data } = await afetch("https://localhost:8000")
  * if (!ok) console.log(status, err);
  * @param {string} url
  * @param {object} [options]
- * @memberof app
  * @async
  */
 
-app.afetch = function(url, options)
+export function afetch(url, options)
 {
     return new Promise((resolve, reject) => {
-        app.fetch(url, options, (err, data, info) => {
+        fetch(url, options, (err, data, info) => {
             resolve({ ok: !err, status: info.status, err, data, info });
         });
     });

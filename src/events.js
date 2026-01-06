@@ -1,4 +1,4 @@
-import { app, isFunction, isString } from "./app"
+import { app, isFunction, isString, trace } from "./app"
 
 var _events = {}
 
@@ -9,7 +9,8 @@ var _events = {}
  * @param {function} callback
  * @param {string} [namespace]
  */
-app.on = (event, callback, namespace) => {
+export function on(event, callback, namespace)
+{
     if (!isFunction(callback)) return;
     if (!_events[event]) _events[event] = [];
     _events[event].push([callback, isString(namespace)]);
@@ -21,13 +22,14 @@ app.on = (event, callback, namespace) => {
  * @param {function} callback
  * @param {string} [namespace]
  */
-app.once = (event, callback, namespace) => {
+export function once(event, callback, namespace)
+{
     if (!isFunction(callback)) return;
     const cb = (...args) => {
-        app.off(event, cb);
+        off(event, cb);
         callback(...args);
     }
-    app.on(event, cb, namespace);
+    on(event, cb, namespace);
 }
 
 /**
@@ -36,7 +38,8 @@ app.once = (event, callback, namespace) => {
  * @param {function} callback
  * @param {string} [namespace]
  */
-app.only = (event, callback, namespace) => {
+export function only(event, callback, namespace)
+{
     _events[event] = isFunction(callback) ? [callback, isString(namespace)] : [];
 }
 
@@ -53,7 +56,8 @@ app.only = (event, callback, namespace) => {
  * ...
  * app.off("myapp")
  */
-app.off = (event, callback) => {
+export function off(event, callback)
+{
     if (event && callback) {
         if (!_events[event]) return;
         const i = isFunction(callback) ? 0 : isString(callback) ? 1 : -1;
@@ -75,8 +79,9 @@ app.off = (event, callback) => {
  * @example <caption>notify topic:event1, topic:event2, ...</caption>
  * app.emit("topic:*",....)
  */
-app.emit = (event, ...args) => {
-    app.trace("emit:", event, ...args, app.debug > 1 && _events[event]);
+export function emit(event, ...args)
+{
+    trace("emit:", event, ...args, app.debug > 1 && _events[event]);
     if (_events[event]) {
         for (const cb of _events[event]) cb[0](...args);
     } else

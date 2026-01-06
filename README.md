@@ -21,7 +21,7 @@
 
   Native support:
 
-   - esbuild: bundle everything into a single file by converting HTML files to strings: see **scripts/build-app.js** for a simple **esbuild** plugin
+   - esbuild: bundle everything into a single file by importing multiple JS/HTML files: see **scripts/build-app.js** for a simple **esbuild** plugin
    - server-side: maintain HTML files on the server to load individually on demand using the same directives, see **examples/dashboard.html**.
 
   More ideas:
@@ -43,6 +43,7 @@
 ## Getting started
 
 Visit the [tutorial](https://vseryakov.github.io/alpinejs-app/docs/web/tutorial-start.html).
+
 
 ## Full documentation
 

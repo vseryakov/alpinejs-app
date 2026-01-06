@@ -1,5 +1,7 @@
 
-app.components.todo = class extends app.AlpineComponent {
+import { AlpineComponent } from "../dist/app.mjs"
+
+export class todo extends AlpineComponent {
 
     newTask = ''
     tasks = []

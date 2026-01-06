@@ -1,5 +1,7 @@
 
-app.components.hello = class extends app.AlpineComponent {
+import { AlpineComponent, app, emit } from "../dist/app.mjs"
+
+export class hello extends AlpineComponent {
     template = ""
 
     toggle() {
@@ -9,7 +11,7 @@ app.components.hello = class extends app.AlpineComponent {
 
 app.templates.hello2 = "#hello"
 
-app.components.hello2 = class extends app.components.hello {
+export class hello2 extends hello {
     onCreate() {
         this.params.reason = "Hello2 World"
         this._timer = setInterval(() => { this.params.param1 = Date() }, 1000);
@@ -29,7 +31,7 @@ app.components.hello2 = class extends app.components.hello {
 
     toggle() {
         super.toggle()
-        app.emit(app.event, "toggle", this.template)
+        emit(app.event, "toggle", this.template)
     }
 }
 

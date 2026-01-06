@@ -1,4 +1,8 @@
-import { app, isElement, isFunction, isString } from "./app"
+
+import { app, call, isElement, isFunction, isString, toCamel, trace } from "./app"
+import { emit, on } from "./events"
+import { $ } from "./dom"
+import { parsePath } from "./router"
 
 var _plugins = {}
 var _default_plugin;
@@ -7,25 +11,27 @@ var _default_plugin;
  * Register a render plugin, at least 2 functions must be defined in the options object:
  * @param {string} name
  * @param {object} options
- * @param {function} render - (element, options) to show a component, called by {@link app.render}
+ * @param {function} render - (element, options) to show a component, called by {@link render}
  * @param {function} cleanup - (element) - optional, run additional cleanups before destroying a component
  * @param {function} data - (element) - return the component class instance for the given element or the main
  * @param {boolean} [options.default] - if not empty make this plugin default
- * @param {class} [options.Component] - optional base component constructor, it will be registered as app.{Type}Component, like AlpineComponent, KoComponent,... to easy create custom components
+ * @param {class} [options.Component] - optional base component constructor, it will be registered as
+ * app.{Type}Component, like AlpineComponent, KoComponent,... to easy create custom components in CDN mode
  *
  * The reason for plugins is that while this is designed for Alpine.js, the idea originated by using Knockout.js with this system,
  * the plugin can be found at [app.ko.js](https://github.com/vseryakov/backendjs/blob/c97ca152dfd55a3841d07b54701e9d2b8620c516/web/js/app.ko.js).
  *
  * There is a simple plugin in examples/simple.js to show how to use it without any rendering engine with vanillla HTML, not very useful though.
  */
-app.plugin = (name, options) => {
+export function register(name, options)
+{
     if (!name || !isString(name)) throw Error("type must be defined")
     if (options) {
         for (const p of ["render", "cleanup", "data"]) {
             if (options[p] && !isFunction(options[p])) throw Error(p + " must be a function");
         }
         if (isFunction(options?.Component)) {
-            app[`${name.substr(0, 1).toUpperCase() + name.substr(1).toLowerCase()}Component`] = options.Component;
+            app[toCamel(`_${name}_component`)] = options.Component;
         }
     }
     var plugin = _plugins[name] = _plugins[name] || {};
@@ -42,8 +48,9 @@ app.plugin = (name, options) => {
  *
  * @returns {Proxy|undefined} to get the actual object pass it to **Alpine.raw(app.$data())**
  */
-app.$data = (element, level) => {
-    if (isString(element)) element = app.$(element);
+export function $data(element, level)
+{
+    if (isString(element)) element = $(element);
     for (const p in _plugins) {
         if (!_plugins[p].data) continue;
         const d = _plugins[p].data(element, level);
@@ -54,7 +61,7 @@ app.$data = (element, level) => {
 /**
  * Returns an object with **template** and **component** properties.
  *
- * Calls {@link app.parsePath} first to resolve component name and params.
+ * Calls {@link parsePath} first to resolve component name and params.
  *
  * Passing an object with 'template' set will reuse it, for case when template is already resolved.
  *
@@ -79,9 +86,10 @@ app.$data = (element, level) => {
  * @param {string} [dflt]
  * @returns {object} in format { name, params, template, component }
  */
-app.resolve = (path, dflt) => {
-    const tmpl = app.parsePath(path);
-    app.trace("resolve:", path, dflt, tmpl);
+export function resolve(path, dflt)
+{
+    const tmpl = parsePath(path);
+    trace("resolve:", path, dflt, tmpl);
     var name = tmpl?.name, templates = app.templates, components = app.components;
     var template = tmpl.template || templates[name] || document.getElementById(name);
     if (!template && dflt) {
@@ -106,10 +114,10 @@ app.resolve = (path, dflt) => {
 }
 
 /**
- * Show a component, options can be a string to be parsed by {@link app.parsePath} or an object with { name, params } properties.
- * if no **params.$target** provided a component will be shown inside the main element defined by {@link app.$target}.
+ * Show a component, options can be a string to be parsed by {@link parsePath} or an object with { name, params } properties.
+ * if no **params.$target** provided a component will be shown inside the main element defined by {@link $target}.
  *
- * It returns the resolved component as described in {@link app.resolve} method after rendering or nothing if nothing was shown.
+ * It returns the resolved component as described in {@link resolve} method after rendering or nothing if nothing was shown.
  *
  * When showing main app the current component is asked to be deleted first by sending an event __prepare:delete__,
  * a component that is not ready to be deleted yet must set the property __event.stop__ in the event
@@ -126,16 +134,17 @@ app.resolve = (path, dflt) => {
  * @param {string} [dflt]
  * @returns {object|undefined}
  */
-app.render = (options, dflt) => {
-    var tmpl = app.resolve(options, dflt);
+export function render(options, dflt)
+{
+    var tmpl = resolve(options, dflt);
     if (!tmpl) return;
 
     var params = tmpl.params = Object.assign(tmpl.params || {}, options?.params);
     params.$target = options.$target || params.$target || app.$target;
 
-    app.trace("render:", options, tmpl.name, tmpl.params);
+    trace("render:", options, tmpl.name, tmpl.params);
 
-    const element = isElement(params.$target) || app.$(params.$target);
+    const element = isElement(params.$target) || $(params.$target);
     if (!element) return;
 
     var plugin = tmpl.component?.$type || options?.plugin || params.$plugin;
@@ -146,23 +155,23 @@ app.render = (options, dflt) => {
     if (params.$target == app.$target) {
         // Ask if it can be destroyed first
         var ev = { name: tmpl.name, params };
-        app.emit(app.event, "prepare:delete", ev);
+        emit(app.event, "prepare:delete", ev);
         if (ev.stop) return;
 
         // Cleanup by all plugins
         var plugins = Object.values(_plugins);
         for (const p of plugins.filter(x => x.cleanup)) {
-            app.call(p.cleanup, element);
+            call(p.cleanup, element);
         }
 
         // Save in history if not explicitly asked not to
         if (!(options?.$nohistory || params.$nohistory || tmpl.component?.$nohistory || app.$nohistory)) {
             queueMicrotask(() => {
-                app.emit("path:save", tmpl);
+                emit("path:save", tmpl);
             });
         }
     }
-    app.emit("component:render", tmpl);
+    emit("component:render", tmpl);
     plugin.render(element, tmpl);
     return tmpl;
 }
@@ -177,7 +186,7 @@ app.render = (options, dflt) => {
  *     app.$all(".carousel", element).forEach(el => (bootstrap.Carousel.getOrCreateInstance(el)));
  * })
  */
-app.stylePlugin = function(callback)
+export function stylePlugin(callback)
 {
     if (isFunction(callback)) _stylePlugins.push(callback);
 }
@@ -190,11 +199,11 @@ function applyStylePlugins(element)
     for (const cb of _stylePlugins) cb(element);
 }
 
-app.on("alpine:init", () => {
+on("alpine:init", () => {
     for (const p in _plugins) {
-        app.call(_plugins[p], "init");
+        call(_plugins[p], "init");
     }
-    app.on("component:create", (ev) => {
+    on("component:create", (ev) => {
         if (isElement(ev?.element)) applyStylePlugins(ev.element);
     });
 });

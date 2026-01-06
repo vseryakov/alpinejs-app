@@ -9,10 +9,10 @@ cat > package.json <<EOF
     "watch": "node node_modules/alpinejs-app/scripts/build-app.js --watch"
   },
   "dependencies": {
-    "alpinejs-app": "^1.4.0"
+    "alpinejs-app": "^1.5.0"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.27.0"
   }
 }
 EOF
@@ -35,7 +35,9 @@ cat > index.html <<EOF
 
     <button class="btn btn-primary" x-render="'hello/hi?reason=World'">Say Hello</button>
 </template>
+EOF
 
+cat > hello.html <<EOF
 <template id="hello">
     <h5>This is the <span x-text=\$name></span> component</h5>
 
@@ -63,8 +65,11 @@ EOF
 
 cat > index.js <<EOF
 import 'alpinejs-app/dist/app.js'
+
 import './hello'
-import './example.html'
+
+import * as templates from './{hello,example}.html'
+Object.assign(app.templates, templates)
 
 app.debug = 1
 app.start();

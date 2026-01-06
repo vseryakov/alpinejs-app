@@ -1,8 +1,5 @@
 
-import app from './../src/index'
+import "./cdn"
 
 import * as lib from "./../src/lib"
-Object.assign(app, lib);
-
-
-window.app = app
+Object.assign(window.app, lib);

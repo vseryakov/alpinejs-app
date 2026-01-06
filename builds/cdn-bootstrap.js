@@ -1,10 +1,6 @@
 
-import app from './../src/index'
+import "./cdn-lib"
 
-import * as bs from "./../src/bootstrap"
-import * as lib from "./../src/lib"
+import * as bootstrap from "./../src/bootstrap"
 
-Object.assign(app, bs);
-Object.assign(app, lib);
-
-window.app = app
+Object.assign(window.app, bootstrap);

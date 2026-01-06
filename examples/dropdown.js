@@ -1,5 +1,7 @@
 
-app.components.dropdown = class extends app.AlpineComponent {
+import { $data, AlpineComponent } from "../dist/app.mjs"
+
+export class dropdown extends AlpineComponent {
 
     title = ""
     value = ""
@@ -7,7 +9,7 @@ app.components.dropdown = class extends app.AlpineComponent {
 
     onCreate() {
         this._parent = this.$el.parentElement;
-        var xdata = app.$data(this.$parent, 0);
+        var xdata = $data(this.$parent, 0);
         var options = xdata?.options || this.options;
         this.value = this._parent._x_model?.get() || xdata?.value || this._value(options[0]);
         this.title = this._title(options.find(x => (this.value == this._value(x))));

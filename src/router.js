@@ -1,7 +1,10 @@
-import { app, isObject, isString } from "./app"
 
+import { app, isObject, isString, trace } from "./app"
+import { $on, $ready } from "./dom"
+import { emit, on } from "./events"
+import { render } from "./render"
 
- /**
+/**
   * Parses component path and returns an object with at least **{ name, params }** ready for rendering. External urls are ignored.
   *
   * Passing an object will retun a shallow copy of it with name and params properties possibly set if not provided.
@@ -19,7 +22,8 @@ import { app, isObject, isString } from "./app"
   * @param {string|object} path
   * @returns {Object} in format { name, params }
   */
-app.parsePath = (path) => {
+export function parsePath(path)
+{
     var rc = { name: "", params: {} }, query, loc = window.location;
 
     if (isObject(path)) return Object.assign(rc, path);
@@ -67,7 +71,8 @@ app.parsePath = (path) => {
  * @param {Object} options
  *
  */
-app.savePath = (options) => {
+export function savePath(options)
+{
     if (isString(options)) options = { name: options };
     if (!options?.name) return;
     var path = [options.name];
@@ -76,37 +81,39 @@ app.savePath = (options) => {
     }
     while (!path.at(-1)) path.length--;
     path = path.join("/");
-    app.trace("savePath:", path, options);
+    trace("savePath:", path, options);
     if (!path) return;
-    app.emit("path:push", window.location.origin + app.base + path);
+    emit("path:push", window.location.origin + app.base + path);
     window.history.pushState(null, "", window.location.origin + app.base + path);
 }
 
 /**
- * Show a component by path, it is called on **path:restore** event by default from {@link app.start} and is used
+ * Show a component by path, it is called on **path:restore** event by default from {@link start} and is used
  * to show first component on initial page load. If the path is not recognized or no component is
- * found then the default {@link app.index} component is shown.
+ * found then the default {@link index} component is shown.
  * @param {string} path
  */
-app.restorePath = (path) => {
-    app.trace("restorePath:", path, app.index);
-    app.render(path, app.index);
+export function restorePath(path)
+{
+    trace("restorePath:", path, app.index);
+    render(path, app.index);
 }
 
 /**
  * Setup default handlers:
- * - on **path:restore** event call {@link app.restorePath} to render a component from the history
- * - on **path:save** call {@link app.savePath} to save the current component in the history
- * - on page ready call {@link app.restorePath} to render the initial page
+ * - on **path:restore** event call {@link restorePath} to render a component from the history
+ * - on **path:save** call {@link savePath} to save the current component in the history
+ * - on page ready call {@link restorePath} to render the initial page
  *
  * **If not called then no browser history will not be handled, up to the app to do it some other way.**. One good
  * reason is to create your own handlers to build different path and then save/restore.
  */
-app.start = () => {
-    app.on("path:save", app.savePath);
-    app.on("path:restore", app.restorePath);
-    app.$ready(app.restorePath.bind(app, window.location.href));
+export function start()
+{
+    on("path:save", savePath);
+    on("path:restore", restorePath);
+    $ready(restorePath.bind(app, window.location.href));
 }
 
-app.$on(window, "popstate", () => app.emit("path:restore", window.location.href));
+$on(window, "popstate", () => emit("path:restore", window.location.href));
 

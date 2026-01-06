@@ -8,6 +8,7 @@ const opts = {
     entryPoints: ['index.js'],
     outfile: 'bundle.js',
     platform: 'browser',
+    metafile: true,
     bundle: true,
     plugins: [plugin],
     logLevel: 'info',
@@ -34,7 +35,7 @@ const opts = {
     } else {
         await esbuild.build(opts);
 
-        opts.entryPoints = ['index.esm.js'];
+        opts.entryPoints = ['index.mjs'];
         opts.platform = "neutral"
         opts.outfile = 'bundle.mjs'
         await esbuild.build(opts);

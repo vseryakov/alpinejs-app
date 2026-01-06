@@ -67,6 +67,11 @@ Point your browser to __http://localhost:8090/__ to see it in action.
     <button x-render="'hello/hi?reason=World'">Say Hello</button>
 </template>
 
+```
+
+### hello.html
+
+```html
 <template id="hello">
     <h5>This is the <span x-text=$name></span> component</h5>
 
@@ -99,8 +104,11 @@ Point your browser to __http://localhost:8090/__ to see it in action.
 
 ```javascript
 import 'alpinejs-app/dist/app.js'
+
 import './hello'
-import './example.html'
+
+import * as templates from './{hello,example}.html'
+Object.assign(app.templates, templates)
 
 app.debug = 1
 app.start();
@@ -120,15 +128,17 @@ app.components.hello = class extends app.AlpineComponent {
 
 **What is happening:**
 
-- The script defines a template and a component, {@link app.start} calls {@link app.restorePath} when the page is ready, defaulting to render "index" since the static path doesn’t match. (running locally with file:// origin will not replace history)
+- The script defines a template and a component, {@link start} calls {@link restorePath} when the page is ready, defaulting to render "index" since the static path doesn’t match. (running locally with file:// origin will not replace history)
 - The body includes a placeholder for the main app.
 - The "index" template is the default starting page, with a button to display the __hello__ component with parameters.
 - Clicking 'Say Hello' switches the display to the __hello__ component via __x-render__ directive.
-- The __hello__ component is a class extending {@link app.AlpineComponent} with a toggle function.
+- The __hello__ component is a class extending {@link AlpineComponent} with a toggle function.
 - A __x-template__ directive remains empty until the "template" variable is populated by clicking the 'Show' button, which triggers the component's toggle method to render the __example__ template in the contained div. The __.show__ modifier keeps the div hidden until template is set.
 - The __example__ template is defined in the "examples/example.html" file and bundled into bundle.js.
 
 Nothing much, all the work is done by Alpine.js actually.
+
+A more complex example is at [demo](https://vseryakov.github.io/alpinejs-app/examples/index.html).
 
 To continue go to the {@tutorial components}.
 

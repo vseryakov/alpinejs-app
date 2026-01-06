@@ -1,6 +1,6 @@
 /**
  * Global application object
- * @namespace
+ * @namespace app
  */
 
 export var app = {
@@ -18,7 +18,7 @@ export var app = {
     $target: "#app-main",
 
     /**
-     * @var {string} - Specifies a fallback component for unrecognized paths on initial load, it is used by {@link app.restorePath}.
+     * @var {string} - Specifies a fallback component for unrecognized paths on initial load, it is used by {@link restorePath}.
      * @default
      */
     index: "index",
@@ -42,16 +42,22 @@ export var app = {
      */
     components: {},
 
-    /**
-     * global defaults for the {@link app.fetch} will be used if not passed
-     * @var {object} app.fetchOptions
-     */
-
+    /** @var {function}  - see {@link isFunction} */
     isF: isFunction,
+
+    /** @var {function}  - see {@link isString} */
     isS: isString,
+
+    /** @var {function}  - see {@link isElement} */
     isE: isElement,
+
+    /** @var {function}  - see {@link isObject} */
     isO: isObject,
+
+    /** @var {function}  - see {@link isNumber} */
     isN: isNumber,
+
+    /** @var {function}  - see {@link isArray} */
     isA: isArray,
 
     toCamel,
@@ -83,8 +89,6 @@ export function log(...args) { console.log(...args) }
  * Empty locale translator
  * @param {...any} args
  * @returns {string}
- * @func __
- * @memberof app
  */
 export function __(...args) { return args.join("") };
 
@@ -92,8 +96,6 @@ export function __(...args) { return args.join("") };
  * Returns the array if the value is non empty array or dflt value if given or undefined
  * @param {any} val
  * @returns {any|any[]}
- * @func isA
- * @memberof app
  */
 export function isArray(val, dflt) { return Array.isArray(val) && val.length ? val : dflt }
 
@@ -101,8 +103,6 @@ export function isArray(val, dflt) { return Array.isArray(val) && val.length ? v
  * Returns the num itself if it is a number
  * @param {any} num
  * @returns {number|undefined}
- * @func isN
- * @memberof app
  */
 export function isNumber(num) { return typeof num == "number" ? num : undefined }
 
@@ -110,8 +110,6 @@ export function isNumber(num) { return typeof num == "number" ? num : undefined 
  * Returns the str itself if it is not empty or ""
  * @param {any} str
  * @returns {string}
- * @func isS
- * @memberof app
  */
 export function isString(str) { return typeof str == "string" && str }
 
@@ -119,8 +117,6 @@ export function isString(str) { return typeof str == "string" && str }
  * Returns the callback is it is a function
  * @param {any} callback
  * @returns {function|undefined}
- * @func isF
- * @memberof app
  */
 
 export function isFunction(callback) { return typeof callback == "function" && callback }
@@ -129,8 +125,6 @@ export function isFunction(callback) { return typeof callback == "function" && c
  * Returns the obj itself if it is a not null object
  * @param {any} obj
  * @returns {object|undefined}
- * @func isO
- * @memberof app
  */
 export function isObject(obj) { return typeof obj == "object" && obj }
 
@@ -138,8 +132,6 @@ export function isObject(obj) { return typeof obj == "object" && obj }
  * Returns the element itself if it is a HTMLElement
  * @param {any} element
  * @returns {HTMLElement|undefined}
- * @func isE
- * @memberof app
  */
 export function isElement(element) { return element instanceof HTMLElement && element }
 
@@ -147,8 +139,6 @@ export function isElement(element) { return element instanceof HTMLElement && el
  * Convert a string into camelized format
  * @param {string} str
  * @returns {string}
- * @func toCamel
- * @memberof app
  */
 export function toCamel(str)
 {

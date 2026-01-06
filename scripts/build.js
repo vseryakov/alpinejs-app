@@ -30,7 +30,7 @@ for (const cdn of cdns) {
 }
 
 esbuild.build({
-    entryPoints: ['builds/module.js'],
+    entryPoints: ['src/index.js'],
     outfile: 'dist/app.mjs',
     platform: 'neutral',
     bundle: true,
@@ -40,7 +40,7 @@ esbuild.build({
 }).catch(() => process.exit(1))
 
 esbuild.build({
-    entryPoints: ['builds/module.js'],
+    entryPoints: ['src/index.js'],
     outfile: 'dist/app.min.mjs',
     platform: 'neutral',
     minify: true,

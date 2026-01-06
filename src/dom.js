@@ -1,4 +1,5 @@
-import { app, isElement, isFunction, isObject, isString, toCamel } from "./app"
+import { app, call, isElement, isFunction, isObject, isString, toCamel } from "./app"
+import { emit } from "./events"
 
 /**
  * Returns a query parameter value from the current document location
@@ -6,7 +7,10 @@ import { app, isElement, isFunction, isObject, isString, toCamel } from "./app"
  * @param {string} [dflt]
  * @return {string}
  */
-app.$param = (name, dflt) => (new URLSearchParams(location.search).get(name) || dflt || "");
+export function $param(name, dflt)
+{
+    return new URLSearchParams(location.search).get(name) || dflt || "";
+}
 
 const esc = (selector) => (selector.replace(/#([^\s"#']+)/g, (_, id) => `#${CSS.escape(id)}`))
 
@@ -18,7 +22,10 @@ const esc = (selector) => (selector.replace(/#([^\s"#']+)/g, (_, id) => `#${CSS.
  * @example
  * var el = app.$("#div")
  */
-app.$ = (selector, doc) => (isString(selector) ? (isElement(doc) || document).querySelector(esc(selector)) : null)
+export function $(selector, doc)
+{
+    return isString(selector) ? (isElement(doc) || document).querySelector(esc(selector)) : null
+}
 
 /**
  * An alias for **document.querySelectorAll**
@@ -28,7 +35,10 @@ app.$ = (selector, doc) => (isString(selector) ? (isElement(doc) || document).qu
  * @example
  * Array.from(app.$all("input")).find((el) => !(el.readOnly || el.disabled || el.type == "hidden"));
  */
-app.$all = (selector, doc) => (isString(selector) ? (isElement(doc) || document).querySelectorAll(esc(selector)) : null)
+export function $all(selector, doc)
+{
+    return isString(selector) ? (isElement(doc) || document).querySelectorAll(esc(selector)) : null
+}
 
 /**
  * Send a CustomEvent using DispatchEvent to the given element, true is set to composed, cancelable and bubbles properties.
@@ -36,9 +46,10 @@ app.$all = (selector, doc) => (isString(selector) ? (isElement(doc) || document)
  * @param {string} name
  * @param {object} [detail]
  */
-app.$event = (element, name, detail = {}) => (
-    element instanceof EventTarget && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true }))
-);
+export function $event(element, name, detail = {})
+{
+    return element instanceof EventTarget && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true }))
+}
 
 /**
  * An alias for **element.addEventListener**
@@ -49,7 +60,10 @@ app.$event = (element, name, detail = {}) => (
  * @example
  * app.$on(window, "popstate", () => { ... })
  */
-app.$on = (element, event, callback, ...arg) => (isFunction(callback) && element.addEventListener(event, callback, ...arg));
+export function $on(element, event, callback, ...arg)
+{
+    return isFunction(callback) && element.addEventListener(event, callback, ...arg)
+}
 
 /**
  * An alias for **element.removeEventListener**
@@ -58,7 +72,10 @@ app.$on = (element, event, callback, ...arg) => (isFunction(callback) && element
  * @param {function} callback
  * @param {any} [...args] - additional params to removeEventListener
  */
-app.$off = (element, event, callback, ...arg) => (isFunction(callback) && element.removeEventListener(event, callback, ...arg));
+export function $off(element, event, callback, ...arg)
+{
+    return isFunction(callback) && element.removeEventListener(event, callback, ...arg)
+}
 
 /**
  * Return or set attribute by name from the given element.
@@ -70,8 +87,9 @@ app.$off = (element, event, callback, ...arg) => (isFunction(callback) && elemen
  * - any - assign new value
  * @returns {undefined|any}
  */
-app.$attr = (element, attr, value) => {
-    if (isString(element)) element = app.$(element);
+export function $attr(element, attr, value)
+{
+    if (isString(element)) element = $(element);
     if (!isElement(element)) return;
     return value === undefined ? element.getAttribute(attr) :
            value === null ? element.removeAttribute(attr) :
@@ -84,13 +102,14 @@ app.$attr = (element, attr, value) => {
  * @param {functions} [cleanup]
  * @returns {HTMLElement}
  */
-app.$empty = (element, cleanup) => {
-    if (isString(element)) element = app.$(element);
+export function $empty(element, cleanup)
+{
+    if (isString(element)) element = $(element);
     if (!isElement(element)) return;
     while (element.firstChild) {
         const node = element.firstChild;
         node.remove();
-        app.call(cleanup, node);
+        call(cleanup, node);
     }
     return element;
 }
@@ -102,14 +121,15 @@ app.$empty = (element, cleanup) => {
  * @param {any|object} [...args]
  * @param {object} [options]
  * @example
- * app.$elem("div", "id", "123", "-display", "none", "._x-prop", "value", "click", () => {})
+ * $elem("div", "id", "123", "-display", "none", "._x-prop", "value", "click", () => {})
  *
  * @example <caption>Similar to above but all properties and attributes are taken from an object, in this form options can be passed, at the moment only
  * options for addEventListener are supported.</caption>
  *
- * app.$elem("div", { id: "123", "-display": "none", "._x-prop": "value", click: () => {} }, { signal })
+ * $elem("div", { id: "123", "-display": "none", "._x-prop": "value", click: () => {} }, { signal })
  */
-app.$elem = (name, ...args) => {
+export function $elem(name, ...args)
+{
     var element = document.createElement(name), key, val, opts;
     if (isObject(args[0])) {
         args = Object.entries(args[0]).flatMap(x => x);
@@ -119,7 +139,7 @@ app.$elem = (name, ...args) => {
         key = args[i], val = args[i + 1];
         if (!isString(key)) continue;
         if (isFunction(val)) {
-            app.$on(element, key, val, { capture: opts?.capture, passive: opts?.passive, once: opts?.once, signal: opts?.signal });
+            $on(element, key, val, { capture: opts?.capture, passive: opts?.passive, once: opts?.once, signal: opts?.signal });
         } else
         if (key.startsWith("-")) {
             element.style[key.substr(1)] = val;
@@ -147,9 +167,10 @@ app.$elem = (name, ...args) => {
  *  - list - the result will be an array with all body child nodes, i.e. simpler to feed it to Element.append()
  *  - doc - return the whole parsed document
  * @example
- * document.append(...app.$parse("<div>...</div>"), 'list'))
+ * document.append(...$parse("<div>...</div>"), 'list'))
  */
-app.$parse = (html, format) => {
+export function $parse(html, format)
+{
     html = new window.DOMParser().parseFromString(html || "", 'text/html');
     return format === "doc" ? html : format === "list" ? Array.from(html.body.childNodes) : html.body;
 }
@@ -162,13 +183,14 @@ app.$parse = (html, format) => {
  * @example
  * app.$append(document, "<div>...</div>")
  */
-app.$append = (element, template, setup) => {
-    if (isString(element)) element = app.$(element);
+export function $append(element, template, setup)
+{
+    if (isString(element)) element = $(element);
     if (!isElement(element)) return;
 
     let doc;
     if (isString(template)) {
-        doc = app.$parse(template, "doc");
+        doc = $parse(template, "doc");
     } else
     if (template?.content?.nodeType == 11) {
         doc = { body: template.content.cloneNode(true) };
@@ -182,7 +204,7 @@ app.$append = (element, template, setup) => {
     }
     while (node = doc.body.firstChild) {
         element.appendChild(node);
-        if (setup && node.nodeType == 1) app.call(setup, node);
+        if (setup && node.nodeType == 1) call(setup, node);
     }
     return element;
 }
@@ -197,31 +219,32 @@ var _ready = []
  *
  * })
  */
-app.$ready = (callback) => {
+export function $ready(callback)
+{
     _ready.push(callback);
     if (document.readyState == "loading") return;
-    while (_ready.length) setTimeout(app.call, 0, _ready.shift());
+    while (_ready.length) setTimeout(call, 0, _ready.shift());
 }
 
-app.$on(window, "DOMContentLoaded", () => {
-    while (_ready.length) setTimeout(app.call, 0, _ready.shift());
+$on(window, "DOMContentLoaded", () => {
+    while (_ready.length) setTimeout(call, 0, _ready.shift());
 });
 
 function domChanged()
 {
     var w = document.documentElement.clientWidth;
-    app.emit("dom:changed", {
+    emit("dom:changed", {
         breakPoint: w < 576 ? 'xs' : w < 768 ? 'sm' : w < 992 ? 'md' : w < 1200 ? 'lg' : w < 1400 ? 'xl' : 'xxl',
         colorScheme: window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light",
     });
 }
 
-app.$ready(() => {
+$ready(() => {
     domChanged();
-    app.$on(window.matchMedia('(prefers-color-scheme: dark)'), 'change', domChanged);
+    $on(window.matchMedia('(prefers-color-scheme: dark)'), 'change', domChanged);
 
     var _resize;
-    app.$on(window, "resize", () => {
+    $on(window, "resize", () => {
         clearTimeout(_resize);
         _resize = setTimeout(domChanged, 250);
     });

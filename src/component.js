@@ -1,5 +1,6 @@
 
-import { app, isString, toCamel } from './app';
+import { app, call, isString, toCamel, trace } from './app';
+import { emit, off, on } from "./events"
 
 /**
  * Base class for components
@@ -7,7 +8,7 @@ import { app, isString, toCamel } from './app';
  * @param {object} [params] - properties passed during creation
  * @class
  */
-class Component {
+export class Component {
     params = {};
 
     constructor(name, params) {
@@ -24,23 +25,23 @@ class Component {
      * @param {object} params - properties passed
      */
     init(params) {
-        app.trace("init:", this.$type, this.$name);
+        trace("init:", this.$type, this.$name);
         Object.assign(this.params, params);
-        app.emit("component:create", { type: this.$type, name: this.$name, component: this, element: this.$el, params: this.params });
+        emit("component:create", { type: this.$type, name: this.$name, component: this, element: this.$el, params: this.params });
         if (!this.params.$noevents) {
-            app.on(app.event, this._handleEvent);
+            on(app.event, this._handleEvent);
         }
-        app.call(this._onCreate?.bind(this, this.params));
+        call(this._onCreate?.bind(this, this.params));
     }
 
     /**
      * Called when a component is about to be destroyed, calls __onDelete__ class method for custom cleanup
      */
     destroy() {
-        app.trace("destroy:", this.$type, this.$name);
-        app.off(app.event, this._handleEvent);
-        app.emit("component:delete", { type: this.$type, name: this.$name, component: this, element: this.$el, params: this.params });
-        app.call(this._onDelete?.bind(this));
+        trace("destroy:", this.$type, this.$name);
+        off(app.event, this._handleEvent);
+        emit("component:delete", { type: this.$type, name: this.$name, component: this, element: this.$el, params: this.params });
+        call(this._onDelete?.bind(this));
         this.params = {};
         delete this.$root;
     }
@@ -52,15 +53,15 @@ class Component {
 function handleEvent(event, ...args)
 {
     if (this.onEvent) {
-        app.trace("event:", this.$type, this.$name, event, ...args);
-        app.call(this.onEvent?.bind(this.$data || this), event, ...args);
+        trace("event:", this.$type, this.$name, event, ...args);
+        call(this.onEvent?.bind(this.$data || this), event, ...args);
     }
     if (!isString(event)) return;
     var method = toCamel("on_" + event);
     if (!this[method]) return;
 
-    app.trace("event:", this.$type, this.$name, method, ...args);
-    app.call(this[method]?.bind(this.$data || this), ...args);
+    trace("event:", this.$type, this.$name, method, ...args);
+    call(this[method]?.bind(this.$data || this), ...args);
 }
 
 export default Component;

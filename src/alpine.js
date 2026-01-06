@@ -1,7 +1,14 @@
 import { app, isElement, isObject, isString } from './app';
 import Component from './component';
+import { fetch } from "./fetch";
+import { $, $append, $elem, $empty, $off, $on } from "./dom";
+import { emit } from "./events"
+import { register, render, resolve } from "./render"
+import { parsePath } from "./router"
 
 const _alpine = "alpine";
+
+var _Alpine;
 
 /**
  * Alpine.js component
@@ -45,37 +52,37 @@ class Element extends HTMLElement {
 
     connectedCallback() {
         queueMicrotask(() => {
-            render(this, this.localName.substr(4));
+            _render(this, this.localName.substr(4));
         });
     }
 }
 
-function render(element, options)
+function _render(element, options)
 {
     if (isString(options)) {
-        options = app.resolve(options);
+        options = resolve(options);
         if (!options) return;
     }
 
-    app.$empty(element);
+    $empty(element);
 
     element._x_params = Object.assign({}, options.params);
-    Alpine.onElRemoved(element, () => { delete element._x_params });
+    _Alpine.onElRemoved(element, () => { delete element._x_params });
 
     if (!options.component) {
-        Alpine.mutateDom(() => {
-            app.$append(element, options.template, Alpine.initTree);
+        _Alpine.mutateDom(() => {
+            $append(element, options.template, _Alpine.initTree);
         });
     } else {
         // In case a component was loaded after alpine:init event
-        Alpine.data(options.name, () => (new options.component(options.name)));
+        _Alpine.data(options.name, () => (new options.component(options.name)));
 
-        const node = app.$elem("div", "x-data", options.name);
-        app.$append(node, options.template);
+        const node = $elem("div", "x-data", options.name);
+        $append(node, options.template);
 
-        Alpine.mutateDom(() => {
+        _Alpine.mutateDom(() => {
             element.appendChild(node);
-            Alpine.initTree(node);
+            _Alpine.initTree(node);
         });
     }
     return options;
@@ -83,10 +90,10 @@ function render(element, options)
 
 function data(element, level)
 {
-    if (!isElement(element)) element = app.$(app.$target + " div");
+    if (!isElement(element)) element = $(app.$target + " div");
     if (!element) return;
     if (typeof level == "number") return element._x_dataStack?.at(level);
-    return Alpine.closestDataStack(element)[0];
+    return _Alpine.closestDataStack(element)[0];
 }
 
 function init()
@@ -95,7 +102,7 @@ function init()
         const tag = `app-${obj?.$tag || name}`;
         if (obj?.$type != _alpine || customElements.get(tag)) continue;
         customElements.define(tag, class extends Element {});
-        Alpine.data(name, () => (new obj(name)));
+        _Alpine.data(name, () => (new obj(name)));
     }
 }
 
@@ -107,11 +114,11 @@ function $render(el, value, modifiers, callback)
     if (!value.url && !(!cache && /^(https?:\/\/|\/|.+\.html(\?|$)).+/.test(value))) {
         if (callback(el, value)) return;
     }
-    app.fetch(value, opts, (err, text, info) => {
+    fetch(value, opts, (err, text, info) => {
         if (err || !isString(text)) {
             return console.warn("$render: Text expected from", value, "got", err, text);
         }
-        const tmpl = isString(value) ? app.parsePath(value) : value;
+        const tmpl = isString(value) ? parsePath(value) : value;
         tmpl.template = text;
         tmpl.name = tmpl.params?.$name || tmpl.name;
         if (cache) {
@@ -130,7 +137,7 @@ function $template(el, value, modifiers)
             const mod = modifiers[i];
             switch (mod) {
             case "params":
-                var scope = Alpine.$data(el);
+                var scope = _Alpine.$data(el);
                 if (!isObject(scope[modifiers[i + 1]])) break;
                 tmpl.params = Object.assign(scope[modifiers[i + 1]], tmpl.params);
                 break;
@@ -145,10 +152,10 @@ function $template(el, value, modifiers)
     }
 
     $render(el, value, modifiers, (el, tmpl) => {
-        tmpl = app.resolve(tmpl);
+        tmpl = resolve(tmpl);
         if (!tmpl) return;
 
-        if (!render(el, toMods(tmpl))) return;
+        if (!_render(el, toMods(tmpl))) return;
 
         if (mods.show) {
             if (mods.nonempty && !el.firstChild) {
@@ -162,11 +169,17 @@ function $template(el, value, modifiers)
 
 }
 
-app.plugin(_alpine, { render, Component: AlpineComponent, data, init, default: 1 });
+register(_alpine, { render: _render, Component: AlpineComponent, data, init, default: 1 });
 
-app.$on(document, "alpine:init", () => {
+export { AlpineComponent };
 
-    app.emit("alpine:init");
+export default AlpineComponent;
+
+export function AlpinePlugin(Alpine)
+{
+    _Alpine = Alpine;
+
+    emit("alpine:init");
 
     Alpine.magic("app", (el) => app);
 
@@ -189,13 +202,13 @@ app.$on(document, "alpine:init", () => {
             if (modifiers.includes("stop")) {
                 e.stopPropagation();
             }
-            $render(el, value, modifiers, (el, tmpl) => (app.render(tmpl)));
+            $render(el, value, modifiers, (el, tmpl) => (render(tmpl)));
         }
-        app.$on(el, "click", click)
+        $on(el, "click", click)
         el.style.cursor = "pointer";
 
         cleanup(() => {
-            app.$off(el, 'click', click)
+            $off(el, 'click', click)
         })
     });
 
@@ -206,7 +219,7 @@ app.$on(document, "alpine:init", () => {
         const empty = () => {
             template = null;
             Alpine.mutateDom(() => {
-                app.$empty(el, (node) => Alpine.destroyTree(node));
+                $empty(el, (node) => Alpine.destroyTree(node));
 
                 if (modifiers.includes("show")) {
                     el.style.setProperty('display', "none", modifiers.includes('important') ? 'important' : undefined);
@@ -231,5 +244,5 @@ app.$on(document, "alpine:init", () => {
         el._x_dataStack = scope.slice(0, parseInt(evaluate(expression || "")) || 0);
     });
 
-});
+}
 

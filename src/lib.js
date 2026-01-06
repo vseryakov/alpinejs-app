@@ -1,5 +1,7 @@
 
 import { __, app, call, isFunction, isNumber, isObject, isString, noop, toCamel } from "./app"
+import { $attr, $elem, $parse } from "./dom"
+import { fetch } from "./fetch"
 
 /**
  * @param {any[]} list
@@ -21,7 +23,7 @@ export function isFlag(list, item)
  * @param {function} [callback]
  * @param {boolean} [direct=true]
  * @example
- * app.forEachSeries([ 1, 2, 3 ], function (i, next, data) {
+ * forEachSeries([ 1, 2, 3 ], function (i, next, data) {
  *    console.log(i, data);
  *    next(null, data);
  * }, (err, data) => {
@@ -56,7 +58,7 @@ export function forEachSeries(list, iterator, callback, direct = true)
  * @param {function} [callback]
  * @param {boolean} [direct]
  * @example
- * app.series([
+ * series([
  *    function(next) {
  *        next(null, "data");
  *    },
@@ -82,7 +84,7 @@ export function series(tasks, callback, direct = true)
  * @param {function} callback
  * @param {boolean} direct - controls how the final callback is called, if true it is called directly otherwisde via setImmediate
  * @example
- * app.forEach([ 1, 2, 3 ], function (i, next) {
+ * forEach([ 1, 2, 3 ], function (i, next) {
  *   console.log(i);
  *   next();
  * }, (err) => {
@@ -241,8 +243,10 @@ export function toTitle(name, minlen)
  * @param {int} [options.bigint] - return BigInt if not a safe integer
  * @return {number}
  * @example
- * app.toNumber("123")
- * app.toNumber("1.23", { float: 1, dflt: 0, min: 0, max: 2 })
+ * toNumber("123")
+ * 123
+ * toNumber("1.23", { float: 1, dflt: 0, min: 0, max: 2 })
+ * 1.23
  */
 export function toNumber(val, options)
 {
@@ -287,7 +291,6 @@ export function toNumber(val, options)
  * @param {string} [options.sign=standard]
  * @param {int} [options.min=2]
  * @param {int} [options.max=3]
- * @memberof module:lib
  * @method toPrice
  */
 export function toPrice(num, options)
@@ -424,16 +427,17 @@ export function loadResources(urls, options, callback)
 {
     if (typeof options == "function") callback = options, options = null;
     if (typeof urls == "string") urls = [urls];
-    app[`forEach${options?.series ? "Series" : ""}`](urls, (url, next) => {
+    const func = options?.series ? forEachSeries: forEach;
+    func(urls, (url, next) => {
         let el;
         const ev = () => { call(options?.callback, el, options); next() }
         if (/\.css/.test(url)) {
-            el = app.$elem("link", "rel", "stylesheet", "type", "text/css", "href", url, "load", ev, "error", ev)
+            el = $elem("link", "rel", "stylesheet", "type", "text/css", "href", url, "load", ev, "error", ev)
         } else {
-            el = app.$elem('script', "async", !!options?.async, "src", url, "load", ev, "error", ev)
+            el = $elem('script', "async", !!options?.async, "src", url, "load", ev, "error", ev)
         }
         for (const p in options?.attrs) {
-            app.$attr(el, p, options.attrs[p]);
+            $attr(el, p, options.attrs[p]);
         }
         document.head.appendChild(el);
     }, options?.timeout > 0 ? () => { setTimeout(callback, options.timeout) } : callback);
@@ -488,7 +492,7 @@ export function sendFile(url, options, callback)
         if (p == "json" || p == "files") continue;
         req[p] ??= options[p];
     }
-    app.fetch(url, req, callback);
+    fetch(url, req, callback);
 }
 
 function isattr(attr, list)
@@ -512,7 +516,7 @@ function isattr(attr, list)
 export function sanitizer(html, list)
 {
     if (!isString(html)) return list ? [] : html;
-    const body = app.$parse(html);
+    const body = $parse(html);
     const elements = [...body.querySelectorAll('*')];
     for (const el of elements) {
         const name = el.nodeName.toLowerCase();

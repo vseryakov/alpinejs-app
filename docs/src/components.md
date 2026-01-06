@@ -96,9 +96,10 @@ See also how the [dropdown](examples/dropdown.js) component is implemented.
 
 The examples/ folder contains more components to play around and a bundle.sh script to show a simple way of bundling components together.
 
-### Simple bundled example: [index.html](examples/index.html)
+### Simple CDN bundled example: [index.html](examples/index.html)
 
-An example to show very simple way to bundle .html and .js files into a single file.
+An example to show very simple way to bundle .html and .js files into a single file as
+CDN bundle, i.e. window.app is global with all methods in it.
 
 To run live example do `npm run watch`.
 
@@ -106,6 +107,25 @@ Then go to http://localhost:8090/ to see the example with router and external re
 
 ### Esbuild app plugin
 
-The **scripts/esbuild-html.js** script is an **esbuild** plugin that bundles templates from .html files to be used by the app.
+The **scripts/esbuild-app.js** script is an **esbuild** plugin that bundles multiple .js and .html files to be used by the app.
 
 Running `node build.js` in the examples folder will generate the **bundle.js** which includes all .js and .html files used by the index.html
+
+### Using as NPM module for ESM bundles
+
+```bash
+npm install @vseryakov/alpinejs-app alpinejs
+```
+
+```js
+import Alpine from "alpinejs";
+import { AlpinePlugin } from "alpinejs-app";
+
+Alpine.plugin(AlpinePlugin);
+
+window.Alpine = Alpine;
+window.Alpine.start();
+```
+
+
+

@@ -1,5 +1,7 @@
 
-app.components.dashboard = class extends app.AlpineComponent {
+import { $, AlpineComponent } from "../dist/app.mjs"
+
+export class dashboard extends AlpineComponent {
 
     tab = "charts"
 
@@ -46,13 +48,13 @@ app.components.dashboard = class extends app.AlpineComponent {
 };
 
 
-app.components.chart = class extends app.AlpineComponent {
+export class chart extends AlpineComponent {
 
     chart;
 
     onCreate()
     {
-        const ctx = app.$("canvas", this.$el).getContext('2d');
+        const ctx = $("canvas", this.$el).getContext('2d');
         this.chart = new Chart(ctx, {
             type: this.type,
             data: this.data,
