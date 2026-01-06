@@ -1,6 +1,7 @@
 const path = require("path");
 const http = require("http");
 const url = require("url");
+const fs = require("fs");
 const esbuild = require("esbuild");
 const plugin = require(__dirname + "/esbuild-app");
 
@@ -23,11 +24,17 @@ const opts = {
 
         http.createServer((req, res) => {
             var u = url.parse(req.url);
-            if (/\.(js|html)(\?|$)/.test(u.path)) {
+            if (/\.(m?js|html)(\?|$)/.test(u.path)) {
                 u.path = "/" + path.basename(u.path);
             }
             const options = { port, hostname: hosts[0], path: u.path, method: req.method, headers: req.headers }
-            const preq = http.request(options, pres => { pres.pipe(res, { end: true }) });
+            const preq = http.request(options, pres => {
+                if (u.pathname.endsWith(".mjs")) {
+                    pres.headers["content-type"] = "text/javascript";
+                }
+                res.writeHead(pres.statusCode, pres.headers)
+                pres.pipe(res, { end: true })
+            });
             req.pipe(preq, { end: true });
         }).listen(8090);
 
@@ -35,9 +42,12 @@ const opts = {
     } else {
         await esbuild.build(opts);
 
-        opts.entryPoints = ['index.mjs'];
-        opts.platform = "neutral"
-        opts.outfile = 'bundle.mjs'
-        await esbuild.build(opts);
+        try { var mjs = await fs.promises.stat("index.mjs") } catch (e) {}
+        if (mjs) {
+            opts.entryPoints = ['index.mjs'];
+            opts.platform = "neutral"
+            opts.outfile = 'bundle.mjs'
+            await esbuild.build(opts);
+        }
     }
 })();

@@ -43,10 +43,6 @@
     start: () => start,
     stylePlugin: () => stylePlugin
   });
-  /**
-   * Global application object
-   * @namespace app
-   */
   var app = {
     /**
      * @var {string} - Defines the root path for the application, must be framed with slashes.
@@ -99,98 +95,38 @@
     trace,
     __
   };
-  /**
-   * Empty function
-   */
   function noop() {
   }
-  /**
-     * if __app.debug__ is set then it will log arguments in the console otherwise it is no-op
-     * @param {...any} args
-     */
   function trace(...args) {
     app.debug && app.log(...args);
   }
-  /**
-   * Alias to console.log
-   */
   function log(...args) {
     console.log(...args);
   }
-  /**
-   * Empty locale translator
-   * @param {...any} args
-   * @returns {string}
-   */
   function __(...args) {
     return args.join("");
   }
-  /**
-   * Returns the array if the value is non empty array or dflt value if given or undefined
-   * @param {any} val
-   * @returns {any|any[]}
-   */
   function isArray(val, dflt) {
     return Array.isArray(val) && val.length ? val : dflt;
   }
-  /**
-   * Returns the num itself if it is a number
-   * @param {any} num
-   * @returns {number|undefined}
-   */
   function isNumber(num) {
     return typeof num == "number" ? num : void 0;
   }
-  /**
-   * Returns the str itself if it is not empty or ""
-   * @param {any} str
-   * @returns {string}
-   */
   function isString(str) {
     return typeof str == "string" && str;
   }
-  /**
-   * Returns the callback is it is a function
-   * @param {any} callback
-   * @returns {function|undefined}
-   */
   function isFunction(callback) {
     return typeof callback == "function" && callback;
   }
-  /**
-   * Returns the obj itself if it is a not null object
-   * @param {any} obj
-   * @returns {object|undefined}
-   */
   function isObject(obj) {
     return typeof obj == "object" && obj;
   }
-  /**
-   * Returns the element itself if it is a HTMLElement
-   * @param {any} element
-   * @returns {HTMLElement|undefined}
-   */
   function isElement(element) {
     return element instanceof HTMLElement && element;
   }
-  /**
-   * Convert a string into camelized format
-   * @param {string} str
-   * @returns {string}
-   */
   function toCamel(str) {
     return isString(str) ? str.toLowerCase().replace(/[.:_-](\w)/g, (_, c) => c.toUpperCase()) : "";
   }
-  /**
-   * Call a function safely with context and arguments:
-   * @param {object|function} obj
-   * @param {string|function} [method]
-   * @param {any} [...args]
-   * @example
-   * app.call(func,..)
-   * app.call(obj, func, ...)
-   * app.call(obj, method, ...)
-   */
   function call(obj, method, ...args) {
     if (isFunction(obj)) return obj(method, ...args);
     if (typeof obj != "object") return;
@@ -198,34 +134,16 @@
     if (obj && isFunction(obj[method])) return obj[method].call(obj, ...args);
   }
   var _entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" };
-  /**
-   * Convert common special symbols into xml entities
-   * @param {string} str
-   * @returns {string}
-   */
   function escape(str) {
     if (typeof str != "string") return "";
     return str.replace(/([&<>'":])/g, (_, x) => _entities[x] || x);
   }
   var _events = {};
-  /**
-   * Listen on event, the callback is called synchronously, optional namespace allows deleting callbacks later easier by not providing
-   * exact function by just namespace.
-   * @param {string} event
-   * @param {function} callback
-   * @param {string} [namespace]
-   */
   function on(event, callback, namespace) {
     if (!isFunction(callback)) return;
     if (!_events[event]) _events[event] = [];
     _events[event].push([callback, isString(namespace)]);
   }
-  /**
-   * Listen on event, the callback is called only once
-   * @param {string} event
-   * @param {function} callback
-   * @param {string} [namespace]
-   */
   function once(event, callback, namespace) {
     if (!isFunction(callback)) return;
     const cb = (...args) => {
@@ -234,28 +152,9 @@
     };
     on(event, cb, namespace);
   }
-  /**
-   * Remove all current listeners for the given event, if a callback is given make it the **only** listener.
-   * @param {string} event
-   * @param {function} callback
-   * @param {string} [namespace]
-   */
   function only(event, callback, namespace) {
     _events[event] = isFunction(callback) ? [callback, isString(namespace)] : [];
   }
-  /**
-   * Remove all event listeners for the event name and exact callback or namespace
-   * @param {string} event|namespace
-   * - event name if callback is not empty
-   * - namespace if no callback
-   * @param {function|string} [callback]
-   * - function - exact callback to remove for the event
-   * - string - namespace for the event
-   * @example
-   * app.on("component:*", (ev) => { ... }, "myapp")
-   * ...
-   * app.off("myapp")
-   */
   function off(event, callback) {
     if (event && callback) {
       if (!_events[event]) return;
@@ -267,15 +166,6 @@
       }
     }
   }
-  /**
-   * Send an event to all listeners at once, one by one.
-   *
-   * If the event ends with **_:*_** it means notify all listeners that match the beginning of the given pattern, for example:
-   * @param {string} event
-   * @param {...any} args
-   * @example <caption>notify topic:event1, topic:event2, ...</caption>
-   * app.emit("topic:*",....)
-   */
   function emit(event, ...args) {
     trace("emit:", event, ...args, app.debug > 1 && _events[event]);
     if (_events[event]) {
@@ -289,90 +179,30 @@
       }
     }
   }
-  /**
-   * Returns a query parameter value from the current document location
-   * @param {string} name
-   * @param {string} [dflt]
-   * @return {string}
-   */
   function $param(name, dflt) {
     return new URLSearchParams(location.search).get(name) || dflt || "";
   }
   var esc = (selector) => selector.replace(/#([^\s"#']+)/g, (_, id) => `#${CSS.escape(id)}`);
-  /**
-   * An alias to **document.querySelector**, doc can be an Element, empty or non-string selectors will return null
-   * @param {string} selector
-   * @param {HTMLElement} [doc]
-   * @returns {null|HTMLElement}
-   * @example
-   * var el = app.$("#div")
-   */
   function $(selector, doc) {
     return isString(selector) ? (isElement(doc) || document).querySelector(esc(selector)) : null;
   }
-  /**
-   * An alias for **document.querySelectorAll**
-   * @param {string} selector
-   * @param {HTMLElement} [doc]
-   * @returns {null|HTMLElement[]}
-   * @example
-   * Array.from(app.$all("input")).find((el) => !(el.readOnly || el.disabled || el.type == "hidden"));
-   */
   function $all(selector, doc) {
     return isString(selector) ? (isElement(doc) || document).querySelectorAll(esc(selector)) : null;
   }
-  /**
-   * Send a CustomEvent using DispatchEvent to the given element, true is set to composed, cancelable and bubbles properties.
-   * @param {HTMLElement} element
-   * @param {string} name
-   * @param {object} [detail]
-   */
   function $event(element, name, detail = {}) {
     return element instanceof EventTarget && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true }));
   }
-  /**
-   * An alias for **element.addEventListener**
-   * @param {HTMLElement} element
-   * @param {string} event
-   * @param {function} callback
-   * @param {any} [...args] - additional params to addEventListener
-   * @example
-   * app.$on(window, "popstate", () => { ... })
-   */
   function $on(element, event, callback, ...arg) {
     return isFunction(callback) && element.addEventListener(event, callback, ...arg);
   }
-  /**
-   * An alias for **element.removeEventListener**
-   * @param {HTMLElement} element
-   * @param {string} event
-   * @param {function} callback
-   * @param {any} [...args] - additional params to removeEventListener
-   */
   function $off(element, event, callback, ...arg) {
     return isFunction(callback) && element.removeEventListener(event, callback, ...arg);
   }
-  /**
-   * Return or set attribute by name from the given element.
-   * @param {HTMLElement|string} element
-   * @param {string} attr
-   * @param {any} [value]
-   * - undefined - return the attribute value
-   * - null - remove attribute
-   * - any - assign new value
-   * @returns {undefined|any}
-   */
   function $attr(element, attr, value) {
     if (isString(element)) element = $(element);
     if (!isElement(element)) return;
     return value === void 0 ? element.getAttribute(attr) : value === null ? element.removeAttribute(attr) : element.setAttribute(attr, value);
   }
-  /**
-   * Remove all nodes from the given element, call the cleanup callback for each node if given
-   * @param {HTMLElement|string} element
-   * @param {functions} [cleanup]
-   * @returns {HTMLElement}
-   */
   function $empty(element, cleanup) {
     if (isString(element)) element = $(element);
     if (!isElement(element)) return;
@@ -383,20 +213,6 @@
     }
     return element;
   }
-  /**
-   * Create a DOM element with attributes, **-name** means **style.name**, **.name** means a property **name**,
-   * all other are attributes, functions are event listeners
-   * @param {string} name
-   * @param {any|object} [...args]
-   * @param {object} [options]
-   * @example
-   * $elem("div", "id", "123", "-display", "none", "._x-prop", "value", "click", () => {})
-   *
-   * @example <caption>Similar to above but all properties and attributes are taken from an object, in this form options can be passed, at the moment only
-   * options for addEventListener are supported.</caption>
-   *
-   * $elem("div", { id: "123", "-display": "none", "._x-prop": "value", click: () => {} }, { signal })
-   */
   function $elem(name, ...args) {
     var element = document.createElement(name), key, val, opts;
     if (isObject(args[0])) {
@@ -422,27 +238,10 @@
     }
     return element;
   }
-  /**
-   * A shortcut to DOMParser, default is to return the .body.
-   * @param {string} html
-   * @param {string} [format] - defines the result format:
-   *  - list - the result will be an array with all body child nodes, i.e. simpler to feed it to Element.append()
-   *  - doc - return the whole parsed document
-   * @example
-   * document.append(...$parse("<div>...</div>"), 'list'))
-   */
   function $parse(html, format) {
     html = new window.DOMParser().parseFromString(html || "", "text/html");
     return format === "doc" ? html : format === "list" ? Array.from(html.body.childNodes) : html.body;
   }
-  /**
-   * Append nodes from the template to the given element, call optional setup callback for each node.
-   * @param {string|HTMLElement} element
-   * @param {string|HTMLElement} template can be a string with HTML or a template element.
-   * @param {function} [setup]
-   * @example
-   * app.$append(document, "<div>...</div>")
-   */
   function $append(element, template, setup) {
     if (isString(element)) element = $(element);
     if (!isElement(element)) return;
@@ -465,14 +264,6 @@
     return element;
   }
   var _ready = [];
-  /**
-   * Run callback once the document is loaded and ready, it uses setTimeout to schedule callbacks
-   * @param {function} callback
-   * @example
-   * app.$ready(() => {
-   *
-   * })
-   */
   function $ready(callback) {
     _ready.push(callback);
     if (document.readyState == "loading") return;
@@ -499,22 +290,6 @@
   });
   var _plugins = {};
   var _default_plugin;
-  /**
-   * Register a render plugin, at least 2 functions must be defined in the options object:
-   * @param {string} name
-   * @param {object} options
-   * @param {function} render - (element, options) to show a component, called by {@link render}
-   * @param {function} cleanup - (element) - optional, run additional cleanups before destroying a component
-   * @param {function} data - (element) - return the component class instance for the given element or the main
-   * @param {boolean} [options.default] - if not empty make this plugin default
-   * @param {class} [options.Component] - optional base component constructor, it will be registered as
-   * app.{Type}Component, like AlpineComponent, KoComponent,... to easy create custom components in CDN mode
-   *
-   * The reason for plugins is that while this is designed for Alpine.js, the idea originated by using Knockout.js with this system,
-   * the plugin can be found at [app.ko.js](https://github.com/vseryakov/backendjs/blob/c97ca152dfd55a3841d07b54701e9d2b8620c516/web/js/app.ko.js).
-   *
-   * There is a simple plugin in examples/simple.js to show how to use it without any rendering engine with vanillla HTML, not very useful though.
-   */
   function register(name, options) {
     if (!name || !isString(name)) throw Error("type must be defined");
     if (options) {
@@ -529,15 +304,6 @@
     if (options?.default) _default_plugin = plugin;
     return Object.assign(plugin, options);
   }
-  /**
-   * Return component data instance for the given element or the main component if omitted. This is for
-   * debugging purposes or cases when calling some known method is required.
-   * @param {string|HTMLElement} element
-   * @param {number} [level] - if is not a number then the closest scope is returned otherwise only the requested scope at the level or undefined.
-   * This is useful for components to make sure they use only the parent's scope for example.
-   *
-   * @returns {Proxy|undefined} to get the actual object pass it to **Alpine.raw(app.$data())**
-   */
   function $data(element, level) {
     if (isString(element)) element = $(element);
     for (const p in _plugins) {
@@ -546,34 +312,6 @@
       if (d) return d;
     }
   }
-  /**
-   * Returns an object with **template** and **component** properties.
-   *
-   * Calls {@link parsePath} first to resolve component name and params.
-   *
-   * Passing an object with 'template' set will reuse it, for case when template is already resolved.
-   *
-   * The template property is set as:
-   *  - try app.templates[.name]
-   *  - try an element with ID name and use innerHTML
-   *  - if not found and dflt is given try the same with it
-   *  - if template texts starts with # it means it is a reference to another element's innerHTML,
-   *     otemplate is set with the original template before replacing the template property
-   *  - if template text starts with $ it means it is a reference to another template in **app.templates**,
-   *     otemplate is set with the original template before replacing the template property
-   *
-   * The component property is set as:
-   *  - try app.components[.name]
-   *  - try app.components[dflt]
-   *  - if resolved to a function return
-   *  - if resolved to a string it refers to another component, try app.templates[component],
-   *     ocomponent is set with the original component string before replacing the component property
-   *
-   * if the component property is empty then this component is HTML template.
-   * @param {string} path
-   * @param {string} [dflt]
-   * @returns {object} in format { name, params, template, component }
-   */
   function resolve(path, dflt) {
     const tmpl = parsePath(path);
     trace("resolve:", path, dflt, tmpl);
@@ -597,27 +335,6 @@
     tmpl.component = component;
     return tmpl;
   }
-  /**
-   * Show a component, options can be a string to be parsed by {@link parsePath} or an object with { name, params } properties.
-   * if no **params.$target** provided a component will be shown inside the main element defined by {@link $target}.
-   *
-   * It returns the resolved component as described in {@link resolve} method after rendering or nothing if nothing was shown.
-   *
-   * When showing main app the current component is asked to be deleted first by sending an event __prepare:delete__,
-   * a component that is not ready to be deleted yet must set the property __event.stop__ in the event
-   * handler __onPrepareDelete(event)__ in order to prevent rendering new component.
-   *
-   * To explicitly disable history pass __options.$nohistory__ or __params.$nohistory__ otherwise main components are saved automatically by sending
-   * the __path:save__ event.
-   *
-   * A component can globally disable history by creating a static property __$nohistory__ in the class definition.
-   *
-   * To disable history all together set `app.$nohistory = true`.
-   *
-   * @param {string|object} options
-   * @param {string} [dflt]
-   * @returns {object|undefined}
-   */
   function render(options, dflt) {
     var tmpl = resolve(options, dflt);
     if (!tmpl) return;
@@ -647,15 +364,6 @@
     plugin.render(element, tmpl);
     return tmpl;
   }
-  /**
-   * Add a callback to process classes for new components, all registered callbacks will be called on component:create
-   * event with top HTMLElement as parameter. This is for UI frameworks intergation to apply logic to added elements
-   * @param {function} callback
-   * @example
-   * app.stylePlugin((el) => {
-   *     app.$all(".carousel", element).forEach(el => (bootstrap.Carousel.getOrCreateInstance(el)));
-   * })
-   */
   function stylePlugin(callback) {
     if (isFunction(callback)) _stylePlugins.push(callback);
   }
@@ -672,24 +380,6 @@
       if (isElement(ev?.element)) applyStylePlugins(ev.element);
     });
   });
-  /**
-    * Parses component path and returns an object with at least **{ name, params }** ready for rendering. External urls are ignored.
-    *
-    * Passing an object will retun a shallow copy of it with name and params properties possibly set if not provided.
-    *
-    * The path can be:
-    * - component name
-    * - relative path: name/param1/param2/param3/....
-    * - absolute path: /app/name/param1/param2/...
-    * - URL: https://host/app/name/param1/...
-    *
-    *  All parts from the path and query parameters will be placed in the **params** object.
-    *
-    * The **.html** extention will be stripped to support extrernal loading but other exts will be kept as is.
-    *
-    * @param {string|object} path
-    * @returns {Object} in format { name, params }
-    */
   function parsePath(path) {
     var rc = { name: "", params: {} }, query, loc = window.location;
     if (isObject(path)) return Object.assign(rc, path);
@@ -725,14 +415,6 @@
     }
     return rc;
   }
-  /**
-   * Saves the given component in the history as ** /name/param1/param2/param3/.. **
-   *
-   * It is called on every **component:create** event for main components as a microtask,
-   * meaning immediate callbacks have a chance to modify the behaviour.
-   * @param {Object} options
-   *
-   */
   function savePath(options) {
     if (isString(options)) options = { name: options };
     if (!options?.name) return;
@@ -747,37 +429,16 @@
     emit("path:push", window.location.origin + app.base + path);
     window.history.pushState(null, "", window.location.origin + app.base + path);
   }
-  /**
-   * Show a component by path, it is called on **path:restore** event by default from {@link start} and is used
-   * to show first component on initial page load. If the path is not recognized or no component is
-   * found then the default {@link index} component is shown.
-   * @param {string} path
-   */
   function restorePath(path) {
     trace("restorePath:", path, app.index);
     render(path, app.index);
   }
-  /**
-   * Setup default handlers:
-   * - on **path:restore** event call {@link restorePath} to render a component from the history
-   * - on **path:save** call {@link savePath} to save the current component in the history
-   * - on page ready call {@link restorePath} to render the initial page
-   *
-   * **If not called then no browser history will not be handled, up to the app to do it some other way.**. One good
-   * reason is to create your own handlers to build different path and then save/restore.
-   */
   function start() {
     on("path:save", savePath);
     on("path:restore", restorePath);
     $ready(restorePath.bind(app, window.location.href));
   }
   $on(window, "popstate", () => emit("path:restore", window.location.href));
-  /**
-   * Global object to customize {@link fetch} and {@link afetch}
-   * @example <caption>make POST default method</caption>
-   * fetchOptions.method = "POST"
-   * await afetch("url.com")
-   */
   var fetchOptions = {
     method: "GET",
     cache: "default",
@@ -833,30 +494,11 @@
     }
     return info;
   }
-  /**
-   * Fetch remote content, wrapper around Fetch API
-   *
-   * __NOTE: Saves X-CSRF-Token header and sends it back with subsequent requests__
-   * @param {string} url - URL to fetch
-   * @param {object} [options]
-   * @param {string} [options.method] - GET, POST,...GET is default or from app.fetchOptions.method
-   * @param {boolean} [options.post] - set method to POST
-   * @param {string|object|FormData} [options.body] - a body accepted by window.fetch
-   * @param {string} [options.dataType] - explicit return type: text, blob, default is auto detected between text or json
-   * @param {object} [options.headers] - an object with additional headers to send, all global headers from app.fetchOptions.headers also are merged
-   * @param {object} [options.request] - properties to pass to fetch options according to Web API `RequestInit`
-   * @param {function} [callback] - callback as (err, data, info) where info is an object { status, headers, type }
-   *
-   * @example
-   * fetch("http://api.host.com/user/123", (err, data, info) => {
-   *    if (info.status == 200) console.log(data, info);
-   * });
-   */
   function fetch(url, options, callback) {
     if (isFunction(options)) callback = options, options = null;
     try {
       const [uri, opts] = parseOptions(url, options);
-      app.trace("fetch:", uri, opts, options);
+      trace("fetch:", uri, opts, options);
       window.fetch(uri, opts).then(async (res) => {
         var err, data2, info = parseResponse(res);
         if (!res.ok) {
@@ -887,18 +529,6 @@
       call(callback, err);
     }
   }
-  /**
-   * Promisified {@link fetch} which returns a Promise, all exceptions are passed to the reject handler, no need to use try..catch
-   * Return everything in an object `{ ok, status, err, data, info }`.
-   * @example
-   * const { err, data } = await afetch("https://localhost:8000")
-   *
-   * const { ok, err, status, data } = await afetch("https://localhost:8000")
-   * if (!ok) console.log(status, err);
-   * @param {string} url
-   * @param {object} [options]
-   * @async
-   */
   function afetch(url, options) {
     return new Promise((resolve2, reject) => {
       fetch(url, options, (err, data2, info) => {
@@ -906,12 +536,6 @@
       });
     });
   }
-  /**
-   * Base class for components
-   * @param {string} name - component name
-   * @param {object} [params] - properties passed during creation
-   * @class
-   */
   var Component = class {
     params = {};
     constructor(name, params) {
@@ -961,30 +585,6 @@
   var component_default = Component;
   var _alpine = "alpine";
   var _Alpine;
-  /**
-   * Alpine.js component
-   * @param {string} name - component name
-   * @param {object} [params] - properties passed during creation
-   * @class
-   * @extends Component
-   * @example <caption>Component code</caption>
-   * app.components.items = class extends app.AlpineComponent {
-   *   items = []
-   *
-   *   onCreate() {
-   *       app.fetch("host/items", (err, items) => {
-   *           this.items = items;
-   *       })
-   *   }
-   *}
-   * @example <caption>Component template</caption>
-   * <div x-show="!list.length">
-   *   Your basket is empty
-   * </div>
-   * <template x-for="item in items">
-   *   ID: <div x-text="item.id"></div>
-   * </template>
-   */
   var AlpineComponent = class extends component_default {
     static $type = _alpine;
     constructor(name, params) {

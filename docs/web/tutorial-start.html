@@ -96,23 +96,21 @@ npm run watch
 
 </code></pre>
 <h3>hello.html</h3>
-<pre class="prettyprint source lang-html"><code>&lt;template id=&quot;hello&quot;>
-    &lt;h5>This is the &lt;span x-text=$name>&lt;/span> component&lt;/h5>
+<pre class="prettyprint source lang-html"><code>&lt;h5>This is the &lt;span x-text=$name>&lt;/span> component&lt;/h5>
 
-    &lt;p>
-        First param from render url: &lt;span x-text=&quot;params.param1&quot;>&lt;/span>
-    &lt;/p>
+&lt;p>
+    First param from render url: &lt;span x-text=&quot;params.param1&quot;>&lt;/span>
+&lt;/p>
 
-    &lt;p>
-        Named param reason: &lt;span x-text=&quot;params.reason&quot;>&lt;/span>
-    &lt;/p>
+&lt;p>
+    Named param reason: &lt;span x-text=&quot;params.reason&quot;>&lt;/span>
+&lt;/p>
 
-    &lt;div x-template.show=&quot;template&quot;>&lt;/div>
+&lt;div x-template.show=&quot;template&quot;>&lt;/div>
 
-    &lt;button @click=&quot;toggle&quot;>Toggle&lt;/button>
+&lt;button @click=&quot;toggle&quot;>Toggle&lt;/button>
 
-    &lt;button x-render=&quot;'index'&quot;>Back&lt;/button>
-&lt;/template>
+&lt;button x-render=&quot;'index'&quot;>Back&lt;/button>
 
 </code></pre>
 <h3>example.html</h3>

@@ -72,23 +72,21 @@ Point your browser to __http://localhost:8090/__ to see it in action.
 ### hello.html
 
 ```html
-<template id="hello">
-    <h5>This is the <span x-text=$name></span> component</h5>
+<h5>This is the <span x-text=$name></span> component</h5>
 
-    <p>
-        First param from render url: <span x-text="params.param1"></span>
-    </p>
+<p>
+    First param from render url: <span x-text="params.param1"></span>
+</p>
 
-    <p>
-        Named param reason: <span x-text="params.reason"></span>
-    </p>
+<p>
+    Named param reason: <span x-text="params.reason"></span>
+</p>
 
-    <div x-template.show="template"></div>
+<div x-template.show="template"></div>
 
-    <button @click="toggle">Toggle</button>
+<button @click="toggle">Toggle</button>
 
-    <button x-render="'index'">Back</button>
-</template>
+<button x-render="'index'">Back</button>
 
 ```
 

@@ -38,23 +38,21 @@ cat > index.html <<EOF
 EOF
 
 cat > hello.html <<EOF
-<template id="hello">
-    <h5>This is the <span x-text=\$name></span> component</h5>
+<h5>This is the <span x-text=\$name></span> component</h5>
 
-    <p>
-        First param from render url: <span x-text="params.param1"></span>
-    </p>
+<p>
+    First param from render url: <span x-text="params.param1"></span>
+</p>
 
-    <p>
-        Named param reason: <span x-text="params.reason"></span>
-    </p>
+<p>
+    Named param reason: <span x-text="params.reason"></span>
+</p>
 
-    <div class="m-2 border" x-template.show="template"></div>
+<div class="m-2 border" x-template.show="template"></div>
 
-    <button class="btn btn-primary" @click="toggle">Toggle</button>
+<button class="btn btn-primary" @click="toggle">Toggle</button>
 
-    <button class="btn btn-outline-dark" x-render="'index'">Back</button>
-</template>
+<button class="btn btn-outline-dark" x-render="'index'">Back</button>
 EOF
 
 cat > example.html <<EOF
