@@ -1,5 +1,5 @@
 
-import * as all from '../dist/app.mjs'
+import * as all from '../src/index.js'
 
 Object.assign(all.app, all)
 

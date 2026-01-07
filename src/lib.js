@@ -1,5 +1,5 @@
 
-import { __, app, call, isFunction, isNumber, isObject, isString, noop, toCamel } from "./app"
+import { __, call, isFunction, isNumber, isObject, isString, noop, toCamel } from "./app"
 import { $attr, $elem, $parse } from "./dom"
 import { fetch } from "./fetch"
 
@@ -461,7 +461,7 @@ export function sendFile(url, options, callback)
     const build = (key, val) => {
         if (val === undefined) return;
         if (Array.isArray(val)) {
-            for (const i in val) build(`${key}[${app.isO(val[i]) ? i : ""}]`, val[i]);
+            for (const i in val) build(`${key}[${isObject(val[i]) ? i : ""}]`, val[i]);
         } else
         if (isObject(val)) {
             for (const n in val) build(`${key}[${n}]`, val[n]);

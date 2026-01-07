@@ -40,7 +40,7 @@ The package.json is also created, now let's build our silly app and see how it w
 
 ```shell
 npm install
-npm run watch
+npm run start
 ```
 
 Point your browser to __http://localhost:8090/__ to see it in action.

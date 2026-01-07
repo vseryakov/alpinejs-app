@@ -92,26 +92,16 @@ using the example above hello component can be placed inside HTML as **<app-hell
 See also how the [dropdown](examples/dropdown.js) component is implemented.
 
 
-## Examples
-
-The examples/ folder contains more components to play around and a bundle.sh script to show a simple way of bundling components together.
-
-### Simple CDN bundled example: [index.html](examples/index.html)
-
-An example to show very simple way to bundle .html and .js files into a single file as
-CDN bundle, i.e. window.app is global with all methods in it.
-
-To run live example do `npm run watch`.
-
-Then go to http://localhost:8090/ to see the example with router and external rendering.
-
-### Esbuild app plugin
-
-The **scripts/esbuild-app.js** script is an **esbuild** plugin that bundles multiple .js and .html files to be used by the app.
-
-Running `node build.js` in the examples folder will generate the **bundle.js** which includes all .js and .html files used by the index.html
-
 ### Using as NPM module for ESM bundles
+
+The library comes with CDN and ESM bundles:
+
+- dist/app.js - CDN bundle with global window.app object
+- dist/app-lib.js - Base bundle with additional tools from the src/lib.js
+- dist/app-bootstrap.js - Lib bundle with Bootstrap showAlert/showToast functions
+
+- dist/app.mjs - ESM module, nothing is global, all methods are exported
+
 
 ```bash
 npm install @vseryakov/alpinejs-app alpinejs
@@ -126,6 +116,34 @@ Alpine.plugin(AlpinePlugin);
 window.Alpine = Alpine;
 window.Alpine.start();
 ```
+
+To use src/lib.js just import it in your code directly for example:
+
+
+```js
+import * as app from 'alpinejs-app/src/index'
+import * as lib from 'alpinejs-app/src/lib'
+```
+
+## Examples
+
+The examples/ folder contains more components to play around and a bundle.sh script to show a simple way of bundling components together.
+
+### Simple CDN bundled example: [index.html](examples/index.html)
+
+An example to show very simple way to bundle .html and .js files into a single file as
+CDN bundle, i.e. window.app is global with all methods in it.
+
+To run live example do `npm run start`.
+
+Then go to http://localhost:8090/ to see the example with router and external rendering.
+
+### Esbuild app plugin
+
+The **scripts/esbuild-app.js** script is an **esbuild** plugin that bundles multiple .js and .html files to be used by the app.
+
+Running `node build.js` in the examples folder will generate the **bundle.js** which includes all .js and .html files used by the index.html
+
 
 
 

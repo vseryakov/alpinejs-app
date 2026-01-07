@@ -4,6 +4,7 @@ export * from './dom'
 export * from './router'
 export * from './render'
 export * from './fetch'
+export * from './app'
 
 import { AlpineComponent, AlpinePlugin } from './alpine'
 

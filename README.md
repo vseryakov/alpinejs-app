@@ -39,7 +39,6 @@
 
 - **Direct Deep-Linking**: For direct access, server-side routes must redirect to the main app HTML page, with the base path set as '/app/' by default.
 
-
 ## Getting started
 
 Visit the [tutorial](https://vseryakov.github.io/alpinejs-app/docs/web/tutorial-start.html).

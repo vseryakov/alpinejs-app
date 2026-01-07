@@ -5,7 +5,10 @@
 
 /* global bootstrap */
 
-import { app, call, escape, isElement, isObject } from "./app"
+import {
+    $, $all, $elem, $empty, $on, $parse, $ready,
+    escape, isElement, isObject,
+    on, stylePlugin } from "./index"
 
 import { sanitizer, toDuration, toTitle } from "./lib"
 
@@ -24,7 +27,7 @@ export function showAlert(container, type, text, options)
     o.type = o.type == "error" ? "danger" : o.type || "info";
 
     var element = o.element || ".alerts";
-    var alerts = app.$(element, isElement(container) || document.body);
+    var alerts = $(element, isElement(container) || document.body);
     if (!alerts) return;
 
     var html = `
@@ -38,14 +41,14 @@ export function showAlert(container, type, text, options)
         alerts.style.display = "block";
     }
     if (o.css) alerts.classList.add(o.css);
-    if (o.clear) app.$empty(alerts);
-    var alert = app.$parse(html).firstElementChild;
+    if (o.clear) $empty(alerts);
+    var alert = $parse(html).firstElementChild;
     var instance = bootstrap.Alert.getOrCreateInstance(alert);
     alerts.prepend(alert);
     if (o.delay) {
         setTimeout(() => { instance.close() }, o.delay);
     }
-    app.$on(alert, 'closed.bs.alert', (ev) => { cleanupAlerts(alerts, o) });
+    $on(alert, 'closed.bs.alert', (ev) => { cleanupAlerts(alerts, o) });
     if (o.scroll) alerts.scrollIntoView();
     return alert;
 }
@@ -57,9 +60,9 @@ export function showAlert(container, type, text, options)
  */
 export function hideAlert(container, options)
 {
-    var alerts = app.$(options?.element || ".alerts", container);
+    var alerts = $(options?.element || ".alerts", container);
     if (!alerts) return;
-    app.$empty(alerts);
+    $empty(alerts);
     cleanupAlerts(alerts, options);
 }
 
@@ -99,9 +102,9 @@ export function showToast(container, type, text, options)
     </div>`;
 
     if (!container) {
-        container = app.$(".toast-container");
+        container = $(".toast-container");
         if (!container) {
-            container = app.$elem("div", "aria-live", "polite");
+            container = $elem("div", "aria-live", "polite");
             document.body.append(container);
         }
         var pos = o.pos == "tl" ? "top-0 start-0" :
@@ -114,15 +117,15 @@ export function showToast(container, type, text, options)
         o.pos == "br" ? "bottom-0 end-0" : "top-0 start-50 translate-middle-x";
         container.className = `toast-container position-fixed ${pos} p-3`;
     }
-    if (o.clear) app.$empty(container);
-    var toast = app.$parse(html).firstElementChild;
+    if (o.clear) $empty(container);
+    var toast = $parse(html).firstElementChild;
     bootstrap.Toast.getOrCreateInstance(toast).show();
     container.prepend(toast);
     toast._timer = o.notimer ? "" : setInterval(() => {
         if (!toast.parentElement) return clearInterval(toast._timer);
-        app.$(".timer", toast).textContent = o.countdown ? toDuration(delay - (Date.now() - o.now)) : toDuration(o.now, 1) + " ago";
+        $(".timer", toast).textContent = o.countdown ? toDuration(delay - (Date.now() - o.now)) : toDuration(o.now, 1) + " ago";
     }, o.countdown ? o.delay/2 : o.delay);
-    app.$on(toast, "hidden.bs.toast", (ev) => { clearInterval(ev.target._timer); ev.target.remove() });
+    $on(toast, "hidden.bs.toast", (ev) => { clearInterval(ev.target._timer); ev.target.remove() });
     return toast;
 }
 
@@ -131,85 +134,7 @@ export function showToast(container, type, text, options)
  */
 export function hideToast()
 {
-    app.$empty(app.$(".toast-container"));
-}
-
-/**
- * Login modal popup, generic enough but built for backendjs in mind
- */
-export function showLogin(options, callback)
-{
-    if (typeof options == "function") callback = options, options = null;
-
-    const html = `
-<div class="modal fade" tabindex="-1" aria-labelledby="hdr" aria-modal="true" role="dialog">
-<div class="modal-dialog" role="document">
-    <div class="modal-content">
-    <div class="modal-body">
-        <form class="form-horizontal" role="form">
-            <h4 class="text-center py-4" id="hdr" >
-            <img src="${options?.logo || "/img/logo.png"}" style="max-height: 3rem;"> ${options?.title || 'Please Sign In'}</h4>
-            <div class="mb-3 row">
-                <label for="login" class=" col-form-label col-sm-4">${options?.login || "Login"}</label>
-                <div class="col-sm-8">
-                    <input id="login" type="text" class="form-control">
-                </div>
-            </div>
-            <div class="mb-3 row">
-                <label for="secret" class=" col-form-label col-sm-4">${options?.password || "Password"}</label>
-                <div class="col-sm-8">
-                    <input id="secret" placeholder="Password" type="password" class="form-control">
-                </div>
-            </div>
-        </form>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" id="submit" class="btn btn-outline-secondary">Login</button>
-    </div>
-    </div>
-</div>
-</div>`;
-    var modal = app.$parse(html).firstChild;
-
-    var login = app.$("#login", modal);
-    app.$on(login, "keyup", (ev) => {
-        if (ev.which == 13) { secret.focus(); ev.preventDefault() }
-    });
-
-    var secret = app.$("#secret", modal);
-    app.$on(secret, "keyup", (ev) => {
-        if (ev.which == 13) { submit.click(); ev.preventDefault() }
-    });
-
-    var submit = app.$("#submit", modal);
-    app.$on(submit, "click", (ev) => {
-        var body = { login: login.value, secret: secret.value }
-        app.fetch(options?.url || "/login", { post: 1, body }, (err, rc, info) => {
-            if (err) return showAlert("error", err);
-            Object.assign(app.user, rc);
-            call(callback, err);
-            app.emit("user:login", rc, info);
-            instance.hide();
-        });
-    });
-
-    app.$on(modal, "shown.bs.modal", (e) => {
-        queueMicrotask(() => { login.focus() });
-    });
-    app.$on(modal, "hide.bs.modal", (e) => {
-        if (isElement(document.activeElement)) {
-            document.activeElement.blur();
-        }
-    });
-    app.$on(modal, "hidden.bs.modal", (e) => {
-        modal.remove();
-        instance.dispose();
-    });
-    document.body.append(modal);
-    var instance = bootstrap.Modal.getOrCreateInstance(modal);
-    instance.show();
-    return modal;
+    $empty($(".toast-container"));
 }
 
 function alertText(text, options)
@@ -231,14 +156,14 @@ function cleanupAlerts(alerts, options)
 
 function applyPlugins(element)
 {
-    app.$all(".carousel", element).forEach(el => (bootstrap.Carousel.getOrCreateInstance(el)));
-    app.$all(`[data-bs-toggle="popover"]`, element).forEach(el => (bootstrap.Popover.getOrCreateInstance(el)));
+    $all(".carousel", element).forEach(el => (bootstrap.Carousel.getOrCreateInstance(el)));
+    $all(`[data-bs-toggle="popover"]`, element).forEach(el => (bootstrap.Popover.getOrCreateInstance(el)));
 }
 
-app.$ready(() => {
-    app.stylePlugin(applyPlugins);
-    app.on("dom:changed", (ev) => {
+$ready(() => {
+    stylePlugin(applyPlugins);
+    on("dom:changed", (ev) => {
         document.documentElement.setAttribute("data-bs-theme", ev.colorScheme);
     });
-    app.on("alert", showAlert);
+    on("alert", showAlert);
 });

@@ -24,12 +24,23 @@
     AlpineComponent: () => AlpineComponent,
     AlpinePlugin: () => AlpinePlugin,
     Component: () => component_default,
+    __: () => __,
     afetch: () => afetch,
     app: () => app,
+    call: () => call,
     default: () => index_default,
     emit: () => emit,
+    escape: () => escape,
     fetch: () => fetch,
     fetchOptions: () => fetchOptions,
+    isArray: () => isArray,
+    isElement: () => isElement,
+    isFunction: () => isFunction,
+    isNumber: () => isNumber,
+    isObject: () => isObject,
+    isString: () => isString,
+    log: () => log,
+    noop: () => noop,
     off: () => off,
     on: () => on,
     once: () => once,
@@ -41,7 +52,9 @@
     restorePath: () => restorePath,
     savePath: () => savePath,
     start: () => start,
-    stylePlugin: () => stylePlugin
+    stylePlugin: () => stylePlugin,
+    toCamel: () => toCamel,
+    trace: () => trace
   });
   var app = {
     /**

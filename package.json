@@ -24,7 +24,7 @@
     "demo": "sh scripts/demo.sh",
     "build": "node scripts/build.js && npm run docs",
     "devbuild": "node scripts/build.js",
-    "watch": "cd examples && npm run watch",
+    "start": "cd examples && npm run start",
     "docs": "rm -rf docs/web && jsdoc -c docs/jsdoc.js"
   },
   "devDependencies": {

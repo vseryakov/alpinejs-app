@@ -4,6 +4,6 @@
   "scripts": {
     "build": "node ../scripts/build-app.js",
     "devbuild": "node ../scripts/build-app.js",
-    "watch": "node ../scripts/build-app.js --watch --serve"
+    "start": "node ../scripts/build-app.js --watch --serve"
   }
 }

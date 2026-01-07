@@ -6,7 +6,7 @@ cat > package.json <<EOF
   "name": "demo",
   "scripts": {
     "build": "node node_modules/alpinejs-app/scripts/build-app.js",
-    "watch": "node node_modules/alpinejs-app/scripts/build-app.js --watch"
+    "start": "node node_modules/alpinejs-app/scripts/build-app.js --watch"
   },
   "dependencies": {
     "alpinejs-app": "^1.5.0"
