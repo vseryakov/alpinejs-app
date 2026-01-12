@@ -28,8 +28,7 @@
     "docs": "rm -rf docs/web && jsdoc -c docs/jsdoc.js"
   },
   "devDependencies": {
-    "esbuild": "^0.27.0",
-    "docdash": "github:vseryakov/docdash"
+    "esbuild": "^0.27.0"
   },
   "eslintConfig": {
     "root": true,
