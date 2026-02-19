@@ -488,7 +488,7 @@ export function sendFile(url, options, callback)
         method: options.method || "POST",
     };
     for (const p in options) {
-        if (p == "json" || p == "files") continue;
+        if (p == "json" || p == "files" || p == "body") continue;
         req[p] ??= options[p];
     }
     fetch(url, req, callback);
