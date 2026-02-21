@@ -104,8 +104,9 @@ export function fetch(url, options, callback)
         window.fetch(uri, opts).
         then(async (res) => {
             var err, data, info = parseResponse(res);
+            var ctype = info.headers["content-type"];
             if (!res.ok) {
-                if (/\/json/.test(info.headers["content-type"])) {
+                if (/\/json/.test(ctype)) {
                     const d = await res.json();
                     err = { status: res.status };
                     for (const p in d) err[p] = d[p];
@@ -122,7 +123,8 @@ export function fetch(url, options, callback)
                 data = await res.blob();
                 break;
             default:
-                data = /\/json/.test(info.headers["content-type"]) ? await res.json() : await res.text();
+                data = /\/json/.test(ctype) ? await res.json() :
+                       /image|video|audio|pdf|zip|binary|octet/.test(ctype) ? await res.blob() : await res.text();
             }
             call(callback, null, data, info);
         }).catch (err => {
