@@ -390,15 +390,16 @@ export function loadResources(urls, options, callback)
 }
 
 /**
- * Send file(s) and forms
+ * Send file(s) and forms, a wrapper around fetch
  * @param {string} url
  * @param {object} options
  * @param {object} [options.files] - name/File pairs to be sent as multi-part
  * @param {object} [options.body] - simple form properties
  * @param {object} [options.json] - send as JSON blobs
  * @param {function} [callback]
+ * @async
  */
-export function sendFile(url, options, callback)
+export async function sendFile(url, options, callback)
 {
     const add = (k, v) => {
        body.append(k, isFunction(v) ? v() : v === null || v === true ? "" : v);
@@ -438,16 +439,7 @@ export function sendFile(url, options, callback)
         if (p == "json" || p == "files" || p == "body") continue;
         req[p] ??= options[p];
     }
-    fetch(url, req, callback);
-}
-
-export function asendFile(url, options)
-{
-    return new Promise((resolve, reject) => {
-        sendFile(url, options, (err, data, info) => {
-            resolve({ ok: !err, status: info.status, err, data, info });
-        });
-    });
+    return fetch(url, req, callback);
 }
 
 function isattr(attr, list)

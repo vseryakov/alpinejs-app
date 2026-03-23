@@ -138,5 +138,7 @@ Nothing much, all the work is done by Alpine.js actually.
 
 A more complex example is at [demo](https://vseryakov.github.io/alpinejs-app/examples/index.html).
 
+Also there are more examples in a sister project [backendjs](https://github.com/vseryakov/backendjs/tree/master/examples).
+
 To continue go to the {@tutorial components}.
 

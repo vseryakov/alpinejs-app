@@ -95,23 +95,23 @@ limiting scope for children might as well be useful.
 <div x-scope-level=1></div>
 ```
 
-## Directive: **x-droppable**
+## Directive: **x-file-drop**
 
 Adds drag-and-drop (and click-to-select) file upload behavior to an element.
 
  - Clicking the element triggers a click on a nested `<input type="file">`.
- - Dragging a file over/into the element sets `target.dragging = 1`.
- - Leaving/dropping resets `target.dragging = 0`.
+ - Dragging a file over/into the element sets `target._dragging = true`.
+ - Leaving/dropping resets `target._dragging = false`.
  - Dropping a file emits a global app event: `"file:dropped"`, components can use `onFileDropped` method to receive such events
  - Whole components can be used as droppable targets using `$component` magic
 
 ```html
- <div x-data="{ dragging: 0 }" x-droppable="{ dragging }" :class="{ 'border-primary': dragging }">
+ <div x-data="{ _dragging: 0 }" x-file-drop="$data" :class="{ 'border-primary': _dragging }">
      <input type="file" hidden />
      <p>Click or drag file here</p>
  </div>
 
-<div x-droppable="$component" :class="{ 'border-primary': dragging }">
+<div x-file-drop="$component" :class="{ 'border-primary': _dragging }">
      <input type="file" hidden />
      <p>Click or drag file here</p>
  </div>

@@ -152,6 +152,7 @@ function toCamel(str) {
  * @param {int} [options.zero] - replace with this number if result is 0
  * @param {int} [options.digits] - how many digits to keep after the floating point
  * @param {int} [options.bigint] - return BigInt if not a safe integer
+ * @param {int} [options.base=10] - base of the input, 2, 10, 16, ...
  * @return {number}
  * @example
  * toNumber("123")
@@ -170,7 +171,7 @@ function toNumber(val, options) {
       n = options?.dflt || 0;
     } else {
       var f = typeof options?.float == "undefined" || options?.float == null ? /^(-|\+)?([0-9]+)?\.[0-9]+$/.test(val) : options?.float;
-      n = val[0] == "t" ? 1 : val[0] == "f" ? 0 : val == "infinity" ? Infinity : f ? parseFloat(val, 10) : parseInt(val, 10);
+      n = val[0] == "t" ? 1 : val[0] == "f" ? 0 : val == "infinity" ? Infinity : f ? parseFloat(val, options?.base || 10) : parseInt(val, options?.base || 10);
     }
   }
   n = isNaN(n) ? options?.dflt || 0 : n;
@@ -790,10 +791,10 @@ $on(window, "popstate", () => emit("path:restore", window.location.href));
 
 // src/fetch.js
 /**
- * Global object to customize {@link fetch} and {@link afetch}
+ * Global object to customize {@link fetch}
  * @example <caption>make POST default method</caption>
  * fetchOptions.method = "POST"
- * await afetch("url.com")
+ * await fetch("url.com")
  */
 var fetchOptions = {
   method: "GET",
@@ -863,66 +864,53 @@ function parseResponse(res) {
  * @param {object} [options.headers] - an object with additional headers to send, all global headers from app.fetchOptions.headers also are merged
  * @param {object} [options.request] - properties to pass to fetch options according to Web API `RequestInit`
  * @param {function} [callback] - callback as (err, data, info) where info is an object { status, headers, type }
- *
+ * @async
  * @example
  * fetch("http://api.host.com/user/123", (err, data, info) => {
  *    if (info.status == 200) console.log(data, info);
  * });
+ *
+ * const { err, data } = await fetch("https://localhost:8000")
+ *
+ * const { ok, err, status, data } = await fetch("https://localhost:8000")
+ * if (!ok) console.log(status, err);
  */
-function fetch(url, options, callback) {
+async function fetch(url, options, callback) {
   if (isFunction(options)) callback = options, options = null;
   try {
     const [uri, opts] = parseOptions(url, options);
     trace("fetch:", uri, opts, options);
-    window.fetch(uri, opts).then(async (res) => {
-      var err, data2, info = parseResponse(res);
-      var ctype = info.headers["content-type"];
-      if (!res.ok) {
-        if (/\/json/.test(ctype)) {
-          const d = await res.json();
-          err = { status: res.status };
-          for (const p in d) err[p] = d[p];
-        } else {
-          err = { message: await res.text(), status: res.status };
-        }
-        return call(callback, err, data2, info);
+    var data2, info;
+    const res = await window.fetch(uri, opts);
+    info = parseResponse(res);
+    var ctype = info.headers["content-type"];
+    if (!res.ok) {
+      let err;
+      if (/\/json/.test(ctype)) {
+        const d = await res.json();
+        err = { status: res.status };
+        for (const p in d) err[p] = d[p];
+      } else {
+        err = { message: await res.text(), status: res.status };
       }
-      switch (options?.dataType) {
-        case "text":
-          data2 = await res.text();
-          break;
-        case "blob":
-          data2 = await res.blob();
-          break;
-        default:
-          data2 = /\/json/.test(ctype) ? await res.json() : /image|video|audio|pdf|zip|binary|octet/.test(ctype) ? await res.blob() : await res.text();
-      }
-      call(callback, null, data2, info);
-    }).catch((err) => {
-      call(callback, err);
-    });
+      throw err;
+    }
+    switch (options?.dataType) {
+      case "text":
+        data2 = await res.text();
+        break;
+      case "blob":
+        data2 = await res.blob();
+        break;
+      default:
+        data2 = /\/json/.test(ctype) ? await res.json() : /image|video|audio|pdf|zip|binary|octet/.test(ctype) ? await res.blob() : await res.text();
+    }
+    call(callback, null, data2, info);
+    return { ok: true, status: info?.status, data: data2, info };
   } catch (err) {
     call(callback, err);
+    return { ok: false, status: info?.status, err, data: data2, info };
   }
-}
-/**
- * Promisified {@link fetch} which returns a Promise, all exceptions are passed to the reject handler, no need to use try..catch
- * Return everything in an object `{ ok, status, err, data, info }`.
- * @example
- * const { err, data } = await afetch("https://localhost:8000")
- *
- * const { ok, err, status, data } = await afetch("https://localhost:8000")
- * if (!ok) console.log(status, err);
- * @param {string} url
- * @param {object} [options]
- * @async
- */
-function afetch(url, options) {
-  return new Promise((resolve2, reject) => {
-    fetch(url, options, (err, data2, info) => {
-      resolve2({ ok: !err, status: info.status, err, data: data2, info });
-    });
-  });
 }
 
 // src/component.js
@@ -1171,45 +1159,90 @@ function AlpinePlugin(Alpine) {
     const scope = Alpine.closestDataStack(el);
     el._x_dataStack = scope.slice(0, parseInt(evaluate(expression || "")) || 0);
   });
-  Alpine.directive("droppable", (el, { expression }, { evaluate, cleanup }) => {
+  Alpine.directive("file-drop", (el, { expression }, { evaluate, cleanup }) => {
     const target = evaluate(expression);
     var current = null;
     $on(el, "click", click);
     $on(el, "drop", drop);
     $on(el, "dragdrop", drop);
     $on(el, "dragenter", dragenter);
+    $on(el, "dragover", dragenter);
     $on(el, "dragleave", dragleave);
-    $on(el, "dragover", dragover);
     cleanup(() => {
       $off(el, "click", click);
       $off(el, "drop", drop);
       $off(el, "dragdrop", drop);
       $off(el, "dragenter", dragenter);
+      $off(el, "dragover", dragenter);
       $off(el, "dragleave", dragleave);
-      $off(el, "dragover", dragover);
     });
     function click(event) {
       $('[type="file"]', el).click();
     }
     function drop(event) {
       event.preventDefault();
-      var file = event.dataTransfer.files[0];
+      var file = event.dataTransfer.files?.[0];
       $event(el, "file:dropped", { file, event });
       emit(app.event, "file:dropped", { file, event, target, element: el });
-      target.dragging = 0;
+      target._dragging = false;
+      current = null;
     }
     function dragenter(event) {
+      event.preventDefault();
       current = event.target;
-      target.dragging = 1;
+      target._dragging = true;
     }
     function dragleave(event) {
+      event.preventDefault();
       if (event.target === current) {
-        target.dragging = 0;
+        target._dragging = false;
       }
     }
-    function dragover(event) {
+  });
+  Alpine.directive("draggable", (el, { expression }, { evaluate, cleanup }) => {
+    const target = evaluate(expression);
+    var current = null;
+    $on(el, "drop", drop);
+    $on(el, "dragdrop", drop);
+    $on(el, "dragstart", dragstart);
+    $on(el, "dragend", dragend);
+    $on(el, "dragenter", dragenter);
+    $on(el, "dragover", dragenter);
+    $on(el, "dragleave", dragleave);
+    cleanup(() => {
+      $off(el, "drop", drop);
+      $off(el, "dragdrop", drop);
+      $off(el, "dragstart", dragstart);
+      $off(el, "dragend", dragend);
+      $off(el, "dragenter", dragenter);
+      $off(el, "dragover", dragenter);
+      $off(el, "dragleave", dragleave);
+    });
+    function dragenter(event) {
       event.preventDefault();
-      target.dragging = 1;
+      if (el === current) return;
+      target._dragging = true;
+    }
+    function dragleave(event) {
+      event.preventDefault();
+      if (el === current) return;
+      target._dragging = false;
+    }
+    function dragstart(event) {
+      current = el;
+      event.dataTransfer.effectAllowed = "move";
+    }
+    function dragend() {
+      target._dragging = false;
+      current = null;
+    }
+    function drop(event) {
+      event.preventDefault();
+      target._dragging = false;
+      if (el === current || !current) return;
+      current = null;
+      $event(el, "item:dropped", { item: current });
+      emit(app.event, "item:dropped", { event, item: current, element: el });
     }
   });
 }
@@ -1235,7 +1268,6 @@ export {
   AlpinePlugin,
   component_default as Component,
   __,
-  afetch,
   app,
   call,
   index_default as default,

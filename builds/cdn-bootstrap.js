@@ -2,5 +2,5 @@
 import "./cdn-lib"
 
 import * as bootstrap from "./../src/bootstrap"
-
-Object.assign(window.app, bootstrap);
+import * as bootpopup from "./../src/bootpopup"
+Object.assign(window.app, bootstrap, bootpopup);
