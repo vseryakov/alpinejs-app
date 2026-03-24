@@ -120,6 +120,6 @@ Adds drag-and-drop (and click-to-select) file upload behavior to an element.
 
 ## Directive: **x-shtml**
 
-Safe version of html directive by using sanitizer, it must be installed as `app.sanitizer`, the lib and bootstrap bunxdles incluse it
+Safe version of html directive by using sanitizer, only the `lib` and `bootstrap` bundles include it
 
 

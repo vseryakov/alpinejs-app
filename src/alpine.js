@@ -179,7 +179,7 @@ export function AlpinePlugin(Alpine)
 {
     _Alpine = Alpine;
 
-    emit("alpine:init");
+    emit("alpine:init", Alpine);
 
     Alpine.magic("app", (el) => app);
 
@@ -347,22 +347,5 @@ export function AlpinePlugin(Alpine)
 
     })
 
-    Alpine.directive('shtml', (el, { expression }, { effect, evaluateLater }) => {
-        const evaluate = evaluateLater(expression)
-
-        effect(() => {
-            evaluate(value => {
-                $empty(el);
-                const children = app.sanitizer(value, true);
-                if (!children?.length) return;
-                Alpine.mutateDom(() => {
-                    el.append(...children);
-                    el._x_ignoreSelf = true
-                    Alpine.initTree(el);
-                    delete el._x_ignoreSelf
-                })
-            })
-        })
-    })
 }
 

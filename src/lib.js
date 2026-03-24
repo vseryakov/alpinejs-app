@@ -1,7 +1,8 @@
 
 import { __, call, isFunction, isNumber, isObject, isString, noop, toCamel, toNumber } from "./app"
-import { $attr, $elem, $parse } from "./dom"
+import { $attr, $elem, $empty, $parse } from "./dom"
 import { fetch } from "./fetch"
+import { on } from "./events"
 
 /**
  * @param {any[]} list
@@ -496,3 +497,25 @@ sanitizer._tags = {
     table: [], thead: [], tbody: [], th: [], tr: [], td: [],
     u: [], ul: [],
 }
+
+on("alpine:init", (Alpine) => {
+
+    Alpine.directive('shtml', (el, { expression }, { effect, evaluateLater }) => {
+        const evaluate = evaluateLater(expression)
+
+        effect(() => {
+            evaluate(value => {
+                $empty(el);
+                const children = sanitizer(value, true);
+                if (!children?.length) return;
+                Alpine.mutateDom(() => {
+                    el.append(...children);
+                    el._x_ignoreSelf = true
+                    Alpine.initTree(el);
+                    delete el._x_ignoreSelf
+                })
+            })
+        })
+    })
+
+});

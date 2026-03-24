@@ -1,0 +1,1933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>Bootpopup - Alpinejs-app Documentation</title>
+    
+    <meta name="description" content="A Simplest Single Page Application (SPA) library for Alpine.js." />
+    
+    
+    
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+
+    
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Tutorials</h3><ul><li><a href="tutorial-start.html">Getting Started</a><ul class='members'><li data-type='method' style='display: none;'><a href="tutorial-start.html#installation">Installation</a></li><li data-type='method' style='display: none;'><a href="tutorial-start.html#first-app">First app</a></li></ul></li><li><a href="tutorial-components.html">Components</a><ul class='members'><li data-type='method' style='display: none;'><a href="tutorial-components.html#component-lifecycle-and-event-handling">Component Lifecycle and Event Handling</a></li><li data-type='method' style='display: none;'><a href="tutorial-components.html#event-emitter">Event emitter</a></li><li data-type='method' style='display: none;'><a href="tutorial-components.html#custom-elements">Custom Elements</a></li><li data-type='method' style='display: none;'><a href="tutorial-components.html#examples">Examples</a></li></ul></li><li><a href="tutorial-directives.html">Directives</a><ul class='members'><li data-type='method' style='display: none;'><a href="tutorial-directives.html#directive-x-template">Directive: **x-template**</a></li><li data-type='method' style='display: none;'><a href="tutorial-directives.html#directive-x-render">Directive: **x-render**</a></li><li data-type='method' style='display: none;'><a href="tutorial-directives.html#directive-x-scope-level">Directive: **x-scope-level**</a></li><li data-type='method' style='display: none;'><a href="tutorial-directives.html#directive-x-file-drop">Directive: **x-file-drop**</a></li><li data-type='method' style='display: none;'><a href="tutorial-directives.html#directive-x-shtml">Directive: **x-shtml**</a></li></ul></li><li><a href="tutorial-magics.html">Magics</a><ul class='members'><li data-type='method' style='display: none;'><a href="tutorial-magics.html#magic-app">Magic: **$app**</a></li><li data-type='method' style='display: none;'><a href="tutorial-magics.html#magic-component">Magic: **$component**</a></li><li data-type='method' style='display: none;'><a href="tutorial-magics.html#magic-parent">Magic: **$parent**</a></li><li data-type='method' style='display: none;'><a href="tutorial-magics.html#magic-params">Magic: **$params**</a></li></ul></li></ul><h3>Classes</h3><ul><li><a href="AlpineComponent.html">AlpineComponent</a><ul class='methods'><li data-type='method' style='display: none;'><a href="AlpineComponent.html#destroy">destroy</a></li><li data-type='method' style='display: none;'><a href="AlpineComponent.html#init">init</a></li></ul></li><li><a href="Bootpopup.html">Bootpopup</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Bootpopup.html#addOptions">addOptions</a></li><li data-type='method' style='display: none;'><a href="Bootpopup.html#callback">callback</a></li><li data-type='method' style='display: none;'><a href="Bootpopup.html#close">close</a></li><li data-type='method' style='display: none;'><a href="Bootpopup.html#create">create</a></li><li data-type='method' style='display: none;'><a href="Bootpopup.html#data">data</a></li><li data-type='method' style='display: none;'><a href="Bootpopup.html#escape">escape</a></li><li data-type='method' style='display: none;'><a href="Bootpopup.html#show">show</a></li><li data-type='method' style='display: none;'><a href="Bootpopup.html#showAlert">showAlert</a></li><li data-type='method' style='display: none;'><a href="Bootpopup.html#validate">validate</a></li></ul></li><li><a href="Component.html">Component</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Component.html#destroy">destroy</a></li><li data-type='method' style='display: none;'><a href="Component.html#init">init</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="app.html">app</a></li></ul><h3>Global</h3><ul><li><a href="global.html#$">$</a></li><li><a href="global.html#$all">$all</a></li><li><a href="global.html#$append">$append</a></li><li><a href="global.html#$attr">$attr</a></li><li><a href="global.html#$data">$data</a></li><li><a href="global.html#$elem">$elem</a></li><li><a href="global.html#$empty">$empty</a></li><li><a href="global.html#$event">$event</a></li><li><a href="global.html#$off">$off</a></li><li><a href="global.html#$on">$on</a></li><li><a href="global.html#$param">$param</a></li><li><a href="global.html#$parse">$parse</a></li><li><a href="global.html#$ready">$ready</a></li><li><a href="global.html#BootpopupElement">BootpopupElement</a></li><li><a href="global.html#BootpopupOptions">BootpopupOptions</a></li><li><a href="global.html#__">__</a></li><li><a href="global.html#bootpopup">bootpopup</a></li><li><a href="global.html#call">call</a></li><li><a href="global.html#emit">emit</a></li><li><a href="global.html#escape">escape</a></li><li><a href="global.html#fetch">fetch</a></li><li><a href="global.html#fetchOptions">fetchOptions</a></li><li><a href="global.html#forEach">forEach</a></li><li><a href="global.html#forEachSeries">forEachSeries</a></li><li><a href="global.html#hideAlert">hideAlert</a></li><li><a href="global.html#hideToast">hideToast</a></li><li><a href="global.html#isArray">isArray</a></li><li><a href="global.html#isElement">isElement</a></li><li><a href="global.html#isFlag">isFlag</a></li><li><a href="global.html#isFunction">isFunction</a></li><li><a href="global.html#isNumber">isNumber</a></li><li><a href="global.html#isObject">isObject</a></li><li><a href="global.html#isString">isString</a></li><li><a href="global.html#loadResources">loadResources</a></li><li><a href="global.html#log">log</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#off">off</a></li><li><a href="global.html#on">on</a></li><li><a href="global.html#once">once</a></li><li><a href="global.html#only">only</a></li><li><a href="global.html#parallel">parallel</a></li><li><a href="global.html#parsePath">parsePath</a></li><li><a href="global.html#register">register</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#resolve">resolve</a></li><li><a href="global.html#restorePath">restorePath</a></li><li><a href="global.html#sanitizer">sanitizer</a></li><li><a href="global.html#savePath">savePath</a></li><li><a href="global.html#sendFile">sendFile</a></li><li><a href="global.html#series">series</a></li><li><a href="global.html#showAlert">showAlert</a></li><li><a href="global.html#showToast">showToast</a></li><li><a href="global.html#split">split</a></li><li><a href="global.html#start">start</a></li><li><a href="global.html#stylePlugin">stylePlugin</a></li><li><a href="global.html#toCamel">toCamel</a></li><li><a href="global.html#toDate">toDate</a></li><li><a href="global.html#toDuration">toDuration</a></li><li><a href="global.html#toNumber">toNumber</a></li><li><a href="global.html#toPrice">toPrice</a></li><li><a href="global.html#toSize">toSize</a></li><li><a href="global.html#toTitle">toTitle</a></li><li><a href="global.html#trace">trace</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Bootpopup</h1>
+    
+
+    
+
+
+
+
+<section>
+
+
+
+<header>
+    
+        <h2>
+        
+            Bootpopup
+        
+        </h2>
+        
+            <div class="class-description usertext"><p>Bootpopup class</p></div>
+        
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+
+    
+    <h2>Constructor</h2>
+    
+
+    <h4 class="name" id="Bootpopup"><span class="type-signature"></span>new Bootpopup<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line381">line 381</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>..args</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#BootpopupOptions">BootpopupOptions</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+        <a name="members">
+            <h2 class="subsection-title">Members</h2>
+        </a>
+
+        
+            
+<h4 class="name" id="formid"><span class="type-signature"></span>formid<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line384">line 384</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>formid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Randomly generated HTML id of the form.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="options"><span class="type-signature"></span>options<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line388">line 388</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Options used to create the window.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+        
+
+    
+
+
+    
+        <a name="methods">
+            <h2 class="subsection-title">Methods</h2>
+        </a>
+
+        
+            
+
+    
+
+    <h4 class="name" id="addOptions"><span class="type-signature"></span>addOptions<span class="signature">(options)</span><span class="type-signature"> &rarr; {<a href="Bootpopup.html">Bootpopup</a>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line816">line 816</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Add/merge options into current options.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        <table class="params">
+    <thead>
+    <tr>
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td class="type">
+                
+                
+<span class="param-type"><a href="Bootpopup.html">Bootpopup</a></span>
+
+
+
+                
+            </td>
+            <td class="description last">
+                
+                <p>This instance.</p>
+                
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+    
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="callback"><span class="type-signature"></span>callback<span class="signature">(name)</span><span class="type-signature"> &rarr; {any}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Call a callback for the given action and return its result.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line790">line 790</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">"dismiss"</span>
+|
+
+<span class="param-type">"submit"</span>
+|
+
+<span class="param-type">"close"</span>
+|
+
+<span class="param-type">"ok"</span>
+|
+
+<span class="param-type">"cancel"</span>
+|
+
+<span class="param-type">"yes"</span>
+|
+
+<span class="param-type">"no"</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Action name.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        <table class="params">
+    <thead>
+    <tr>
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td class="type">
+                
+                
+<span class="param-type">any</span>
+
+
+
+                
+            </td>
+            <td class="description last">
+                
+                <p>Callback return value.</p>
+                
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+    
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="close"><span class="type-signature"></span>close<span class="signature">()</span><span class="type-signature"> &rarr; {void}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Close popup window (performs the <code>close</code> action).</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line845">line 845</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        <table class="params">
+    <thead>
+    <tr>
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td class="type">
+                
+                
+<span class="param-type">void</span>
+
+
+
+                
+            </td>
+            <td class="description last">
+                
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+    
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="create"><span class="type-signature"></span>create<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="Bootpopup.html">Bootpopup</a>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Create the window and add it to the DOM, but do not show it.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line484">line 484</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        <table class="params">
+    <thead>
+    <tr>
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td class="type">
+                
+                
+<span class="param-type"><a href="Bootpopup.html">Bootpopup</a></span>
+
+
+
+                
+            </td>
+            <td class="description last">
+                
+                <p>This instance.</p>
+                
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+    
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="data"><span class="type-signature"></span>data<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Return form input values from all inputs.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line764">line 764</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        <table class="params">
+    <thead>
+    <tr>
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td class="type">
+                
+                
+<span class="param-type">Object</span>
+
+
+
+                
+            </td>
+            <td class="description last">
+                
+                <p>Data as <code>{ obj: {}, list: [] }</code>.</p>
+                
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+    
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="escape"><span class="type-signature"></span>escape<span class="signature">(str)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line755">line 755</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>str</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>String to escape.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        <table class="params">
+    <thead>
+    <tr>
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td class="type">
+                
+                
+<span class="param-type">string</span>
+
+
+
+                
+            </td>
+            <td class="description last">
+                
+                <p>Escaped string where <code>&amp;&lt;&gt;'&quot;</code> are converted into HTML entities.</p>
+                
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+    
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="show"><span class="type-signature"></span>show<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="Bootpopup.html">Bootpopup</a>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Show the window and call the <code>before</code> callback.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line691">line 691</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        <table class="params">
+    <thead>
+    <tr>
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td class="type">
+                
+                
+<span class="param-type"><a href="Bootpopup.html">Bootpopup</a></span>
+
+
+
+                
+            </td>
+            <td class="description last">
+                
+                <p>This instance.</p>
+                
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+    
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="showAlert"><span class="type-signature"></span>showAlert<span class="signature">(msg, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Bootpopup.html">Bootpopup</a>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line718">line 718</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>msg</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Message to display.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Alert options.</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">"info"</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Use <code>&quot;info&quot;</code> to show information message (requires <code>info: true</code>).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dismiss</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>If true, the message must be closed manually.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>delay</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Auto-hide after this delay (ms).</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        <table class="params">
+    <thead>
+    <tr>
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td class="type">
+                
+                
+<span class="param-type"><a href="Bootpopup.html">Bootpopup</a></span>
+
+
+
+                
+            </td>
+            <td class="description last">
+                
+                <p>This instance.</p>
+                
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+    
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="validate"><span class="type-signature"></span>validate<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Run <code>checkValidity()</code> and return the result.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line741">line 741</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        <table class="params">
+    <thead>
+    <tr>
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td class="type">
+                
+                
+<span class="param-type">boolean</span>
+
+
+
+                
+            </td>
+            <td class="description last">
+                
+                <p>Validity result.</p>
+                
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+    
+
+
+
+
+
+
+
+        
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a> using the <a href="https://github.com/vseryakov/docdash">docdash</a> theme.
+</footer>
+
+
+<script src="scripts/search.js" defer></script>
+
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+
+</body>
+</html>

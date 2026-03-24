@@ -1108,7 +1108,7 @@ function $template(el, value, modifiers) {
 register(_alpine, { render: _render, Component: AlpineComponent, data, init, default: 1 });
 function AlpinePlugin(Alpine) {
   _Alpine = Alpine;
-  emit("alpine:init");
+  emit("alpine:init", Alpine);
   Alpine.magic("app", (el) => app);
   Alpine.magic("params", (el) => {
     while (el) {
@@ -1244,22 +1244,6 @@ function AlpinePlugin(Alpine) {
       $event(el, "item:dropped", { item: current });
       emit(app.event, "item:dropped", { event, item: current, element: el });
     }
-  });
-  Alpine.directive("shtml", (el, { expression }, { effect, evaluateLater }) => {
-    const evaluate = evaluateLater(expression);
-    effect(() => {
-      evaluate((value) => {
-        $empty(el);
-        const children = app.sanitizer(value, true);
-        if (!children?.length) return;
-        Alpine.mutateDom(() => {
-          el.append(...children);
-          el._x_ignoreSelf = true;
-          Alpine.initTree(el);
-          delete el._x_ignoreSelf;
-        });
-      });
-    });
   });
 }
 
