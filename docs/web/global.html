@@ -144,7 +144,7 @@ classes, add labels/groups, input-group addons, validation feedback, etc.</p></l
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line10">line 10</a>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line81">line 81</a>
     </li></ul></dd>
     
 
@@ -1375,7 +1375,7 @@ The button gets <code>data-formid</code> and <code>data-inputid</code> attribute
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line58">line 58</a>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line8">line 8</a>
     </li></ul></dd>
     
 
@@ -1897,12 +1897,13 @@ The button gets <code>data-formid</code> and <code>data-inputid</code> attribute
             
                 <td class="default">
                 
-                    <code>""</code>
+                    <code>"md"</code>
                 
                 </td>
             
 
-            <td class="description last"><p>Size of the modal window.</p></td>
+            <td class="description last"><p>Size of the modal window, a class name in form <code>modal={size}</code>, must implement
+<code>.modal-dialog.modal-{size}</code> and <code>.modal-{size} .modal-content</code> classes to handle width and height (watch spaces)</p></td>
         </tr>
 
     
@@ -3854,6 +3855,43 @@ The button gets <code>data-formid</code> and <code>data-inputid</code> attribute
             
 
             <td class="description last"><p>Default max height of the dropdown in <code>list_input_button</code>.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>an object to be used as Alpine context, injected as immediate &quot;x-data&quot;, it is converted into Proxy using
+<code>Alpine.reactive</code> and that proxy can be accessed as popup property <code>xdata</code>.</p></td>
         </tr>
 
     
@@ -6999,7 +7037,7 @@ options for addEventListener are supported.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line370">line 370</a>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line384">line 384</a>
     </li></ul></dd>
     
 
@@ -7264,39 +7302,47 @@ jects <code>{ name:, value: }</code>. The <code>list_input_tags</code> adds a se
 });
 </code></pre>
 <h3>Prompt:</h3>
-<pre class="prettyprint source lang-javascript"><code>bootpopup.prompt(&quot;Name&quot;, (value) => {
-  alert(value);
-});
+<pre class="prettyprint source lang-javascript"><code> bootpopup.prompt(&quot;Name&quot;, (value) => {
+   alert(value);
+ });
 </code></pre>
 <h3>Customized prompt:</h3>
-<pre class="prettyprint source lang-javascript"><code>bootpopup({
-   title: &quot;Add image&quot;,
+<pre class="prettyprint source lang-javascript"><code>  bootpopup({
+     title: &quot;Add image&quot;,
+      content: [
+          '&lt;p class=&quot;lead&quot;>Add an image&lt;/p>',
+          { p: {text: &quot;Insert image info here:&quot;}},
+          { input: {type: &quot;text&quot;, label: &quot;Title&quot;, name: &quot;title&quot;, placeholder: &quot;Description for image&quot;}},
+          { input: {type: &quot;text&quot;, label: &quot;Link&quot;, name: &quot;link&quot;, placeholder: &quot;Hyperlink for image&quot;}}],
+      buttons: [&quot;ok&quot;, &quot;cancel&quot;],
+      cancel: () => { alert(&quot;Cancel&quot;) },
+      ok: (data, list) => { console.log(data, list) },
+      complete: () => { alert(&quot;complete&quot;) },
+  });
+</code></pre>
+<h3>Validation:</h3>
+<pre class="prettyprint source lang-javascript"><code>var popup = bootpopup({
+    title: &quot;Add details&quot;,
+    alert: 1,
     content: [
-        '&lt;p class=&quot;lead&quot;>Add an image&lt;/p>',
-        { p: {text: &quot;Insert image info here:&quot;}},
-        { input: {type: &quot;text&quot;, label: &quot;Title&quot;, name: &quot;title&quot;, placeholder: &quot;Description for image&quot;}},
-        { input: {type: &quot;text&quot;, label: &quot;Link&quot;, name: &quot;link&quot;, placeholder: &quot;Hyperlink for image&quot;}}],
+        { text: { label: &quot;Name&quot;, name: &quot;title&quot;, placeholder: &quot;your name&quot;}},
+        { number: { label: &quot;Age&quot;, name: &quot;age&quot;, placeholder: &quot;your age&quot;}}],
     buttons: [&quot;ok&quot;, &quot;cancel&quot;],
-    cancel: () => { alert(&quot;Cancel&quot;) },
-    ok: (data, list) => { console.log(data, list) },
-    complete: () => { alert(&quot;complete&quot;) },
+    text_ok: &quot;Verify&quot;,
+    ok: (data) => {
+        if (!data.name) return popup.showAlert(&quot;name is required&quot;)
+    },
 });
-
-### Validation:
-
-```javascript
-var popup = bootpopup({
-  title: &quot;Add details&quot;,
-  alert: 1,
-  content: [
-      { text: { label: &quot;Name&quot;, name: &quot;title&quot;, placeholder: &quot;your name&quot;}},
-      { number: { label: &quot;Age&quot;, name: &quot;age&quot;, placeholder: &quot;your age&quot;}}],
-  buttons: [&quot;ok&quot;, &quot;cancel&quot;],
-  text_ok: &quot;Verify&quot;,
-  ok: (data) => {
-      if (!data.name) return popup.showAlert(&quot;name is required&quot;)
-  },
-});
+</code></pre>
+<h3>Alpine reactivity</h3>
+<pre class="prettyprint source lang-javascript"><code> app.bootpopup({
+      title: `Profile`,
+      data: { quiet: true, email: &quot;&quot; },
+      content: [
+          { checkbox: { name: &quot;quiet&quot;, label: &quot; &quot;, input_label: &quot;Quiet&quot;, value: &quot;1&quot;, switch: 1, &quot;x-model&quot;: &quot;quiet&quot; } },
+          { input: { name: &quot;email&quot;, label: &quot;Email(s)&quot;, placeholder: &quot;Email, email,....&quot;, &quot;x-model&quot;: &quot;email&quot;, attrs_group: { &quot;x-show&quot;: &quot;!quiet&quot; } } },
+      ],
+  })
 </code></pre>
 <p>See more <a href="https://vseryakov.github.io/bootpopup/index.html">Examples</a>.</p>
                 
