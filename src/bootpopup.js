@@ -179,7 +179,7 @@ const escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": 
  * button callback is named the same, for example
  *
  * ```javascript
- *      bootpopup({
+ *      app.bootpopup({
  *        ...
  *        buttons: ["cancel", "Order"],
  *        Order: (data) => {
@@ -193,7 +193,7 @@ const escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": 
  * Customizing default button labels can be done via `text_NAME` properties, for example
  *
  * ```javascript
- * bootpopup({
+ * app.bootpopup({
  *   buttons:["ok","cancel"],
  *   text_ok: "Submit",
  * })
@@ -312,13 +312,13 @@ const escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": 
  * ### Alert:
  *
  *   ```javascript
- *   bootpopup.alert("Hi there");
+ *   app.bootpopup.alert("Hi there");
  *   ```
  *
  * ### Confirm:
  *
  *   ```javascript
- *   bootpopup.confirm("Do you confirm this message?", (yes) => {
+ *   app.bootpopup.confirm("Do you confirm this message?", (yes) => {
  *     alert(yes);
  *   });
  *   ```
@@ -326,7 +326,7 @@ const escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": 
  * ### Prompt:
  *
  * ```javascript
- *  bootpopup.prompt("Name", (value) => {
+ *  app.bootpopup.prompt("Name", (value) => {
  *    alert(value);
  *  });
  * ```
@@ -334,7 +334,7 @@ const escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": 
  * ### Customized prompt:
  *
  * ```javascript
- *   bootpopup({
+ *   app.bootpopup({
  *      title: "Add image",
  *       content: [
  *           '<p class="lead">Add an image</p>',
@@ -351,7 +351,7 @@ const escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": 
  * ### Validation:
  *
  * ```javascript
- * var popup = bootpopup({
+ * var popup = app.bootpopup({
  *     title: "Add details",
  *     alert: 1,
  *     content: [
@@ -387,7 +387,10 @@ export function bootpopup(...args)
 }
 
 /**
- * Bootpopup class
+ * Bootpopup class, used by global bootpopup function but can be used standalone as well.
+ *
+ * See {@link bootpopup} for examples
+ *
  * @param {BootpopupOptions} ..args
  * @class
  */

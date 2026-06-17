@@ -459,6 +459,7 @@ footer {
     display: block;
     background-color: var(--bg-source);
     color: var(--color-source);
+    border-radius: 0.5em;
 }
 
 .prettyprint > code {
@@ -512,10 +513,7 @@ footer {
 
 table {
   border-spacing: 0;
-  //border: 1px solid var(--table-border);
   border-collapse: collapse;
-  border-radius: 3px;
-  //box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   width: 100%;
   margin: 1em 0;
   font-size: 95%;
@@ -530,18 +528,30 @@ td, th {
 }
 
 tr {
-    border-top: 1px solid var(--table-border);
+    border-bottom: 1px solid var(--table-border);
+}
+
+tr:last-child {
+    border: 0px;
 }
 
 thead tr {
    font-weight: bold;
    background-color: var(--table-bg);
-   border-top: 0px solid var(--table-border);
-   border-radius: 3px;
+   border: 0px;
+}
+
+th:first-child {
+  border-radius: 0.5em 0 0 0.5em;
+}
+
+th:last-child {
+  border-radius: 0 0.5em 0.5em 0;
 }
 
 .params .type {
   white-space: nowrap;
+  font-weight: bolder;
 }
 
 .params code {
@@ -550,17 +560,12 @@ thead tr {
 
 .params td, .params .name, .props .name, .name code {
    color: var(--params-color);
-   background-color: var(--params-bg);
    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
    font-size: 100%;
 }
 
 .params .name, .props .name {
    font-weight: bold;
-}
-
-.params td {
-   //border-top: 1px solid var(--table-border)
 }
 
 .params td.description > p:first-child, .props td.description > p:first-child {
