@@ -21,6 +21,7 @@
 
   Native support:
 
+   - esbuild: use builtin loader to import .html files as text and inject into app.templates
    - esbuild: bundle everything into a single file by importing multiple JS/HTML files: see **scripts/build-app.js** for a simple **esbuild** plugin
    - server-side: maintain HTML files on the server to load individually on demand using the same directives, see **examples/dashboard.html**.
 
