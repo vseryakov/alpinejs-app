@@ -130,7 +130,7 @@ class WS {
                     data += "?" + new URLSearchParams(data.data).toString();
                 }
             } else {
-                data = JSON.stringified(data);
+                data = JSON.stringify(data);
             }
         }
         this.ws.send(data);
