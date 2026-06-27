@@ -1,6 +1,6 @@
 
-import { __, call, isFunction, isNumber, isObject, isString, noop, toCamel, toNumber } from "./app"
 import { $attr, $elem, $empty, $parse } from "./dom"
+import { __, call, isFunction, isNumber, isObject, isString, noop, toCamel, toNumber } from "./app"
 import { fetch } from "./fetch"
 import { on } from "./events"
 
@@ -10,7 +10,7 @@ import { on } from "./events"
  * @return {boolean} true if `item` exists in the array `list`, search is case sensitive. if `item` is an array it will return true if
  * any element in the array exists in the `list`.
  */
-export function isFlag(list, item)
+export function includes(list, item)
 {
     return Array.isArray(list) && (Array.isArray(item) ? item.some((x) => (list.includes(x))) : list.includes(item));
 }

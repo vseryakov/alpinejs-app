@@ -29,12 +29,5 @@
   },
   "devDependencies": {
     "esbuild": "^0.28.0"
-  },
-  "eslintConfig": {
-    "root": true,
-    "parserOptions": {
-      "ecmaVersion": 2022,
-      "sourceType": "module"
-    }
   }
 }
