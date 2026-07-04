@@ -96,45 +96,51 @@ export function __(...args) { return args.join("") };
 /**
  * Returns the array if the value is non empty array or dflt value if given or undefined
  * @param {any} val
- * @returns {any|any[]}
+ * @param {any} [dflt]
+ * @returns {any|any[]|undefined}
  */
 export function isArray(val, dflt) { return Array.isArray(val) && val.length ? val : dflt }
 
 /**
- * Returns the num itself if it is a number
+ * Returns the num itself if it is a number or default
  * @param {any} num
+ * @param {any} [dflt]
  * @returns {number|undefined}
  */
-export function isNumber(num) { return typeof num == "number" ? num : undefined }
+export function isNumber(num, dflt) { return typeof num == "number" ? num : undefined }
 
 /**
  * Returns the str itself if it is not empty or ""
  * @param {any} str
+ * @param {any} [dflt=""]
  * @returns {string}
  */
-export function isString(str) { return typeof str == "string" && str }
+export function isString(str, dflt = "") { return typeof str == "string" ? str : dflt }
 
 /**
  * Returns the callback is it is a function
  * @param {any} callback
+ * @param {any} [dflt]
  * @returns {function|undefined}
  */
 
-export function isFunction(callback) { return typeof callback == "function" && callback }
+export function isFunction(callback, dflt) { return typeof callback == "function" ? callback : dflt }
 
 /**
  * Returns the obj itself if it is a not null object
  * @param {any} obj
+ * @param {any} [dflt]
  * @returns {object|undefined}
  */
-export function isObject(obj) { return typeof obj == "object" && obj }
+export function isObject(obj, dflt) { return typeof obj == "object" && obj || dflt }
 
 /**
  * Returns the element itself if it is a HTMLElement
  * @param {any} element
+ * @param {any} [dflt]
  * @returns {HTMLElement|undefined}
  */
-export function isElement(element) { return element instanceof HTMLElement && element }
+export function isElement(element, dflt) { return element instanceof HTMLElement && element || dflt }
 
 /**
  * Convert a string into camelized format
@@ -170,7 +176,7 @@ export function toCamel(str)
  */
 export function toNumber(val, options)
 {
-    var n = 0;
+    var n;
     if (typeof val == "number") {
         n = val;
     } else
@@ -181,7 +187,7 @@ export function toNumber(val, options)
             n = options?.dflt || 0;
         } else {
             // Autodetect floating number
-            var f = typeof options?.float == "undefined" || options?.float == null ? /^(-|\+)?([0-9]+)?\.[0-9]+$/.test(val) : options?.float;
+            const f = typeof options?.float == "undefined" || options?.float == null ? /^(-|\+)?([0-9]+)?\.[0-9]+$/.test(val) : options?.float;
             n = val[0] == 't' ? 1 : val[0] == 'f' ? 0 :
                 val == "infinity" ? Infinity :
                 (f ? parseFloat(val, options?.base || 10) : parseInt(val, options?.base || 10));

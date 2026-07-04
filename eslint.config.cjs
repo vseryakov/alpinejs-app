@@ -17,6 +17,7 @@ module.exports = defineConfig([
             ecmaVersion: "latest",
             sourceType: "module",
             globals: {
+                ...globals.browser,
                 ...globals.node,
                 ...globals.commonjs
             }
