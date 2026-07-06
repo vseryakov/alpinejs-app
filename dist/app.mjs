@@ -167,7 +167,7 @@ function toCamel(str) {
  * 1.23
  */
 function toNumber(val, options) {
-  var n = 0;
+  var n;
   if (typeof val == "number") {
     n = val;
   } else if (typeof val == "boolean") {

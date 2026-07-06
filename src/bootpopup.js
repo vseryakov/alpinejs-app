@@ -1216,7 +1216,7 @@ function processEntry(self, type, entry)
             children.push(div);
         }
         for (const p of ["switch", "inline", "reverse", "options", "value", "type"]) delete attrs[p];
-            addElement(self, { type, attrs, opts, parent, children, elem });
+        addElement(self, { type, attrs, opts, parent, children, elem });
         break;
 
     case "alert":

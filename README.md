@@ -30,6 +30,49 @@
    - keep HTML templates in JSON files to load separately via fetch on demand or via importmap
    - include your .js files in the HTML for small apps and let the browser to handle caching
 
+#### New directives
+```html
+<div x-template="template"></div>
+
+<div x-template="show ? 'index' : ''"></div>
+
+<div x-template.cache="show ? '/path/index.html' : ''"></div>
+
+<a x-render="'hello/hi?reason=World'">Show hello component with params</a>
+
+<button @click="toggle">Call the toggle method in the current component</button>
+
+<button x-render="'index?$target=#div'">Show Bundled or Cached by ID</button>
+
+<button x-render.cache="'/index.html?$target=#div'">Show External File</button>
+```
+
+#### Component class
+
+```js
+app.components.hello = class extends app.AlpineComponent {
+    template = ""
+
+    onCreate() {
+
+    }
+
+    onDelete() {
+
+    }
+
+    onToggle(data) {
+        console.log("received toggle event:", data)
+    }
+
+    toggle() {
+        this.template = !this.template ? "example" : "";
+
+        app.emit(app.event, "toggle", this.template)
+    }
+}
+```
+
 ### Features
 
 - **Components**: These are the primary building blocks of the UI. They can be either standalone HTML templates or HTML backed by JavaScript classes, capable of nesting other components.

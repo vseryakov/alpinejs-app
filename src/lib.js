@@ -498,6 +498,189 @@ sanitizer._tags = {
     u: [], ul: [],
 }
 
+/**
+ * Return an ISO week number for given date, from https://www.epochconverter.com/weeknumbers
+ * @param {string|Date} date
+ * @param {boolean} [utc]
+ * @return {int}
+ */
+export function weekOfYear(date, utc)
+{
+    date = toDate(date, null);
+    if (!date) return 0;
+    utc = utc ? "UTC": "";
+    var target = new Date(date.valueOf());
+    target[`set${utc}Date`](target[`get${utc}Date`]() - ((date[`get${utc}Day`]() + 6) % 7) + 3);
+    var firstThursday = target.valueOf();
+    target[`set${utc}Month`](0, 1);
+    var day = target[`get${utc}Day`]();
+    if (day !== 4) target[`set${utc}Month`](0, 1 + ((4 - day) + 7) % 7);
+    return 1 + Math.ceil((firstThursday - target) / 604800000);
+}
+
+/**
+ * Returns true if the given date is in DST timezone
+ * @param {Date} date
+ * @return {boolean}
+ */
+export function isDST(date)
+{
+    var jan = new Date(date.getFullYear(), 0, 1).getTimezoneOffset();
+    var jul = new Date(date.getFullYear(), 6, 1).getTimezoneOffset();
+    return Math.max(jan, jul) !== date.getTimezoneOffset();
+}
+
+function zeropad(n) { return n > 9 ? n : '0' + n }
+function spacepad(n) { return n > 9 ? n : ' ' + n }
+
+const strftimeFormat = "%Y-%m-%d %H:%M:%S %Z";
+
+const weekDays = [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ]
+const weekDaysFull = [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' ]
+const months = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]
+const monthsFull = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ]
+
+
+export var tzMap = [
+    // name, GMT offset, daylight
+    ["WET", "GMT", false],
+    ["WED", "GMT+0100", true],
+    ["CET", "GMT+0100", false],
+    ["CED", "GMT+0200", true],
+    ["EET", "GMT+0200", false],
+    ["EED", "GMT+0300", true],
+    ["EDT", "GMT-0400", true],
+    ["EST", "GMT-0500", false],
+    ["PDT", "GMT-0700", true],
+    ["PST", "GMT-0800", false],
+    ["CDT", "GMT-0500", true],
+    ["CST", "GMT-0600", false],
+    ["MDT", "GMT-0600", true],
+    ["MST", "GMT-0700", false],
+    ["HADT", "GMT-0900", true],
+    ["HAST", "GMT-1000", false],
+    ["AKDT", "GMT-0800", true],
+    ["AKST", "GMT-0900", false],
+    ["ADT", "GMT-0300", true],
+    ["AST", "GMT-0400", false],
+];
+
+const _strftime = {
+    a(t, utc, _tz) {
+        return __(weekDays[utc ? t.getUTCDay() : t.getDay()])
+    },
+    A(t, utc, _tz) {
+        return __(weekDaysFull[utc ? t.getUTCDay() : t.getDay()])
+    },
+    b(t, utc, _tz) {
+        return __(months[utc ? t.getUTCMonth() : t.getMonth()])
+    },
+    B(t, utc, _tz) {
+        return __(monthsFull[utc ? t.getUTCMonth() : t.getMonth()])
+    },
+    c(t, utc, __tz) {
+        return utc ? t.toUTCString() : t.toString()
+    },
+    d(t, utc, __tz) {
+        return zeropad(utc ? t.getUTCDate() : t.getDate())
+    },
+    e(t, utc, __tz) {
+        return spacepad(utc ? t.getUTCDate() : t.getDate())
+    },
+    H(t, utc, __tz) {
+        return zeropad(utc ? t.getUTCHours() : t.getHours())
+    },
+    I(t, utc, __tz) {
+        return zeropad((((utc ? t.getUTCHours() : t.getHours()) + 12) % 12) || 12)
+    },
+    k(t, utc, __tz) {
+        return spacepad(utc ? t.getUTCHours() : t.getHours())
+    },
+    l(t, utc, __tz) {
+        return spacepad((((utc ? t.getUTCHours() : t.getHours()) + 12) % 12) || 12)
+    },
+    L(t, utc, __tz) {
+        return zeropad(utc ? t.getUTCMilliseconds() : t.getMilliseconds())
+    },
+    m(t, utc, __tz) {
+        return zeropad((utc ? t.getUTCMonth() : t.getMonth()) + 1)
+    }, // month-1
+    M(t, utc, __tz) {
+        return zeropad(utc ? t.getUTCMinutes() : t.getMinutes())
+    },
+    p(t, utc, __tz) {
+        return (utc ? t.getUTCHours() : t.getHours()) < 12 ? 'am' : 'pm';
+    },
+    P(t, utc, __tz) {
+        return (utc ? t.getUTCHours() : t.getHours()) < 12 ? 'AM' : 'PM';
+    },
+    S(t, utc, __tz) {
+       return zeropad(utc ? t.getUTCSeconds() : t.getSeconds())
+    },
+    w(t, utc, __tz) {
+        return utc ? t.getUTCDay() : t.getDay()
+    }, // 0..6 == sun..sat
+    W(t, utc, __tz) {
+        return zeropad(weekOfYear(t, utc))
+    },
+    y(t, _utc, __tz) {
+        return zeropad(t.getYear() % 100);
+    },
+    Y(t, utc, __tz) {
+        return utc ? t.getUTCFullYear() : t.getFullYear()
+    },
+    t(t, _utc, __tz) {
+        return t.getTime()
+    },
+    u(t, _utc, __tz) {
+        return Math.floor(t.getTime()/1000)
+    },
+    Z(t, _utc, _lang, tz) {
+        tz = tz ? tz/60000 : t.getTimezoneOffset();
+        return "GMT" + (tz < 0 ? "+" : "-") + zeropad(Math.abs(-tz/60)) + "00";
+    },
+    zz(t, utc, lang, tz) {
+        return _strftime.z(t, utc, lang, tz, 1);
+    },
+    z(t, _utc, _lang, tz, zz) {
+        tz = tz ? tz/60000 : t.getTimezoneOffset();
+        tz = "GMT" + (tz < 0 ? "+" : "-") + zeropad(Math.abs(-tz/60)) + "00";
+        const dst = isDST(t);
+        for (const i in tzMap) {
+            if (tz === tzMap[i][1] && (dst === tzMap[i][2])) {
+                return zz ? tz + " " + __(tzMap[i][0]) : __(tzMap[i][0]);
+            }
+        }
+        return tz;
+    },
+    Q(t, utc, _tz) {
+        var h = utc ? t.getUTCHours() : t.getHours();
+        return h < 12 ? __("Morning") :
+               h < 17 ? __("Afternoon") : __("Evening") },
+    '%'() { return '%' },
+};
+
+/**
+ * Format date object according to Unix strftime function
+ * @param {string|number|Date} date
+ * @param {string} fmt
+ * @param {object} [options]
+ * @return {string}
+ */
+export function strftime(date, fmt, options)
+{
+    date = toDate(date, null);
+    if (!date) return "";
+    const utc = options?.utc;
+    const tz = typeof options?.tz === "number" ? options.tz : 0;
+    if (tz) date = new Date(date.getTime() - tz);
+    fmt = fmt || strftimeFormat;
+    for (const p in _strftime) {
+        fmt = fmt.replace('%' + p, _strftime[p](date, utc, tz));
+    }
+    return fmt;
+}
+
 on("alpine:init", (Alpine) => {
 
     Alpine.directive('shtml', (el, { expression }, { effect, evaluateLater }) => {
