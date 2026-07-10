@@ -160,6 +160,8 @@ function applyPlugins(element)
     $all(`[data-bs-toggle="popover"]`, element).forEach(el => (bootstrap.Popover.getOrCreateInstance(el)));
 }
 
+document.documentElement.setAttribute("data-bs-theme", window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light");
+
 $ready(() => {
     stylePlugin(applyPlugins);
     on("dom:changed", (ev) => {

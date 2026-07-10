@@ -100,23 +100,74 @@ limiting scope for children might as well be useful.
 Adds drag-and-drop (and click-to-select) file upload behavior to an element.
 
  - Clicking the element triggers a click on a nested `<input type="file">`.
- - Dragging a file over/into the element sets `target._dragging = true`.
- - Leaving/dropping resets `target._dragging = false`.
- - Dropping a file emits a global app event: `"file:dropped"`, components can use `onFileDropped` method to receive such events
+ - Dragging a file over/into the element sets `target._dragover = true`.
+ - Leaving/dropping resets `target._dragover = false`.
+ - Dropping a file emits a global app event: `"file:dropped"`, components can use `onFileDropped(event)` method to receive such events, event contaons the following `{ file:File, event:Event, target:object, element:HTMLElement }`
  - Whole components can be used as droppable targets using `$component` magic
 
 ```html
- <div x-data="{ _dragging: 0 }" x-file-drop="$data" :class="{ 'border-primary': _dragging }">
+ <div x-data="{ _dragover: false }" x-file-drop="$data" :class="{ 'border-primary': _dragover }">
      <input type="file" hidden />
      <p>Click or drag file here</p>
  </div>
 
-<div x-file-drop="$component" :class="{ 'border-primary': _dragging }">
+<div x-file-drop="$component" :class="{ 'border-primary': _dragover }">
      <input type="file" hidden />
      <p>Click or drag file here</p>
  </div>
 
 ```
+
+## Directive: **x-draggable**
+
+Adds HTML5 drag/drop behavior to an element and binds drag state to the object returned by the directive expression.
+
+ - The element must have draggable="true".
+ - The directive expression should evaluate to an object that can be dragged around.
+
+Events:
+
+ item:dropped - Fired when another draggable item is dropped onto this element.
+
+ Event detail:
+```js
+ {
+   target,         // target object from the drop destination
+   item,           // dragged item object
+   item_element    // dragged DOM element
+   scope: object[] // data scope stack starting from the current item, scope[0] being the current item, 1 is the parent
+ }
+```
+
+ Global event:
+
+ Also emits "item:dropped" through app.event with:
+
+```js
+ {
+   event,          // original drop event
+   target,         // drop target object
+   element,        // drop target DOM element
+   item,           // dragged item object
+   item_element    // dragged DOM element
+   scope: object[] // data scope stack starting from the current item, scope[0] being the current item, 1 is the parent
+ }
+```
+
+```html
+  <template x-for="item in results" :key="item.id">
+    <div class="m-2" draggable="true" x-draggable="item" :class="{ 'dragover': item._dragover, 'dragging': item._dragging }"></div>
+  </template>
+
+
+  onItemDropped(event) {
+    const results = event.scope[1].results;
+    const item = results.findIndex(x => x.id == event.item.id)
+    const target = results.findIndex(x => x.id == event.target.id)
+    results.splice(item, 1);
+    results.splice(target, 0, event.item);
+}
+ ```
 
 ## Directive: **x-shtml**
 

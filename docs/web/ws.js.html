@@ -5,7 +5,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>fetch.js - Alpinejs-app Documentation</title>
+    <title>ws.js - Alpinejs-app Documentation</title>
     
     <meta name="description" content="A Simplest Single Page Application (SPA) library for Alpine.js." />
     
@@ -41,7 +41,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">fetch.js</h1>
+    <h1 class="page-title">ws.js</h1>
     
 
     
@@ -52,147 +52,199 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>
-import { call, isFunction, isObject, isString, trace } from "./app"
+import { app, isObject, toNumber, trace } from "./app"
+import { $on } from "./dom"
+import { emit } from "./events"
 
 /**
- * Global object to customize {@link fetch}
- * @example &lt;caption>make POST default method&lt;/caption>
- * fetchOptions.method = "POST"
- * await fetch("url.com")
- */
-export var fetchOptions = {
-    method: "GET",
-    cache: "default",
-    headers: {},
-};
-
-function parseOptions(url, options)
-{
-    const headers = options?.headers || {};
-    const opts = Object.assign({
-        headers,
-        method: options?.method || options?.post &amp;&amp; "POST" || undefined,
-    }, options?.request);
-
-    for (const p in fetchOptions.headers) {
-        headers[p] ??= fetchOptions.headers[p];
-    }
-    for (const p of ["method","cache","credentials","duplex","integrity","keepalive","mode","priority","redirect","referrer","referrerPolicy","signal"]) {
-        if (fetchOptions[p] !== undefined) {
-            opts[p] ??= fetchOptions[p];
-        }
-    }
-    var body = options?.body;
-    if (opts.method == "GET" || opts.method == "HEAD") {
-        if (isObject(body)) {
-            url += "?" + new URLSearchParams(body).toString();
-        }
-    } else
-    if (isString(body)) {
-        opts.body = body;
-        headers["content-type"] ??= 'application/x-www-form-urlencoded; charset=UTF-8';
-    } else
-    if (body instanceof FormData) {
-        opts.body = body;
-        delete headers["content-type"];
-    } else
-    if (isObject(body)) {
-        opts.body = JSON.stringify(body);
-        headers["content-type"] = "application/json; charset=UTF-8";
-    } else
-    if (body) {
-        opts.body = body;
-        headers["content-type"] ??= "application/octet-stream";
-    }
-    return [url, opts];
-}
-
-
-function parseResponse(res)
-{
-    const info = { status: res.status, headers: {}, type: res.type, url: res.url, redirected: res.redirected };
-    for (const h of res.headers) {
-        info.headers[h[0].toLowerCase()] = h[1];
-    }
-    const h_csrf = fetchOptions.csrfHeader || "x-csrf-token";
-    const v_csrf = info?.headers[h_csrf];
-    if (v_csrf) {
-        if (v_csrf &lt;= 0) {
-            delete fetchOptions.headers[h_csrf];
-        } else {
-            fetchOptions.headers[h_csrf] = v_csrf;
-        }
-    }
-    return info;
-}
-
-/**
- * Fetch remote content, wrapper around Fetch API
+ * Websockets client
+ * @param {object} [options] - config params
+ * @param {string} [options.path=/] - connect url path name
+ * @param {object} [options.query] - query parameters to send on connect in the url
+ * @param {number} [options.retry_timeout=250] - ms between retries to connect
+ * @param {number} [options.retry_factor] - multiplier for retry timeout
+ * @param {number} [options.max_timeout=30000] - ms for max timeout on retries, once reached restart with retry_timeout
+ * @param {number} [options.max_retries] - how many retries to perform until connected
+ * @param {number} [options.max_pending=10] - how many request to keep in pending queue until connected
+ * @param {number} [options.ping_interval=300000] - ms between pings
+ * @class
  *
- * __NOTE: Saves X-CSRF-Token header and sends it back with subsequent requests__
- * @param {string} url - URL to fetch
- * @param {object} [options]
- * @param {string} [options.method] - GET, POST,...GET is default or from app.fetchOptions.method
- * @param {boolean} [options.post] - set method to POST
- * @param {string|object|FormData} [options.body] - a body accepted by window.fetch
- * @param {string} [options.dataType] - explicit return type: text, blob, default is auto detected between text or json
- * @param {object} [options.headers] - an object with additional headers to send, all global headers from app.fetchOptions.headers also are merged
- * @param {object} [options.request] - properties to pass to fetch options according to Web API `RequestInit`
- * @param {function} [callback] - callback as (err, data, info) where info is an object { status, headers, type }
- * @async
  * @example
- * fetch("http://api.host.com/user/123", (err, data, info) => {
- *    if (info.status == 200) console.log(data, info);
+ * app.$ready(async () => {
+ *
+ *   app.ws = new app.WS({ path: "/ws" });
+ *   app.ws.connect();
+ *   app.ws.on("ws:message", (data) => { ...});
+ *
  * });
+ * ....
  *
- * const { err, data } = await fetch("https://localhost:8000")
- *
- * const { ok, err, status, data } = await fetch("https://localhost:8000")
- * if (!ok) console.log(status, err);
+ * app.ws.send("/route/action")
+ * app.ws.send({ path: "/some/path", data: { ...} })
  */
 
-export async function fetch(url, options, callback)
-{
-    if (isFunction(options)) callback = options, options = null;
+class WS {
+    path = "/"
+    query = {}
+    retry_timeout = 500
+    retry_factor = 2
+    max_timeout = 30000
+    max_retries = Infinity
+    max_pending = 10
+    ping_interval = 300000
+    _retries = 0
+    _pending = []
 
-    try {
-        const [uri, opts] = parseOptions(url, options);
-        trace("fetch:", uri, opts, options);
-
-        var data, info;
-
-        const res = await window.fetch(uri, opts);
-        info = parseResponse(res);
-        var ctype = info.headers["content-type"];
-        if (!res.ok) {
-            let err;
-            if (/\/json/.test(ctype)) {
-                const d = await res.json();
-                err = { status: res.status };
-                for (const p in d) err[p] = d[p];
-            } else {
-                err = { message: await res.text(), status: res.status };
+    constructor(options)
+    {
+        for (const p in options) {
+            if (p[0] != "_" &amp;&amp;
+                this[p] !== undefined &amp;&amp;
+                typeof this[p] === typeof options[p]) {
+                this[p] = options[p];
             }
-            throw err;
         }
-        switch (options?.dataType) {
-        case "text":
-            data = await res.text();
-            break;
-        case "blob":
-            data = await res.blob();
-            break;
-        default:
-            data = /\/json/.test(ctype) ? await res.json() :
-            /image|video|audio|pdf|zip|binary|octet/.test(ctype) ? await res.blob() : await res.text();
+
+        $on(window, "online", this.online.bind(this));
+    }
+
+    /**
+     * Open a new websocket connection
+     */
+    connect()
+    {
+        if (this._timer) {
+            clearTimeout(this._timer);
+            delete this._timer;
         }
-        call(callback, null, data, info);
-        return { ok: true, status: info?.status, data, info }
-    } catch (err) {
-        call(callback, err);
-        return { ok: false, status: info?.status, err, data, info }
+        if (this.disabled) return;
+
+        const host = this.host || window.location.hostname;
+
+        if (navigator.onLine === false &amp;&amp; !/^(localhost|127.0.0.1)$/.test(host)) {
+            return this.timer(0);
+        }
+
+        if (!this.query) this.query = {};
+        for (const p in this.headers) {
+            if (this.query[p] === undefined) this.query[p] = this.headers[p];
+        }
+
+        const port = this.port || window.location.port;
+        const proto = this.protocol || window.location.protocol.replace("http", "ws");
+        const url = `${proto}//${host}:${port}${this.path}?${this.query ? new URLSearchParams(this.query).toString() : ""}`;
+
+        const ws = this.ws = new WebSocket(url);
+        ws.onopen = () => {
+            trace("ws.open:", url);
+            emit("ws:open", url);
+            this._ctime = Date.now();
+            this._timeout = toNumber(this.retry_timeout);
+            this._retries = 0;
+            while (this._pending.length) {
+                this.send(this.pending.shift());
+            }
+            this.ping();
+        }
+        ws.onclose = () => {
+            trace("ws.closed:", url, this._timeout, this._retries);
+            this.ws = null;
+            emit("ws:close", url);
+            if (++this._retries &lt; this.max_retries) this.timer();
+        }
+        ws.onmessage = (msg) => {
+            var data = msg.data;
+            if (data === "bye") return this.close(1);
+            if (typeof data == "string" &amp;&amp; (data[0] == "{" || data[0] == "[")) data = JSON.parse(data);
+            trace('ws.message:', data);
+            emit("ws:message", data);
+            if (data.event) {
+                emit(app.event, data.event, data);
+            }
+        }
+        ws.onerror = (err) => {
+            trace('ws.error:', url, err);
+        }
+    }
+
+    /**
+     * Restart websocket reconnect timer, increase timeout according to reconnect policy (retry_factor, max_timeout)
+     * @param {number} timeout
+     */
+    timer(timeout)
+    {
+        clearTimeout(this._timer);
+        if (this.disabled) return;
+        if (typeof timeout == "number") this._timeout = timeout;
+        this._timer = setTimeout(this.connect.bind(this), this._timeout);
+        this._timeout *= this._timeout == this.max_timeout ? 0 : toNumber(this.retry_factor);
+        this._timeout = toNumber(this._timeout, { min: this.retry_timeout, max: this.max_timeout });
+    }
+
+    /**
+     * Send a ping and shcedule next one
+     */
+    ping()
+    {
+        clearTimeout(this._ping);
+        if (this.disabled || !this.ping_interval) return;
+        if (this.ws?.readyState === WebSocket.OPEN) {
+            this.ws.send(this.ping_path || "/ping");
+        }
+        this._ping = setTimeout(this.ping.bind(this), this.ping_interval);
+    }
+
+    /**
+     * Closes and possibly disables WS connection, to reconnect again must delete .disabled property
+     * @param {boolean} [disable]
+     */
+    close(disable)
+    {
+        this.disabled = disable;
+        if (!this.ws) return;
+        this.ws.close();
+        delete this.ws;
+    }
+
+    /**
+     * Send a string data or an object
+     * @param {object|string} data
+     */
+    send(data)
+    {
+        if (this.ws?.readyState != WebSocket.OPEN) {
+            if (!this.max_pending || this._pending.length &lt; this.max_pending) {
+                this._pending.push(data);
+            }
+            return;
+        }
+        if (isObject(data)) {
+            if (data.url &amp;&amp; data.url[0] == "/") {
+                data = data.url;
+                if (isObject(data.data)) {
+                    data += "?" + new URLSearchParams(data.data).toString();
+                }
+            } else {
+                data = JSON.stringify(data);
+            }
+        }
+        this.ws.send(data);
+    }
+
+    /**
+     * Check the status of websocket connection, reconnect if needed
+     */
+    online()
+    {
+        trace('ws.online:', navigator.onLine, this.ws?.readyState, this.path, this._ctime);
+        if (this.ws?.readyState !== WebSocket.OPEN &amp;&amp; this._ctime) {
+            this.connect();
+        }
     }
 }
+
+export { WS };
+export default WS;
 </code></pre>
         </article>
     </section>

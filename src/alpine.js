@@ -175,6 +175,10 @@ export { AlpineComponent };
 
 export default AlpineComponent;
 
+// Currently dragged item
+var _dragging_el;
+var _dragging_target;
+
 export function AlpinePlugin(Alpine)
 {
     _Alpine = Alpine;
@@ -246,7 +250,6 @@ export function AlpinePlugin(Alpine)
 
     Alpine.directive('file-drop', (el, { expression }, { evaluate, cleanup }) => {
         const target = evaluate(expression)
-        var current = null;
 
         $on(el, "click", click);
         $on(el, "drop", drop);
@@ -270,31 +273,26 @@ export function AlpinePlugin(Alpine)
 
         function drop(event) {
             event.preventDefault();
-            var file = event.dataTransfer.files?.[0];
+            const file = event.dataTransfer.files?.[0];
             $event(el, "file:dropped", { file, event })
             emit(app.event, "file:dropped", { file, event, target, element: el });
-            target._dragging = false;
-            current = null;
+            target._dragover = false;
         }
 
         function dragenter(event) {
             event.preventDefault();
-            current = event.target;
-            target._dragging = true;
+            target._dragover = true;
         }
 
         function dragleave(event) {
             event.preventDefault();
-            if (event.target === current) {
-                target._dragging = false;
-            }
+            target._dragover = false;
         }
 
     })
 
     Alpine.directive('draggable', (el, { expression }, { evaluate, cleanup }) => {
         const target = evaluate(expression)
-        var current = null;
 
         $on(el, "drop", drop);
         $on(el, "dragdrop", drop);
@@ -316,33 +314,37 @@ export function AlpinePlugin(Alpine)
 
         function dragenter(event) {
             event.preventDefault();
-            if (el === current) return;
-            target._dragging = true;
+            if (el === _dragging_el) return;
+            event.dataTransfer.dropEffect = 'move';
+            target._dragover = true;
         }
 
         function dragleave(event) {
             event.preventDefault();
-            if (el === current) return;
-            target._dragging = false;
+            if (el === _dragging_el) return;
+            target._dragover = false;
         }
 
         function dragstart(event) {
-            current = el;
             event.dataTransfer.effectAllowed = 'move';
+            target._dragging = true;
+            _dragging_el = el;
+            _dragging_target = target;
         }
 
         function dragend() {
-            target._dragging = false;
-            current = null;
+            target._dragging = target._dragover = false;
+            _dragging_el = _dragging_target = undefined;
         }
 
         function drop(event) {
             event.preventDefault();
-            target._dragging = false;
-            if (el === current || !current) return;
-            current = null;
-            $event(el, "item:dropped", { item: current })
-            emit(app.event, "item:dropped", { event, item: current, element: el });
+            target._dragover = false;
+            if (!_dragging_el || el === _dragging_el) return;
+            const scope = Alpine.closestDataStack(el);
+            $event(el, "item:dropped", { target, item: _dragging_target, item_element: _dragging_el, scope })
+            emit(app.event, "item:dropped", { event, target, element: el, item: _dragging_target, item_element: _dragging_el, scope });
+            _dragging_el = _dragging_target = undefined;
         }
 
     })
