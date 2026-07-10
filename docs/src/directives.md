@@ -1,6 +1,6 @@
 # Directives
 
-## Directive: **x-template**
+## Directive: x-template
 
 Render a template or component inside a container from the expression which must return a template URL/name or nothing to clear the container.
 
@@ -50,7 +50,7 @@ The component docs will have **opts** as the **this.params**.
 
 For HTML only templates the params passed in the url can be accessed via the **$params** magic, see below for examples.
 
-## Directive: **x-render**
+## Directive: x-render
 
 Binds to click event to display components. Can render components by name, path, or URL with parameters using **app.parsePath**.
 Nothing happens in case the expression is empty. Event's default action is cancelled automatically.
@@ -83,7 +83,7 @@ in the hello component this.params.reason will be set with 'World'
 <button x-render.cache="'/index.html?$target=#div'">Show External</button>
 ```
 
-## Directive: **x-scope-level**
+## Directive: x-scope-level
 
 Reduce data scope depth for the given element, it basically cuts off data inheritance at the requested depth.
 Useful for sub-components not to interfere with parent's properties. In most cases declaring local properties would work but
@@ -95,7 +95,7 @@ limiting scope for children might as well be useful.
 <div x-scope-level=1></div>
 ```
 
-## Directive: **x-file-drop**
+## Directive: x-file-drop
 
 Adds drag-and-drop (and click-to-select) file upload behavior to an element.
 
@@ -118,7 +118,7 @@ Adds drag-and-drop (and click-to-select) file upload behavior to an element.
 
 ```
 
-## Directive: **x-draggable**
+## Directive: x-draggable
 
 Adds HTML5 drag/drop behavior to an element and binds drag state to the object returned by the directive expression.
 
@@ -141,7 +141,7 @@ Events:
 
  Global event:
 
- Also emits "item:dropped" through app.event with:
+ Also emits "item:dropped" through app.event which will call `onItemDropped` method inside active components if defined:
 
 ```js
  {
@@ -158,18 +158,23 @@ Events:
   <template x-for="item in results" :key="item.id">
     <div class="m-2" draggable="true" x-draggable="item" :class="{ 'dragover': item._dragover, 'dragging': item._dragging }"></div>
   </template>
+```
 
+```js
+app.components.results = class extends app.AlpineComponent {
+    results = [];
 
-  onItemDropped(event) {
-    const results = event.scope[1].results;
-    const item = results.findIndex(x => x.id == event.item.id)
-    const target = results.findIndex(x => x.id == event.target.id)
-    results.splice(item, 1);
-    results.splice(target, 0, event.item);
+    onItemDropped(event) {
+        const results = event.scope[1].results;
+        const item = results.findIndex(x => x.id === event.item.id)
+        const target = results.findIndex(x => x.id === event.target.id)
+        results.splice(item, 1);
+        results.splice(target, 0, event.item);
+    }
 }
  ```
 
-## Directive: **x-shtml**
+## Directive: x-shtml
 
 Safe version of html directive by using sanitizer, only the `lib` and `bootstrap` bundles include it
 

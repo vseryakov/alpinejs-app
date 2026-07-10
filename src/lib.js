@@ -15,7 +15,6 @@ export function includes(list, item)
     return Array.isArray(list) && (Array.isArray(item) ? item.some((x) => (list.includes(x))) : list.includes(item));
 }
 
-
 /**
  * Apply an iterator function to each item in an array serially. Execute a callback when all items
  * have been completed or immediately if there is is an error provided.

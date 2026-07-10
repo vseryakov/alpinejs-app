@@ -1167,14 +1167,19 @@ function AlpinePlugin(Alpine) {
     const scope = Alpine.closestDataStack(el);
     el._x_dataStack = scope.slice(0, parseInt(evaluate(expression || "")) || 0);
   });
-  Alpine.directive("file-drop", (el, { expression }, { evaluate, cleanup }) => {
-    const target = evaluate(expression);
-    $on(el, "click", click);
-    $on(el, "drop", drop);
-    $on(el, "dragdrop", drop);
-    $on(el, "dragenter", dragenter);
-    $on(el, "dragover", dragenter);
-    $on(el, "dragleave", dragleave);
+  Alpine.directive("file-drop", (el, { expression }, { effect, cleanup }) => {
+    var target;
+    const evaluate = Alpine.evaluateLater(el, expression);
+    effect(() => evaluate((value) => {
+      if (!value || value === target) return;
+      target = value;
+      $on(el, "click", click);
+      $on(el, "drop", drop);
+      $on(el, "dragdrop", drop);
+      $on(el, "dragenter", dragenter);
+      $on(el, "dragover", dragenter);
+      $on(el, "dragleave", dragleave);
+    }));
     cleanup(() => {
       $off(el, "click", click);
       $off(el, "drop", drop);
@@ -1202,15 +1207,20 @@ function AlpinePlugin(Alpine) {
       target._dragover = false;
     }
   });
-  Alpine.directive("draggable", (el, { expression }, { evaluate, cleanup }) => {
-    const target = evaluate(expression);
-    $on(el, "drop", drop);
-    $on(el, "dragdrop", drop);
-    $on(el, "dragstart", dragstart);
-    $on(el, "dragend", dragend);
-    $on(el, "dragenter", dragenter);
-    $on(el, "dragover", dragenter);
-    $on(el, "dragleave", dragleave);
+  Alpine.directive("draggable", (el, { expression }, { effect, cleanup }) => {
+    var target;
+    const evaluate = Alpine.evaluateLater(el, expression);
+    effect(() => evaluate((value) => {
+      if (!value || value === target) return;
+      target = value;
+      $on(el, "drop", drop);
+      $on(el, "dragdrop", drop);
+      $on(el, "dragstart", dragstart);
+      $on(el, "dragend", dragend);
+      $on(el, "dragenter", dragenter);
+      $on(el, "dragover", dragenter);
+      $on(el, "dragleave", dragleave);
+    }));
     cleanup(() => {
       $off(el, "drop", drop);
       $off(el, "dragdrop", drop);
