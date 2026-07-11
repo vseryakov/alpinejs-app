@@ -44,7 +44,6 @@
  * @property {boolean} [empty=false] If true, return all input values even if empty; default returns only non-empty values.
  * @property {function(string):HTMLElement[]|null} [sanitizer=null] Called when rendering HTML content/labels; must return a list of HTMLElements to append.
  * @property {Object<string,string>|null} [tabs=null] Map of `{tabId: label, ...}` to show `nav-tabs`; content items can set `tab_id`.
- * @property {Object} [self] Context for callback functions; default is the popup object.
  * @property {boolean} [debug=false] Log input values in the console.
  * @property {string} [class_modal="modal fade"] Modal root class.
  * @property {string} [class_dialog="modal-dialog"] Modal dialog class.
@@ -409,7 +408,6 @@ class Bootpopup {
 
     /** @property {Object} options Options used to create the window. */
     options = {
-        self: null,
         id: "",
         title: document.title,
         debug: false,
@@ -677,7 +675,7 @@ class Bootpopup {
 
         // Setup events for dismiss and complete
         $on(this.modal, 'show.bs.modal', (e) => {
-            this.options.show.call(this.options.self, e, this);
+            this.options.show(e, this);
         }, this.eventOptions);
 
         $on(this.modal, 'shown.bs.modal', (e) => {
@@ -687,7 +685,7 @@ class Bootpopup {
                     find(el => !(el.readOnly||el.disabled||el.type=='hidden'));
                 if (focus) focus.focus();
             }
-            this.options.shown.call(this.options.self || this, e, this);
+            this.options.shown(e, this);
         }, this.eventOptions);
 
         $on(this.modal, 'hide.bs.modal', (e) => {
@@ -695,12 +693,12 @@ class Bootpopup {
                 document.activeElement.blur();
             }
             e.bootpopupButton = this._callback;
-            this.options.dismiss.call(this.options.self, e, this);
+            this.options.dismiss(e, this);
         }, this.eventOptions);
 
         $on(this.modal, 'hidden.bs.modal', (e) => {
             e.bootpopupButton = this._callback;
-            this.options.complete.call(this.options.self, e, this);
+            this.options.complete(e, this);
             this.modal.remove();
             bootstrap.Modal.getInstance(this.modal)?.dispose();
             delete this.options.data;
@@ -817,7 +815,7 @@ class Bootpopup {
         if (!func) return;
         this._callback = name;
         const a = this.data();
-        const result = func.call(this.options.self || this, a.obj, a.list, event, this);
+        const result = func(a.obj, a.list, event, this);
         if (result instanceof Promise) {
             result.then(resolved => {
                 if (resolved !== null) {
