@@ -158,7 +158,7 @@ classes, add labels/groups, input-group addons, validation feedback, etc.</p></l
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line81">line 81</a>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line83">line 83</a>
     </li></ul></dd>
     
 
@@ -1887,6 +1887,74 @@ The button gets <code>data-formid</code> and <code>data-inputid</code> attribute
 
         <tr>
             
+                <td class="name"><code>show</code></td>
+            
+
+            <td class="type">
+            
+                function()
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>function(){}</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>Called before the window is shown, after being created. <code>(popup)</code>.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>shown</code></td>
+            
+
+            <td class="type">
+            
+                function()
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>function(){}</code>
+                
+                </td>
+            
+
+            <td class="description last"><p>Called before the window is shown, after being created. <code>(popup)</code>.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>dismiss</code></td>
             
 
@@ -1914,7 +1982,7 @@ The button gets <code>data-formid</code> and <code>data-inputid</code> attribute
                 </td>
             
 
-            <td class="description last"><p>Called when the window is dismissed. <code>(data)</code>.</p></td>
+            <td class="description last"><p>Called when the window is dismissed. <code>(event, popup)</code>.</p></td>
         </tr>
 
     
@@ -1948,7 +2016,7 @@ The button gets <code>data-formid</code> and <code>data-inputid</code> attribute
                 </td>
             
 
-            <td class="description last"><p>Called when the form is submitted. Return <code>false</code> to cancel. <code>(data)</code>.</p></td>
+            <td class="description last"><p>Called when the form is submitted. Return <code>false</code> to cancel. <code>(data, list, event, popup)</code>.</p></td>
         </tr>
 
     
@@ -1982,7 +2050,7 @@ The button gets <code>data-formid</code> and <code>data-inputid</code> attribute
                 </td>
             
 
-            <td class="description last"><p>Called when Close button is selected. <code>(data)</code>.</p></td>
+            <td class="description last"><p>Called when Close button is selected. <code>(data, list, event, popup)</code>.</p></td>
         </tr>
 
     
@@ -2016,7 +2084,7 @@ The button gets <code>data-formid</code> and <code>data-inputid</code> attribute
                 </td>
             
 
-            <td class="description last"><p>Called when OK button is selected. <code>(data)</code>.</p></td>
+            <td class="description last"><p>Called when OK button is selected. <code>(data, list, event, popup)</code>.</p></td>
         </tr>
 
     
@@ -2050,7 +2118,7 @@ The button gets <code>data-formid</code> and <code>data-inputid</code> attribute
                 </td>
             
 
-            <td class="description last"><p>Called when Cancel button is selected. <code>(data)</code>.</p></td>
+            <td class="description last"><p>Called when Cancel button is selected. <code>(data, list, event, popup)</code>.</p></td>
         </tr>
 
     
@@ -2084,7 +2152,7 @@ The button gets <code>data-formid</code> and <code>data-inputid</code> attribute
                 </td>
             
 
-            <td class="description last"><p>Called when Yes button is selected. <code>(data)</code>.</p></td>
+            <td class="description last"><p>Called when Yes button is selected. <code>(data, list, event, popup)</code>.</p></td>
         </tr>
 
     
@@ -2118,7 +2186,7 @@ The button gets <code>data-formid</code> and <code>data-inputid</code> attribute
                 </td>
             
 
-            <td class="description last"><p>Called when No button is selected. <code>(data)</code>.</p></td>
+            <td class="description last"><p>Called when No button is selected. <code>(data, list, event, popup)</code>.</p></td>
         </tr>
 
     
@@ -2152,7 +2220,7 @@ The button gets <code>data-formid</code> and <code>data-inputid</code> attribute
                 </td>
             
 
-            <td class="description last"><p>Always called when the dialog box has completed. <code>(data)</code>.</p></td>
+            <td class="description last"><p>Always called when the dialog box has completed. <code>(event, popup)</code>.</p></td>
         </tr>
 
     
@@ -6430,7 +6498,7 @@ options for addEventListener are supported.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line388">line 388</a>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line390">line 390</a>
     </li></ul></dd>
     
 
