@@ -321,6 +321,8 @@ const escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": 
  *   app.bootpopup.confirm("Do you confirm this message?", (yes) => {
  *     alert(yes);
  *   });
+ *
+ *   const ok = await app.bootpopup.aconfirm("Do you confirm?");
  *   ```
  *
  * ### Prompt:
@@ -329,6 +331,8 @@ const escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": 
  *  app.bootpopup.prompt("Name", (value) => {
  *    alert(value);
  *  });
+ *
+ * const name = await app.bootpopup.aprompt("Your name");
  * ```
  *
  * ### Customized prompt:
@@ -872,7 +876,7 @@ bootpopup.inputs = [];
 /**
  * Shows an alert dialog box.
  * @Returns: instance of Bootpopup window
- * @param {string} message - message of the alert
+ * @param {string} text - message of the alert
  * @param {function} callback - `(function)()` callback when the alert is dismissed
  */
 bootpopup.alert = function(text, callback)
@@ -886,10 +890,22 @@ bootpopup.alert = function(text, callback)
 }
 
 /**
+ * Async version of alert
+ * @param {string} text - message of the alert
+ * @return {Promise}
+ */
+bootpopup.aalert = function(text)
+{
+    return new Promise((resolve, _reject) => {
+        bootpopup.alert(text, () => resolve());
+    });
+}
+
+/**
  * Shows a confirm dialog box.
  * @Returns: instance of Bootpopup window
  *
- * @param {string} message - message to confirm
+ * @param {string} text - message to confirm
  * @param {function} callback - `(function)(answer)` callback when the confirm is answered. `answer` will be `true`
  * if the answer was yes and `false` if it was no. If dismissed, the default answer is no
  */
@@ -903,6 +919,18 @@ bootpopup.confirm = function(text, callback)
         class_footer: "modal-footer justify-content-center",
         yes: isFunction(callback) ? () => { callback(ok = true) } : null,
         dismiss: isFunction(callback) ? () => { if (!ok) callback(false) } : null,
+    });
+}
+
+/**
+ * Async version of confirm
+ * @param {string} text - message of the alert
+ * @return {Promise<boolean>} - resolves to true or false
+ */
+bootpopup.aconfirm = function(text)
+{
+    return new Promise((resolve, _reject) => {
+        bootpopup.confirm(text, (rc) => resolve(rc));
     });
 }
 
@@ -922,6 +950,18 @@ bootpopup.prompt = function(label, callback)
         buttons: ["ok", "cancel"],
         ok: isFunction(callback) ? (d) => { callback(ok = d.value || "") } : null,
         dismiss: isFunction(callback) ? () => { if (ok === undefined) callback() } : null,
+    });
+}
+
+/**
+ * Async version of alert
+ * @param {string} label - label of the value being asked
+ * @return {Promise<string|undefined>} - returns resolved value or undefined
+ */
+bootpopup.aprompt = function(text)
+{
+    return new Promise((resolve, _reject) => {
+        bootpopup.prompt(text, (rc) => resolve(rc));
     });
 }
 

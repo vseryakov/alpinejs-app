@@ -6430,7 +6430,7 @@ options for addEventListener are supported.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line384">line 384</a>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line388">line 388</a>
     </li></ul></dd>
     
 
@@ -6683,11 +6683,15 @@ jects <code>{ name:, value: }</code>. The <code>list_input_tags</code> adds a se
 <pre class="prettyprint source lang-javascript"><code>app.bootpopup.confirm(&quot;Do you confirm this message?&quot;, (yes) => {
   alert(yes);
 });
+
+const ok = await app.bootpopup.aconfirm(&quot;Do you confirm?&quot;);
 </code></pre>
 <h3>Prompt:</h3>
 <pre class="prettyprint source lang-javascript"><code> app.bootpopup.prompt(&quot;Name&quot;, (value) => {
    alert(value);
  });
+
+const name = await app.bootpopup.aprompt(&quot;Your name&quot;);
 </code></pre>
 <h3>Customized prompt:</h3>
 <pre class="prettyprint source lang-javascript"><code>  app.bootpopup({
