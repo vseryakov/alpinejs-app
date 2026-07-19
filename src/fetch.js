@@ -82,7 +82,7 @@ function parseResponse(res)
  * @param {string} [options.method] - GET, POST,...GET is default or from app.fetchOptions.method
  * @param {boolean} [options.post] - set method to POST
  * @param {string|object|FormData} [options.body] - a body accepted by window.fetch
- * @param {string} [options.dataType] - explicit return type: text, blob, default is auto detected between text or json
+ * @param {string} [options.data_type] - explicit return type: text, blob, default is auto detected between text or json
  * @param {object} [options.headers] - an object with additional headers to send, all global headers from app.fetchOptions.headers also are merged
  * @param {object} [options.request] - properties to pass to fetch options according to Web API `RequestInit`
  * @param {function} [callback] - callback as (err, data, info) where info is an object { status, headers, type }
@@ -122,7 +122,7 @@ export async function fetch(url, options, callback)
             }
             throw err;
         }
-        switch (options?.dataType) {
+        switch (options?.data_type) {
         case "text":
             data = await res.text();
             break;

@@ -162,7 +162,7 @@ export function toCamel(str)
  * @param {int} [options.max] - maximum value, clip
  * @param {int} [options.incr] - a number to add before checking for other conditions
  * @param {int} [options.mult] - a number to multiply before checking for other conditions
- * @param {int} [options.novalue] - replace this number with default
+ * @param {int} [options.no_value] - replace this number with default
  * @param {int} [options.zero] - replace with this number if result is 0
  * @param {int} [options.digits] - how many digits to keep after the floating point
  * @param {int} [options.bigint] - return BigInt if not a safe integer
@@ -195,7 +195,7 @@ export function toNumber(val, options)
     }
     n = isNaN(n) ? options?.dflt || 0 : n;
     if (options) {
-        if (typeof options.novalue == "number" && n === options.novalue) n = options.dflt || 0;
+        if (typeof options.no_value == "number" && n === options.no_value) n = options.dflt || 0;
         if (typeof options.incr == "number") n += options.incr;
         if (typeof options.mult == "number") n *= options.mult;
         if (isNaN(n)) n = options.dflt || 0;

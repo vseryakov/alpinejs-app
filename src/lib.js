@@ -261,12 +261,12 @@ export function toPrice(num, options)
  * If str is an array and type is not specified then all non-string items will be returned as is.
  * @param {RegExp|string} [sep=,|] - separator
  * @param {object} [options]
- * @param {boolean} [options.keepempty] - will preserve empty items, by default empty strings are ignored
- * @param {boolean} [options.notrim] - will skip trimming strings, trim is the default
+ * @param {boolean} [options.keep_empty] - will preserve empty items, by default empty strings are ignored
+ * @param {boolean} [options.no_trim] - will skip trimming strings, trim is the default
  * @param {int} [options.max] - will skip strings over the specificed size if no `trunc`
  * @param {boolean} [options.trunc] - will truncate strings longer than `max`
  * @param {regexp} [options.regexp] - will skip string if not matching
- * @param {regexp} [options.noregexp] - will skip string if matching
+ * @param {regexp} [options.no_regexp] - will skip string if matching
  * @param {boolean} [options.number] - convert into a number
  * @param {boolean} [options.cap] - capitalize
  * @param {boolean} [options.camel] - camelize
@@ -287,12 +287,12 @@ export function split(str, sep, options)
     var rc = [], keys = isObject(options) ? Object.reys(options) : [], v;
     for (let i = 0; i < len; ++i) {
         v = list[i];
-        if (v === "" && !options?.keepempty) continue;
+        if (v === "" && !options?.keep_empty) continue;
         if (!isString(v)) {
             rc.push(v);
             continue;
         }
-        if (!options?.notrim) v = v.trim();
+        if (!options?.no_trim) v = v.trim();
 
         for (let k = 0; k < keys.length; ++k) {
             switch (keys[k]) {
@@ -315,8 +315,8 @@ export function split(str, sep, options)
                 if (!options.regexp.test(v)) v = "";
                 break;
 
-            case "noregexp":
-                if (options.regexp.test(v)) v = "";
+            case "no_regexp":
+                if (options.no_regexp.test(v)) v = "";
                 break;
 
             case "lower":
@@ -350,7 +350,7 @@ export function split(str, sep, options)
                 break;
             }
         }
-        if (!v.length && !options?.keepempty) continue;
+        if (!v.length && !options?.keep_empty) continue;
         rc.push(v);
     }
     if (options?.unique) {
