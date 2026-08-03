@@ -9,7 +9,7 @@ import { emit, off, on } from "./events"
  * @class
  */
 export class Component {
-    params = {};
+    params = Object.create(null);
 
     constructor(name, params) {
         this.$name = name;
@@ -42,7 +42,7 @@ export class Component {
         off(app.event, this._handleEvent);
         emit("component:delete", { type: this.$type, name: this.$name, component: this, element: this.$el, params: this.params });
         call(this._onDelete?.bind(this));
-        this.params = {};
+        this.params = Object.create(null);
         delete this.$root;
     }
 

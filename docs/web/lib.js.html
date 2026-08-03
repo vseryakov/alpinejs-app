@@ -484,12 +484,12 @@ export async function sendFile(url, options, callback)
         body.append(p, blob);
     }
 
-    var req = {
+    const req = {
         body,
         method: options.method || "POST",
     };
     for (const p in options) {
-        if (p == "json" || p == "files" || p == "body") continue;
+        if (p === "__proto___" || p === "json" || p === "files" || p === "body") continue;
         req[p] ??= options[p];
     }
     return fetch(url, req, callback);

@@ -7,7 +7,7 @@ import { render } from "./render"
 /**
   * Parses component path and returns an object with at least **{ name, params }** ready for rendering. External urls are ignored.
   *
-  * Passing an object will retun a shallow copy of it with name and params properties possibly set if not provided.
+  * Passing an object will return a shallow copy of it with name and params properties possibly set if not provided.
   *
   * The path can be:
   * - component name
@@ -24,13 +24,17 @@ import { render } from "./render"
   */
 export function parsePath(path)
 {
-    var rc = { name: "", params: {} }, query, loc = window.location;
+    const rc = Object.create(null, {
+        name: { value: "", writable: true, enumerable: true },
+        params: { value: Object.create(null), writable: true, enumerable: true }
+    });
+    var query, loc = window.location;
 
     if (isObject(path)) return Object.assign(rc, path);
     if (!isString(path)) return rc;
 
     // Custom parser b/c this is not always url
-    var base = app.base;
+    const base = app.base;
     if (path.startsWith(loc.origin)) path = path.substr(loc.origin.length);
     if (path.includes("://")) path = path.replace(/^(.*:\/\/[^/]*)/, "");
     if (path.startsWith(base)) path = path.substr(base.length);
@@ -57,6 +61,7 @@ export function parsePath(path)
     }
     if (query) {
         for (const [key, value] of new URLSearchParams(query).entries()) {
+            if (key === "__proto___" || key === "constructor" || key === "prototype") continue;
             rc.params[key] = value;
         }
     }
@@ -75,9 +80,12 @@ export function savePath(options)
 {
     if (isString(options)) options = { name: options };
     if (!options?.name) return;
-    var path = [options.name];
+
+    let path = [options.name];
     if (options?.params) {
-        for (let i = 1; i < 7; i++) path.push(options.params[`param${i}`] || "");
+        for (let i = 1; i < 7; i++) {
+            path.push(options.params[`param${i}`] || "");
+        }
     }
     while (!path.at(-1)) path.length--;
     path = path.join("/");

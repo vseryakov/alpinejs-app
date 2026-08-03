@@ -87,13 +87,13 @@ export var app = {
      * this is an alternative to using **&amp;lt;template&amp;gt;** tags which are kept in the DOM all the time even if not used.
      * This object can be populated in the bundle or loaded later as JSON, this all depends on the application environment.
      */
-    templates: {},
+    templates: Object.create(null),
 
     /**
      * @var {string} - Component classes, this is the registry of all components logic to be used with corresponding templates.
      * Only classed derived from **app.AlpineComponent** will be used, internally they are registered with **Alpine.data()** to be reused by name.
      */
-    components: {},
+    components: Object.create(null),
 
     /** @var {function}  - see {@link isFunction} */
     isF: isFunction,
@@ -278,7 +278,7 @@ export function call(obj, method, ...args)
     if (isFunction(obj)) return obj(method, ...args);
     if (typeof obj != "object") return;
     if (isFunction(method)) return method.call(obj, ...args);
-    if (obj &amp;&amp; isFunction(obj[method])) return obj[method].call(obj, ...args);
+    if (isFunction(obj?.[method])) return obj[method].call(obj, ...args);
 }
 
 const _entities = { '&amp;': '&amp;amp;', '&lt;': '&amp;lt;', '>': '&amp;gt;', '"': '&amp;quot;', "'": '&amp;apos;' };

@@ -1,6 +1,6 @@
 import { app, isFunction, isString, trace } from "./app"
 
-var _events = {}
+var _events = Object.create(null)
 
 /**
  * Listen on event, the callback is called synchronously, optional namespace allows deleting callbacks later easier by not providing

@@ -66,7 +66,7 @@ function _render(element, options)
 
     $empty(element);
 
-    element._x_params = Object.assign({}, options.params);
+    element._x_params = Object.assign(Object.create(null), options.params);
     _Alpine.onElRemoved(element, () => { delete element._x_params });
 
     if (!options.component) {

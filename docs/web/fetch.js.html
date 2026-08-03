@@ -63,18 +63,19 @@ import { call, isFunction, isObject, isString, trace } from "./app"
 export var fetchOptions = {
     method: "GET",
     cache: "default",
-    headers: {},
+    headers: Object.create(null),
 };
 
 function parseOptions(url, options)
 {
-    const headers = options?.headers || {};
+    const headers = options?.headers || Object.create(null);
     const opts = Object.assign({
         headers,
         method: options?.method || options?.post &amp;&amp; "POST" || undefined,
     }, options?.request);
 
     for (const p in fetchOptions.headers) {
+        if (p === "__proto___") continue;
         headers[p] ??= fetchOptions.headers[p];
     }
     for (const p of ["method","cache","credentials","duplex","integrity","keepalive","mode","priority","redirect","referrer","referrerPolicy","signal"]) {
@@ -110,18 +111,15 @@ function parseOptions(url, options)
 
 function parseResponse(res)
 {
-    const info = { status: res.status, headers: {}, type: res.type, url: res.url, redirected: res.redirected };
+    const info = {
+        status: res.status,
+        headers: Object.create(null),
+        type: res.type,
+        url: res.url,
+        redirected: res.redirected
+    };
     for (const h of res.headers) {
         info.headers[h[0].toLowerCase()] = h[1];
-    }
-    const h_csrf = fetchOptions.csrfHeader || "x-csrf-token";
-    const v_csrf = info?.headers[h_csrf];
-    if (v_csrf) {
-        if (v_csrf &lt;= 0) {
-            delete fetchOptions.headers[h_csrf];
-        } else {
-            fetchOptions.headers[h_csrf] = v_csrf;
-        }
     }
     return info;
 }
@@ -168,7 +166,7 @@ export async function fetch(url, options, callback)
             let err;
             if (/\/json/.test(ctype)) {
                 const d = await res.json();
-                err = { status: res.status };
+                err = Object.create(null, { status: { value: res.status, enumerable: true } });
                 for (const p in d) err[p] = d[p];
             } else {
                 err = { message: await res.text(), status: res.status };
