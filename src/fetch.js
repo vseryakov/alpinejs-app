@@ -15,11 +15,11 @@ export var fetchOptions = {
 
 function parseOptions(url, options)
 {
-    const headers = options?.headers || Object.create(null);
-    const opts = Object.assign({
+    const headers = isObject(options?.headers) || Object.create(null);
+    const opts = Object.assign(Object.create(null), {
         headers,
         method: options?.method || options?.post && "POST" || undefined,
-    }, options?.request);
+    });
 
     for (const p in fetchOptions.headers) {
         if (p === "__proto___") continue;
@@ -30,7 +30,7 @@ function parseOptions(url, options)
             opts[p] ??= fetchOptions[p];
         }
     }
-    var body = options?.body;
+    const body = options?.body;
     if (opts.method == "GET" || opts.method == "HEAD") {
         if (isObject(body)) {
             url += "?" + new URLSearchParams(body).toString();
@@ -76,13 +76,12 @@ function parseResponse(res)
  *
  * __NOTE: Saves X-CSRF-Token header and sends it back with subsequent requests__
  * @param {string} url - URL to fetch
- * @param {object} [options]
+ * @param {object} [options] - options according to Web API `RequestInit`
  * @param {string} [options.method] - GET, POST,...GET is default or from app.fetchOptions.method
  * @param {boolean} [options.post] - set method to POST
  * @param {string|object|FormData} [options.body] - a body accepted by window.fetch
  * @param {string} [options.data_type] - explicit return type: text, blob, default is auto detected between text or json
  * @param {object} [options.headers] - an object with additional headers to send, all global headers from app.fetchOptions.headers also are merged
- * @param {object} [options.request] - properties to pass to fetch options according to Web API `RequestInit`
  * @param {function} [callback] - callback as (err, data, info) where info is an object { status, headers, type }
  * @async
  * @example

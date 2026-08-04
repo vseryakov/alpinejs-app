@@ -1,5 +1,5 @@
 
-import { app, isObject, isString, trace } from "./app"
+import { app, isBad, isObject, isString, trace } from "./app"
 import { $on, $ready } from "./dom"
 import { emit, on } from "./events"
 import { render } from "./render"
@@ -30,7 +30,13 @@ export function parsePath(path)
     });
     var query, loc = window.location;
 
-    if (isObject(path)) return Object.assign(rc, path);
+    if (isObject(path)) {
+        for (const key in path) {
+            if (isBad(key)) continue;
+            rc[key] = path[key];
+        }
+        return rc;
+    }
     if (!isString(path)) return rc;
 
     // Custom parser b/c this is not always url
@@ -61,7 +67,7 @@ export function parsePath(path)
     }
     if (query) {
         for (const [key, value] of new URLSearchParams(query).entries()) {
-            if (key === "__proto___" || key === "constructor" || key === "prototype") continue;
+            if (isBad(key)) continue;
             rc.params[key] = value;
         }
     }

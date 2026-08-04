@@ -142,6 +142,15 @@ export function isObject(obj, dflt) { return typeof obj == "object" && obj || df
  */
 export function isElement(element, dflt) { return element instanceof HTMLElement && element || dflt }
 
+const _bad = new Set(['__proto__', 'constructor', 'prototype'])
+
+/**
+ * Returns true if the given name is not valid property to be assigned, agaist prototype pollution
+ * @param {string} name
+ * @returns {boolean}
+ */
+export function isBad(name) {  return _bad.has(name) }
+
 /**
  * Convert a string into camelized format
  * @param {string} str
@@ -208,7 +217,6 @@ export function toNumber(val, options)
     }
     return n;
 }
-
 
 /**
  * Call a function safely with context and arguments:
