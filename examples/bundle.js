@@ -33,6 +33,7 @@
     fetch: () => fetch,
     fetchOptions: () => fetchOptions,
     isArray: () => isArray,
+    isBad: () => isBad,
     isElement: () => isElement,
     isFunction: () => isFunction,
     isNumber: () => isNumber,
@@ -137,6 +138,10 @@
   }
   function isElement(element, dflt) {
     return element instanceof HTMLElement && element || dflt;
+  }
+  var _bad = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
+  function isBad(name) {
+    return _bad.has(name);
   }
   function toCamel(str) {
     return isString(str) ? str.toLowerCase().replace(/[.:_-](\w)/g, (_, c) => c.toUpperCase()) : "";
@@ -429,7 +434,13 @@
       params: { value: /* @__PURE__ */ Object.create(null), writable: true, enumerable: true }
     });
     var query, loc = window.location;
-    if (isObject(path)) return Object.assign(rc, path);
+    if (isObject(path)) {
+      for (const key in path) {
+        if (isBad(key)) continue;
+        rc[key] = path[key];
+      }
+      return rc;
+    }
     if (!isString(path)) return rc;
     const base = app.base;
     if (path.startsWith(loc.origin)) path = path.substr(loc.origin.length);
@@ -457,7 +468,7 @@
     }
     if (query) {
       for (const [key, value] of new URLSearchParams(query).entries()) {
-        if (key === "__proto___" || key === "constructor" || key === "prototype") continue;
+        if (isBad(key)) continue;
         rc.params[key] = value;
       }
     }
@@ -495,11 +506,11 @@
     headers: /* @__PURE__ */ Object.create(null)
   };
   function parseOptions(url, options) {
-    const headers = options?.headers || /* @__PURE__ */ Object.create(null);
-    const opts = Object.assign({
+    const headers = isObject(options?.headers) || /* @__PURE__ */ Object.create(null);
+    const opts = Object.assign(/* @__PURE__ */ Object.create(null), {
       headers,
       method: options?.method || options?.post && "POST" || void 0
-    }, options?.request);
+    });
     for (const p in fetchOptions.headers) {
       if (p === "__proto___") continue;
       headers[p] ??= fetchOptions.headers[p];
@@ -509,7 +520,7 @@
         opts[p] ??= fetchOptions[p];
       }
     }
-    var body = options?.body;
+    const body = options?.body;
     if (opts.method == "GET" || opts.method == "HEAD") {
       if (isObject(body)) {
         url += "?" + new URLSearchParams(body).toString();

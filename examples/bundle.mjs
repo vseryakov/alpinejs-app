@@ -9,8 +9,16 @@ var flushPending = false;
 var flushing = false;
 var queue = [];
 var lastFlushedIndex = -1;
+var transactionActive = false;
 function scheduler(callback) {
   queueJob(callback);
+}
+function startTransaction() {
+  transactionActive = true;
+}
+function commitTransaction() {
+  transactionActive = false;
+  queueFlush();
 }
 function queueJob(job) {
   if (!queue.includes(job))
@@ -24,6 +32,8 @@ function dequeueJob(job) {
 }
 function queueFlush() {
   if (!flushing && !flushPending) {
+    if (transactionActive)
+      return;
     flushPending = true;
     queueMicrotask(flushJobs);
   }
@@ -91,20 +101,32 @@ function elementBoundEffect(el) {
 function watch(getter, callback) {
   let firstTime = true;
   let oldValue;
+  let oldValueJSON;
   let effectReference = effect(() => {
     let value = getter();
-    JSON.stringify(value);
+    let newJSON = JSON.stringify(value);
     if (!firstTime) {
-      queueMicrotask(() => {
-        callback(value, oldValue);
-        oldValue = value;
-      });
-    } else {
-      oldValue = value;
+      if (typeof value === "object" || value !== oldValue) {
+        let previousValue = typeof oldValue === "object" ? JSON.parse(oldValueJSON) : oldValue;
+        queueMicrotask(() => {
+          callback(value, previousValue);
+        });
+      }
     }
+    oldValue = value;
+    oldValueJSON = newJSON;
     firstTime = false;
   });
   return () => release(effectReference);
+}
+async function transaction(callback) {
+  startTransaction();
+  try {
+    await callback();
+    await Promise.resolve();
+  } finally {
+    commitTransaction();
+  }
 }
 var onAttributeAddeds = [];
 var onElRemoveds = [];
@@ -288,6 +310,13 @@ function closestDataStack(node) {
 function mergeProxies(objects) {
   return new Proxy({ objects }, mergeProxyTrap);
 }
+function keyInPrototypeChain(obj, key) {
+  if (obj === null || obj === Object.prototype)
+    return null;
+  if (Object.prototype.hasOwnProperty.call(obj, key))
+    return obj;
+  return keyInPrototypeChain(Object.getPrototypeOf(obj), key);
+}
 var mergeProxyTrap = {
   ownKeys({ objects }) {
     return Array.from(
@@ -313,9 +342,14 @@ var mergeProxyTrap = {
     );
   },
   set({ objects }, name, value, thisProxy) {
-    const target = objects.find(
-      (obj) => Object.prototype.hasOwnProperty.call(obj, name)
-    ) || objects[objects.length - 1];
+    let target;
+    for (const obj of objects) {
+      target = keyInPrototypeChain(obj, name);
+      if (target)
+        break;
+    }
+    if (!target)
+      target = objects[objects.length - 1];
     const descriptor = Object.getOwnPropertyDescriptor(target, name);
     if (descriptor?.set && descriptor?.get)
       return descriptor.set.call(thisProxy, value) || true;
@@ -330,7 +364,7 @@ function collapseProxies() {
   }, {});
 }
 function initInterceptors(data22) {
-  let isObject22 = (val) => typeof val === "object" && !Array.isArray(val) && val !== null;
+  let isObject32 = (val) => typeof val === "object" && !Array.isArray(val) && val !== null;
   let recurse = (obj, basePath = "") => {
     Object.entries(Object.getOwnPropertyDescriptors(obj)).forEach(([key, { value, enumerable }]) => {
       if (enumerable === false || value === void 0)
@@ -341,7 +375,7 @@ function initInterceptors(data22) {
       if (typeof value === "object" && value !== null && value._x_interceptor) {
         obj[key] = value.initialize(data22, path, key);
       } else {
-        if (isObject22(value) && value !== obj && !(value instanceof Element)) {
+        if (isObject32(value) && value !== obj && !(value instanceof Element)) {
           recurse(value, path);
         }
       }
@@ -456,7 +490,8 @@ function evaluate(el, expression, extras = {}) {
 function evaluateLater(...args) {
   return theEvaluatorFunction(...args);
 }
-var theEvaluatorFunction = normalEvaluator;
+var theEvaluatorFunction = () => {
+};
 function setEvaluator(newEvaluator) {
   theEvaluatorFunction = newEvaluator;
 }
@@ -626,10 +661,10 @@ function attributesOnly(attributes) {
 }
 var isDeferringHandlers = false;
 var directiveHandlerStacks = /* @__PURE__ */ new Map();
-var currentHandlerStackKey = Symbol();
+var currentHandlerStackKey = /* @__PURE__ */ Symbol();
 function deferHandlingDirectives(callback) {
   isDeferringHandlers = true;
-  let key = Symbol();
+  let key = /* @__PURE__ */ Symbol();
   currentHandlerStackKey = key;
   directiveHandlerStacks.set(key, []);
   let flushHandlers = () => {
@@ -702,6 +737,8 @@ function outNonAlpineAttributes({ name }) {
 var alpineAttributeRegex = () => new RegExp(`^${prefixAsString}([^:^.]+)\\b`);
 function toParsedDirectives(transformedAttributeMap, originalAttributeOverride) {
   return ({ name, value }) => {
+    if (name === value)
+      value = "";
     let typeMatch = name.match(alpineAttributeRegex());
     let valueMatch = name.match(/:([a-zA-Z0-9\-_:]+)/);
     let modifiers = name.match(/\.[^.\]]+(?=[^\]]*$)/g) || [];
@@ -719,8 +756,8 @@ var DEFAULT = "DEFAULT";
 var directiveOrder = [
   "ignore",
   "ref",
-  "data",
   "id",
+  "data",
   "anchor",
   "bind",
   "init",
@@ -738,14 +775,16 @@ function byPriority(a, b) {
   let typeB = directiveOrder.indexOf(b.type) === -1 ? DEFAULT : b.type;
   return directiveOrder.indexOf(typeA) - directiveOrder.indexOf(typeB);
 }
-function dispatch(el, name, detail = {}) {
-  el.dispatchEvent(
+function dispatch(el, name, detail = {}, options = {}) {
+  return el.dispatchEvent(
     new CustomEvent(name, {
       detail,
       bubbles: true,
       // Allows events to pass the shadow DOM barrier.
       composed: true,
-      cancelable: true
+      cancelable: true,
+      // Allows overriding the default event options.
+      ...options
     })
   );
 }
@@ -818,7 +857,7 @@ function findClosest(el, callback) {
   if (callback(el))
     return el;
   if (el._x_teleportBack)
-    el = el._x_teleportBack;
+    return findClosest(el._x_teleportBack, callback);
   if (el.parentNode instanceof ShadowRoot) {
     return findClosest(el.parentNode.host, callback);
   }
@@ -909,9 +948,11 @@ function setClasses(el, value) {
   }
   return setClassesFromString(el, value);
 }
+function splitClasses(classString) {
+  return classString.split(/\s/).filter(Boolean);
+}
 function setClassesFromString(el, classString) {
-  let split = (classString2) => classString2.split(" ").filter(Boolean);
-  let missingClasses = (classString2) => classString2.split(" ").filter((i) => !el.classList.contains(i)).filter(Boolean);
+  let missingClasses = (classString2) => splitClasses(classString2).filter((i) => !el.classList.contains(i)).filter(Boolean);
   let addClassesAndReturnUndo = (classes) => {
     el.classList.add(...classes);
     return () => {
@@ -922,9 +963,8 @@ function setClassesFromString(el, classString) {
   return addClassesAndReturnUndo(missingClasses(classString));
 }
 function setClassesFromObject(el, classObject) {
-  let split = (classString) => classString.split(" ").filter(Boolean);
-  let forAdd = Object.entries(classObject).flatMap(([classString, bool]) => bool ? split(classString) : false).filter(Boolean);
-  let forRemove = Object.entries(classObject).flatMap(([classString, bool]) => !bool ? split(classString) : false).filter(Boolean);
+  let forAdd = Object.entries(classObject).flatMap(([classString, bool]) => bool ? splitClasses(classString) : false).filter(Boolean);
+  let forRemove = Object.entries(classObject).flatMap(([classString, bool]) => !bool ? splitClasses(classString) : false).filter(Boolean);
   let added = [];
   let removed = [];
   forRemove.forEach((i) => {
@@ -1352,13 +1392,6 @@ function bindInputValue(el, value) {
     if (el.attributes.value === void 0) {
       el.value = value;
     }
-    if (window.fromModel) {
-      if (typeof value === "boolean") {
-        el.checked = safeParseBoolean(el.value) === value;
-      } else {
-        el.checked = checkedAttrLooseCompare(el.value, value);
-      }
-    }
   } else if (isCheckbox(el)) {
     if (Number.isInteger(value)) {
       el.value = value;
@@ -1657,7 +1690,10 @@ var Alpine = {
   get raw() {
     return raw;
   },
-  version: "3.15.3",
+  get transaction() {
+    return transaction;
+  },
+  version: "3.15.12",
   flushAndStopDeferringMutations,
   dontAutoEvaluateFunctions,
   disableEffectScheduling,
@@ -1765,8 +1801,8 @@ var hasChanged = (value, oldValue) => value !== oldValue && (value === value || 
 var targetMap = /* @__PURE__ */ new WeakMap();
 var effectStack = [];
 var activeEffect;
-var ITERATE_KEY = Symbol(true ? "iterate" : "");
-var MAP_KEY_ITERATE_KEY = Symbol(true ? "Map key iterate" : "");
+var ITERATE_KEY = /* @__PURE__ */ Symbol(true ? "iterate" : "");
+var MAP_KEY_ITERATE_KEY = /* @__PURE__ */ Symbol(true ? "Map key iterate" : "");
 function isEffect(fn) {
   return fn && fn._isEffect === true;
 }
@@ -2520,7 +2556,7 @@ directive("modelable", (el, { expression }, { effect: effect3, evaluateLater: ev
       return;
     el._x_removeModelListeners["default"]();
     let outerGet = el._x_model.get;
-    let outerSet = el._x_model.set;
+    let outerSet = el._x_model.setWithModifiers;
     let releaseEntanglement = entangle(
       {
         get() {
@@ -2570,8 +2606,8 @@ directive("teleport", (el, { modifiers, expression }, { cleanup: cleanup2 }) => 
     }
   };
   mutateDom(() => {
-    placeInDom(clone2, target, modifiers);
     skipDuringClone(() => {
+      placeInDom(clone2, target, modifiers);
       initTree(clone2);
     })();
   });
@@ -2620,24 +2656,16 @@ function on(el, event, modifiers, callback) {
     event = dotSyntax(event);
   if (modifiers.includes("camel"))
     event = camelCase2(event);
-  if (modifiers.includes("passive"))
-    options.passive = true;
   if (modifiers.includes("capture"))
     options.capture = true;
   if (modifiers.includes("window"))
     listenerTarget = window;
   if (modifiers.includes("document"))
     listenerTarget = document;
-  if (modifiers.includes("debounce")) {
-    let nextModifier = modifiers[modifiers.indexOf("debounce") + 1] || "invalid-wait";
-    let wait = isNumeric(nextModifier.split("ms")[0]) ? Number(nextModifier.split("ms")[0]) : 250;
-    handler4 = debounce(handler4, wait);
+  if (modifiers.includes("passive")) {
+    options.passive = modifiers[modifiers.indexOf("passive") + 1] !== "false";
   }
-  if (modifiers.includes("throttle")) {
-    let nextModifier = modifiers[modifiers.indexOf("throttle") + 1] || "invalid-wait";
-    let wait = isNumeric(nextModifier.split("ms")[0]) ? Number(nextModifier.split("ms")[0]) : 250;
-    handler4 = throttle(handler4, wait);
-  }
+  handler4 = addDebounceOrThrottle(modifiers, handler4);
   if (modifiers.includes("prevent"))
     handler4 = wrapHandler(handler4, (next, e) => {
       e.preventDefault();
@@ -2672,6 +2700,14 @@ function on(el, event, modifiers, callback) {
     handler4 = wrapHandler(handler4, (next, e) => {
       e.target === el && next(e);
     });
+  if (event === "submit") {
+    handler4 = wrapHandler(handler4, (next, e) => {
+      if (e.target._x_pendingModelUpdates) {
+        e.target._x_pendingModelUpdates.forEach((fn) => fn());
+      }
+      next(e);
+    });
+  }
   if (isKeyEvent(event) || isClickEvent(event)) {
     handler4 = wrapHandler(handler4, (next, e) => {
       if (isListeningForASpecificKeyThatHasntBeenPressed(e, modifiers)) {
@@ -2684,6 +2720,19 @@ function on(el, event, modifiers, callback) {
   return () => {
     listenerTarget.removeEventListener(event, handler4, options);
   };
+}
+function addDebounceOrThrottle(modifiers, handler4) {
+  if (modifiers.includes("debounce")) {
+    let nextModifier = modifiers[modifiers.indexOf("debounce") + 1] || "invalid-wait";
+    let wait = isNumeric(nextModifier.split("ms")[0]) ? Number(nextModifier.split("ms")[0]) : 250;
+    handler4 = debounce(handler4, wait);
+  }
+  if (modifiers.includes("throttle")) {
+    let nextModifier = modifiers[modifiers.indexOf("throttle") + 1] || "invalid-wait";
+    let wait = isNumeric(nextModifier.split("ms")[0]) ? Number(nextModifier.split("ms")[0]) : 250;
+    handler4 = throttle(handler4, wait);
+  }
+  return handler4;
 }
 function dotSyntax(subject) {
   return subject.replace(/-/g, ".");
@@ -2709,7 +2758,7 @@ function isClickEvent(event) {
 }
 function isListeningForASpecificKeyThatHasntBeenPressed(e, modifiers) {
   let keyModifiers = modifiers.filter((i) => {
-    return !["window", "document", "prevent", "stop", "once", "capture", "self", "away", "outside", "passive", "preserve-scroll"].includes(i);
+    return !["window", "document", "prevent", "stop", "once", "capture", "self", "away", "outside", "passive", "preserve-scroll", "blur", "change", "lazy"].includes(i);
   });
   if (keyModifiers.includes("debounce")) {
     let debounceIndex = keyModifiers.indexOf("debounce");
@@ -2771,7 +2820,7 @@ function keyToModifiers(key) {
 directive("model", (el, { modifiers, expression }, { effect: effect3, cleanup: cleanup2 }) => {
   let scopeTarget = el;
   if (modifiers.includes("parent")) {
-    scopeTarget = el.parentNode;
+    scopeTarget = findClosest(el, (element) => element !== el);
   }
   let evaluateGet = evaluateLater(scopeTarget, expression);
   let evaluateSet;
@@ -2806,11 +2855,48 @@ directive("model", (el, { modifiers, expression }, { effect: effect3, cleanup: c
         el.setAttribute("name", expression);
     });
   }
-  let event = el.tagName.toLowerCase() === "select" || ["checkbox", "radio"].includes(el.type) || modifiers.includes("lazy") ? "change" : "input";
-  let removeListener = isCloning ? () => {
-  } : on(el, event, modifiers, (e) => {
-    setValue(getInputValue(el, modifiers, e, getValue()));
-  });
+  let hasChangeModifier = modifiers.includes("change") || modifiers.includes("lazy");
+  let hasBlurModifier = modifiers.includes("blur");
+  let hasEnterModifier = modifiers.includes("enter");
+  let hasExplicitEventModifiers = hasChangeModifier || hasBlurModifier || hasEnterModifier;
+  let removeListener;
+  if (isCloning) {
+    removeListener = () => {
+    };
+  } else if (hasExplicitEventModifiers) {
+    let listeners = [];
+    let syncValue = (e) => setValue(getInputValue(el, modifiers, e, getValue()));
+    if (hasChangeModifier) {
+      listeners.push(on(el, "change", modifiers, syncValue));
+    }
+    if (hasBlurModifier) {
+      listeners.push(on(el, "blur", modifiers, syncValue));
+      if (el.form) {
+        let form = el.form;
+        let syncCallback = () => syncValue({ target: el });
+        if (!form._x_pendingModelUpdates)
+          form._x_pendingModelUpdates = [];
+        form._x_pendingModelUpdates.push(syncCallback);
+        cleanup2(() => {
+          if (form._x_pendingModelUpdates) {
+            form._x_pendingModelUpdates.splice(form._x_pendingModelUpdates.indexOf(syncCallback), 1);
+          }
+        });
+      }
+    }
+    if (hasEnterModifier) {
+      listeners.push(on(el, "keydown", modifiers, (e) => {
+        if (e.key === "Enter")
+          syncValue(e);
+      }));
+    }
+    removeListener = () => listeners.forEach((remove) => remove());
+  } else {
+    let event = el.tagName.toLowerCase() === "select" || ["checkbox", "radio"].includes(el.type) ? "change" : "input";
+    removeListener = on(el, event, modifiers, (e) => {
+      setValue(getInputValue(el, modifiers, e, getValue()));
+    });
+  }
   if (modifiers.includes("fill")) {
     if ([void 0, null, ""].includes(getValue()) || isCheckbox(el) && Array.isArray(getValue()) || el.tagName.toLowerCase() === "select" && el.multiple) {
       setValue(
@@ -2834,14 +2920,29 @@ directive("model", (el, { modifiers, expression }, { effect: effect3, cleanup: c
     },
     set(value) {
       setValue(value);
-    }
+    },
+    setWithModifiers: addDebounceOrThrottle(modifiers, setValue)
   };
   el._x_forceModelUpdate = (value) => {
     if (value === void 0 && typeof expression === "string" && expression.match(/\./))
       value = "";
-    window.fromModel = true;
-    mutateDom(() => bind(el, "value", value));
-    delete window.fromModel;
+    mutateDom(() => {
+      if (isCheckbox(el)) {
+        if (Array.isArray(value)) {
+          el.checked = value.some((val) => val == el.value);
+        } else {
+          el.checked = !!value;
+        }
+      } else if (isRadio(el)) {
+        if (typeof value === "boolean") {
+          el.checked = safeParseBoolean(el.value) === value;
+        } else {
+          el.checked = el.value == value;
+        }
+      } else {
+        bind(el, "value", value);
+      }
+    });
   };
   effect3(() => {
     let value = getValue();
@@ -2942,7 +3043,7 @@ directive("html", (el, { expression }, { effect: effect3, evaluateLater: evaluat
   effect3(() => {
     evaluate2((value) => {
       mutateDom(() => {
-        el.innerHTML = value;
+        el.innerHTML = value ?? "";
         el._x_ignoreSelf = true;
         initTree(el);
         delete el._x_ignoreSelf;
@@ -3081,137 +3182,92 @@ directive("for", (el, { expression }, { effect: effect3, cleanup: cleanup2 }) =>
     // the x-bind:key expression is stored for our use instead of evaluated.
     el._x_keyExpression || "index"
   );
-  el._x_prevKeys = [];
-  el._x_lookup = {};
+  el._x_lookup = /* @__PURE__ */ new Map();
   effect3(() => loop(el, iteratorNames, evaluateItems, evaluateKey));
   cleanup2(() => {
-    Object.values(el._x_lookup).forEach((el2) => mutateDom(
-      () => {
+    el._x_lookup.forEach(
+      (el2) => mutateDom(() => {
         destroyTree(el2);
         el2.remove();
-      }
-    ));
-    delete el._x_prevKeys;
+      })
+    );
     delete el._x_lookup;
   });
 });
-function loop(el, iteratorNames, evaluateItems, evaluateKey) {
-  let isObject22 = (i) => typeof i === "object" && !Array.isArray(i);
-  let templateEl = el;
+function refreshScope(scope2) {
+  return (newScope) => {
+    Object.entries(newScope).forEach(([key, value]) => {
+      scope2[key] = value;
+    });
+  };
+}
+function loop(templateEl, iteratorNames, evaluateItems, evaluateKey) {
   evaluateItems((items) => {
-    if (isNumeric3(items) && items >= 0) {
-      items = Array.from(Array(items).keys(), (i) => i + 1);
-    }
-    if (items === void 0)
+    if (isNumeric3(items))
+      items = Array.from({ length: items }, (_, i) => i + 1);
+    if (items === void 0 || items === null)
       items = [];
-    let lookup = el._x_lookup;
-    let prevKeys = el._x_prevKeys;
-    let scopes = [];
-    let keys = [];
-    if (isObject22(items)) {
-      items = Object.entries(items).map(([key, value]) => {
-        let scope2 = getIterationScopeVariables(iteratorNames, value, key, items);
-        evaluateKey((value2) => {
-          if (keys.includes(value2))
-            warn("Duplicate key on x-for", el);
-          keys.push(value2);
-        }, { scope: { index: key, ...scope2 } });
-        scopes.push(scope2);
+    if (items instanceof Set)
+      items = Array.from(items);
+    if (items instanceof Map)
+      items = Array.from(items);
+    let oldLookup = templateEl._x_lookup;
+    let lookup = /* @__PURE__ */ new Map();
+    templateEl._x_lookup = lookup;
+    let hasStringKeys = isObject2(items);
+    let scopeEntries = Object.entries(items).map(([index, item]) => {
+      if (!hasStringKeys)
+        index = parseInt(index);
+      let scope2 = getIterationScopeVariables(iteratorNames, item, index, items);
+      let key;
+      evaluateKey((innerKey) => {
+        if (typeof innerKey === "object")
+          warn("x-for key cannot be an object, it must be a string or an integer", templateEl);
+        if (oldLookup.has(innerKey)) {
+          lookup.set(innerKey, oldLookup.get(innerKey));
+          oldLookup.delete(innerKey);
+        }
+        key = innerKey;
+      }, { scope: { index, ...scope2 } });
+      return [key, scope2];
+    });
+    mutateDom(() => {
+      oldLookup.forEach((el) => {
+        destroyTree(el);
+        el.remove();
       });
-    } else {
-      for (let i = 0; i < items.length; i++) {
-        let scope2 = getIterationScopeVariables(iteratorNames, items[i], i, items);
-        evaluateKey((value) => {
-          if (keys.includes(value))
-            warn("Duplicate key on x-for", el);
-          keys.push(value);
-        }, { scope: { index: i, ...scope2 } });
-        scopes.push(scope2);
-      }
-    }
-    let adds = [];
-    let moves = [];
-    let removes = [];
-    let sames = [];
-    for (let i = 0; i < prevKeys.length; i++) {
-      let key = prevKeys[i];
-      if (keys.indexOf(key) === -1)
-        removes.push(key);
-    }
-    prevKeys = prevKeys.filter((key) => !removes.includes(key));
-    let lastKey = "template";
-    for (let i = 0; i < keys.length; i++) {
-      let key = keys[i];
-      let prevIndex = prevKeys.indexOf(key);
-      if (prevIndex === -1) {
-        prevKeys.splice(i, 0, key);
-        adds.push([lastKey, i]);
-      } else if (prevIndex !== i) {
-        let keyInSpot = prevKeys.splice(i, 1)[0];
-        let keyForSpot = prevKeys.splice(prevIndex - 1, 1)[0];
-        prevKeys.splice(i, 0, keyForSpot);
-        prevKeys.splice(prevIndex, 0, keyInSpot);
-        moves.push([keyInSpot, keyForSpot]);
-      } else {
-        sames.push(key);
-      }
-      lastKey = key;
-    }
-    for (let i = 0; i < removes.length; i++) {
-      let key = removes[i];
-      if (!(key in lookup))
-        continue;
-      mutateDom(() => {
-        destroyTree(lookup[key]);
-        lookup[key].remove();
+      let added = /* @__PURE__ */ new Set();
+      let prev = templateEl;
+      scopeEntries.forEach(([key, scope2]) => {
+        if (lookup.has(key)) {
+          let el = lookup.get(key);
+          el._x_refreshXForScope(scope2);
+          if (prev.nextElementSibling !== el) {
+            if (prev.nextElementSibling)
+              el.replaceWith(prev.nextElementSibling);
+            prev.after(el);
+          }
+          prev = el;
+          if (el._x_currentIfEl) {
+            if (el.nextElementSibling !== el._x_currentIfEl)
+              prev.after(el._x_currentIfEl);
+            prev = el._x_currentIfEl;
+          }
+          return;
+        }
+        if (templateEl.content.children.length > 1)
+          warn("x-for templates require a single root element, additional elements will be ignored.", templateEl);
+        let clone2 = document.importNode(templateEl.content, true).firstElementChild;
+        let reactiveScope = reactive(scope2);
+        addScopeToNode(clone2, reactiveScope, templateEl);
+        clone2._x_refreshXForScope = refreshScope(reactiveScope);
+        lookup.set(key, clone2);
+        added.add(clone2);
+        prev.after(clone2);
+        prev = clone2;
       });
-      delete lookup[key];
-    }
-    for (let i = 0; i < moves.length; i++) {
-      let [keyInSpot, keyForSpot] = moves[i];
-      let elInSpot = lookup[keyInSpot];
-      let elForSpot = lookup[keyForSpot];
-      let marker = document.createElement("div");
-      mutateDom(() => {
-        if (!elForSpot)
-          warn(`x-for ":key" is undefined or invalid`, templateEl, keyForSpot, lookup);
-        elForSpot.after(marker);
-        elInSpot.after(elForSpot);
-        elForSpot._x_currentIfEl && elForSpot.after(elForSpot._x_currentIfEl);
-        marker.before(elInSpot);
-        elInSpot._x_currentIfEl && elInSpot.after(elInSpot._x_currentIfEl);
-        marker.remove();
-      });
-      elForSpot._x_refreshXForScope(scopes[keys.indexOf(keyForSpot)]);
-    }
-    for (let i = 0; i < adds.length; i++) {
-      let [lastKey2, index] = adds[i];
-      let lastEl = lastKey2 === "template" ? templateEl : lookup[lastKey2];
-      if (lastEl._x_currentIfEl)
-        lastEl = lastEl._x_currentIfEl;
-      let scope2 = scopes[index];
-      let key = keys[index];
-      let clone2 = document.importNode(templateEl.content, true).firstElementChild;
-      let reactiveScope = reactive(scope2);
-      addScopeToNode(clone2, reactiveScope, templateEl);
-      clone2._x_refreshXForScope = (newScope) => {
-        Object.entries(newScope).forEach(([key2, value]) => {
-          reactiveScope[key2] = value;
-        });
-      };
-      mutateDom(() => {
-        lastEl.after(clone2);
-        skipDuringClone(() => initTree(clone2))();
-      });
-      if (typeof key === "object") {
-        warn("x-for key cannot be an object, it must be a string or an integer", templateEl);
-      }
-      lookup[key] = clone2;
-    }
-    for (let i = 0; i < sames.length; i++) {
-      lookup[sames[i]]._x_refreshXForScope(scopes[keys.indexOf(sames[i])]);
-    }
-    templateEl._x_prevKeys = keys;
+      skipDuringClone(() => added.forEach((clone2) => initTree(clone2)))();
+    });
   });
 }
 function parseForExpression(expression) {
@@ -3258,12 +3314,17 @@ function getIterationScopeVariables(iteratorNames, item, index, items) {
   return scopeVariables;
 }
 function isNumeric3(subject) {
-  return !Array.isArray(subject) && !isNaN(subject);
+  return typeof subject !== "object" && !isNaN(subject);
+}
+function isObject2(subject) {
+  return typeof subject === "object" && !Array.isArray(subject);
 }
 function handler3() {
 }
 handler3.inline = (el, { expression }, { cleanup: cleanup2 }) => {
   let root = closestRoot(el);
+  if (!root)
+    return;
   if (!root._x_refs)
     root._x_refs = {};
   root._x_refs[expression] = el;
@@ -3369,12 +3430,12 @@ var app = {
    * this is an alternative to using **&lt;template&gt;** tags which are kept in the DOM all the time even if not used.
    * This object can be populated in the bundle or loaded later as JSON, this all depends on the application environment.
    */
-  templates: {},
+  templates: /* @__PURE__ */ Object.create(null),
   /**
    * @var {string} - Component classes, this is the registry of all components logic to be used with corresponding templates.
    * Only classed derived from **app.AlpineComponent** will be used, internally they are registered with **Alpine.data()** to be reused by name.
    */
-  components: {},
+  components: /* @__PURE__ */ Object.create(null),
   /** @var {function}  - see {@link isFunction} */
   isF: isFunction,
   /** @var {function}  - see {@link isString} */
@@ -3382,12 +3443,13 @@ var app = {
   /** @var {function}  - see {@link isElement} */
   isE: isElement,
   /** @var {function}  - see {@link isObject} */
-  isO: isObject2,
+  isO: isObject3,
   /** @var {function}  - see {@link isNumber} */
   isN: isNumber,
   /** @var {function}  - see {@link isArray} */
   isA: isArray2,
   toCamel,
+  toNumber,
   call,
   escape,
   noop,
@@ -3409,36 +3471,69 @@ function __(...args) {
 function isArray2(val, dflt) {
   return Array.isArray(val) && val.length ? val : dflt;
 }
-function isNumber(num) {
+function isNumber(num, dflt) {
   return typeof num == "number" ? num : void 0;
 }
-function isString2(str) {
-  return typeof str == "string" && str;
+function isString2(str, dflt = "") {
+  return typeof str == "string" ? str : dflt;
 }
-function isFunction(callback) {
-  return typeof callback == "function" && callback;
+function isFunction(callback, dflt) {
+  return typeof callback == "function" ? callback : dflt;
 }
-function isObject2(obj) {
-  return typeof obj == "object" && obj;
+function isObject3(obj, dflt) {
+  return typeof obj == "object" && obj || dflt;
 }
-function isElement(element) {
-  return element instanceof HTMLElement && element;
+function isElement(element, dflt) {
+  return element instanceof HTMLElement && element || dflt;
+}
+var _bad = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
+function isBad(name) {
+  return _bad.has(name);
 }
 function toCamel(str) {
   return isString2(str) ? str.toLowerCase().replace(/[.:_-](\w)/g, (_, c) => c.toUpperCase()) : "";
+}
+function toNumber(val, options) {
+  var n;
+  if (typeof val == "number") {
+    n = val;
+  } else if (typeof val == "boolean") {
+    n = val ? 1 : 0;
+  } else {
+    if (typeof val != "string") {
+      n = options?.dflt || 0;
+    } else {
+      const f = typeof options?.float == "undefined" || options?.float == null ? /^(-|\+)?([0-9]+)?\.[0-9]+$/.test(val) : options?.float;
+      n = val[0] == "t" ? 1 : val[0] == "f" ? 0 : val == "infinity" ? Infinity : f ? parseFloat(val, options?.base || 10) : parseInt(val, options?.base || 10);
+    }
+  }
+  n = isNaN(n) ? options?.dflt || 0 : n;
+  if (options) {
+    if (typeof options.no_value == "number" && n === options.no_value) n = options.dflt || 0;
+    if (typeof options.incr == "number") n += options.incr;
+    if (typeof options.mult == "number") n *= options.mult;
+    if (isNaN(n)) n = options.dflt || 0;
+    if (typeof options.min == "number" && n < options.min) n = options.min;
+    if (typeof options.max == "number" && n > options.max) n = options.max;
+    if (typeof options.float != "undefined" && !options.float) n = Math.round(n);
+    if (typeof options.zero == "number" && !n) n = options.zero;
+    if (typeof options.digits == "number") n = parseFloat(n.toFixed(options.digits));
+    if (options.bigint && typeof n == "number" && !Number.isSafeInteger(n)) n = BigInt(n);
+  }
+  return n;
 }
 function call(obj, method, ...args) {
   if (isFunction(obj)) return obj(method, ...args);
   if (typeof obj != "object") return;
   if (isFunction(method)) return method.call(obj, ...args);
-  if (obj && isFunction(obj[method])) return obj[method].call(obj, ...args);
+  if (isFunction(obj?.[method])) return obj[method].call(obj, ...args);
 }
 var _entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" };
 function escape(str) {
   if (typeof str != "string") return "";
   return str.replace(/([&<>'":])/g, (_, x) => _entities[x] || x);
 }
-var _events = {};
+var _events = /* @__PURE__ */ Object.create(null);
 function on2(event, callback, namespace) {
   if (!isFunction(callback)) return;
   if (!_events[event]) _events[event] = [];
@@ -3472,6 +3567,9 @@ var esc = (selector) => selector.replace(/#([^\s"#']+)/g, (_, id) => `#${CSS.esc
 function $(selector, doc) {
   return isString2(selector) ? (isElement(doc) || document).querySelector(esc(selector)) : null;
 }
+function $event(element, name, detail = {}) {
+  return element instanceof EventTarget && element.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: true }));
+}
 function $on(element, event, callback, ...arg) {
   return isFunction(callback) && element.addEventListener(event, callback, ...arg);
 }
@@ -3490,7 +3588,7 @@ function $empty(element, cleanup2) {
 }
 function $elem(name, ...args) {
   var element = document.createElement(name), key, val, opts;
-  if (isObject2(args[0])) {
+  if (isObject3(args[0])) {
     args = Object.entries(args[0]).flatMap((x) => x);
     opts = args[1];
   }
@@ -3563,7 +3661,7 @@ $ready(() => {
     _resize = setTimeout(domChanged, 250);
   });
 });
-var _plugins = {};
+var _plugins = /* @__PURE__ */ Object.create(null);
 var _default_plugin;
 function register(name, options) {
   if (!name || !isString2(name)) throw Error("type must be defined");
@@ -3575,7 +3673,7 @@ function register(name, options) {
       app[toCamel(`_${name}_component`)] = options.Component;
     }
   }
-  var plugin2 = _plugins[name] = _plugins[name] || {};
+  const plugin2 = _plugins[name] = _plugins[name] || /* @__PURE__ */ Object.create(null);
   if (options?.default) _default_plugin = plugin2;
   return Object.assign(plugin2, options);
 }
@@ -3590,8 +3688,8 @@ function $data(element, level) {
 function resolve(path, dflt) {
   const tmpl = parsePath(path);
   trace("resolve:", path, dflt, tmpl);
-  var name = tmpl?.name, templates = app.templates, components = app.components;
-  var template = tmpl.template || templates[name] || document.getElementById(name);
+  const name = tmpl?.name, templates = app.templates, components = app.components;
+  let template = tmpl.template || templates[name] || document.getElementById(name);
   if (!template && dflt) {
     template = templates[dflt] || document.getElementById(dflt);
     if (template) tmpl.name = dflt;
@@ -3603,7 +3701,7 @@ function resolve(path, dflt) {
   }
   if (!template) return;
   tmpl.template = template;
-  var component = components[name] || components[tmpl.name];
+  let component = components[name] || components[tmpl.name];
   if (isString2(component)) {
     component = components[tmpl.ocomponent = component];
   }
@@ -3613,19 +3711,19 @@ function resolve(path, dflt) {
 function render(options, dflt) {
   var tmpl = resolve(options, dflt);
   if (!tmpl) return;
-  var params = tmpl.params = Object.assign(tmpl.params || {}, options?.params);
+  const params = tmpl.params = Object.assign(tmpl.params || /* @__PURE__ */ Object.create(null), options?.params);
   params.$target = options.$target || params.$target || app.$target;
   trace("render:", options, tmpl.name, tmpl.params);
   const element = isElement(params.$target) || $(params.$target);
   if (!element) return;
-  var plugin2 = tmpl.component?.$type || options?.plugin || params.$plugin;
+  let plugin2 = tmpl.component?.$type || options?.plugin || params.$plugin;
   plugin2 = _plugins[plugin2] || _default_plugin;
   if (!plugin2?.render) return;
   if (params.$target == app.$target) {
-    var ev = { name: tmpl.name, params };
+    const ev = { name: tmpl.name, params };
     emit(app.event, "prepare:delete", ev);
     if (ev.stop) return;
-    var plugins = Object.values(_plugins);
+    const plugins = Object.values(_plugins);
     for (const p of plugins.filter((x) => x.cleanup)) {
       call(p.cleanup, element);
     }
@@ -3653,10 +3751,20 @@ on2("alpine:init", () => {
   });
 });
 function parsePath(path) {
-  var rc = { name: "", params: {} }, query, loc = window.location;
-  if (isObject2(path)) return Object.assign(rc, path);
+  const rc = Object.create(null, {
+    name: { value: "", writable: true, enumerable: true },
+    params: { value: /* @__PURE__ */ Object.create(null), writable: true, enumerable: true }
+  });
+  var query, loc = window.location;
+  if (isObject3(path)) {
+    for (const key in path) {
+      if (isBad(key)) continue;
+      rc[key] = path[key];
+    }
+    return rc;
+  }
   if (!isString2(path)) return rc;
-  var base = app.base;
+  const base = app.base;
   if (path.startsWith(loc.origin)) path = path.substr(loc.origin.length);
   if (path.includes("://")) path = path.replace(/^(.*:\/\/[^/]*)/, "");
   if (path.startsWith(base)) path = path.substr(base.length);
@@ -3682,6 +3790,7 @@ function parsePath(path) {
   }
   if (query) {
     for (const [key, value] of new URLSearchParams(query).entries()) {
+      if (isBad(key)) continue;
       rc.params[key] = value;
     }
   }
@@ -3690,9 +3799,11 @@ function parsePath(path) {
 function savePath(options) {
   if (isString2(options)) options = { name: options };
   if (!options?.name) return;
-  var path = [options.name];
+  let path = [options.name];
   if (options?.params) {
-    for (let i = 1; i < 7; i++) path.push(options.params[`param${i}`] || "");
+    for (let i = 1; i < 7; i++) {
+      path.push(options.params[`param${i}`] || "");
+    }
   }
   while (!path.at(-1)) path.length--;
   path = path.join("/");
@@ -3714,15 +3825,16 @@ $on(window, "popstate", () => emit("path:restore", window.location.href));
 var fetchOptions = {
   method: "GET",
   cache: "default",
-  headers: {}
+  headers: /* @__PURE__ */ Object.create(null)
 };
 function parseOptions(url, options) {
-  const headers = options?.headers || {};
-  const opts = Object.assign({
+  const headers = isObject3(options?.headers) || /* @__PURE__ */ Object.create(null);
+  const opts = Object.assign(/* @__PURE__ */ Object.create(null), {
     headers,
     method: options?.method || options?.post && "POST" || void 0
-  }, options?.request);
+  });
   for (const p in fetchOptions.headers) {
+    if (p === "__proto___") continue;
     headers[p] ??= fetchOptions.headers[p];
   }
   for (const p of ["method", "cache", "credentials", "duplex", "integrity", "keepalive", "mode", "priority", "redirect", "referrer", "referrerPolicy", "signal"]) {
@@ -3730,9 +3842,9 @@ function parseOptions(url, options) {
       opts[p] ??= fetchOptions[p];
     }
   }
-  var body = options?.body;
+  const body = options?.body;
   if (opts.method == "GET" || opts.method == "HEAD") {
-    if (isObject2(body)) {
+    if (isObject3(body)) {
       url += "?" + new URLSearchParams(body).toString();
     }
   } else if (isString2(body)) {
@@ -3741,7 +3853,7 @@ function parseOptions(url, options) {
   } else if (body instanceof FormData) {
     opts.body = body;
     delete headers["content-type"];
-  } else if (isObject2(body)) {
+  } else if (isObject3(body)) {
     opts.body = JSON.stringify(body);
     headers["content-type"] = "application/json; charset=UTF-8";
   } else if (body) {
@@ -3751,58 +3863,57 @@ function parseOptions(url, options) {
   return [url, opts];
 }
 function parseResponse(res) {
-  const info = { status: res.status, headers: {}, type: res.type, url: res.url, redirected: res.redirected };
+  const info = {
+    status: res.status,
+    headers: /* @__PURE__ */ Object.create(null),
+    type: res.type,
+    url: res.url,
+    redirected: res.redirected
+  };
   for (const h of res.headers) {
     info.headers[h[0].toLowerCase()] = h[1];
   }
-  const h_csrf = fetchOptions.csrfHeader || "x-csrf-token";
-  const v_csrf = info?.headers[h_csrf];
-  if (v_csrf) {
-    if (v_csrf <= 0) {
-      delete fetchOptions.headers[h_csrf];
-    } else {
-      fetchOptions.headers[h_csrf] = v_csrf;
-    }
-  }
   return info;
 }
-function fetch(url, options, callback) {
+async function fetch(url, options, callback) {
   if (isFunction(options)) callback = options, options = null;
   try {
     const [uri, opts] = parseOptions(url, options);
     trace("fetch:", uri, opts, options);
-    window.fetch(uri, opts).then(async (res) => {
-      var err, data22, info = parseResponse(res);
-      if (!res.ok) {
-        if (/\/json/.test(info.headers["content-type"])) {
-          const d = await res.json();
-          err = { status: res.status };
-          for (const p in d) err[p] = d[p];
-        } else {
-          err = { message: await res.text(), status: res.status };
-        }
-        return call(callback, err, data22, info);
+    var data22, info;
+    const res = await window.fetch(uri, opts);
+    info = parseResponse(res);
+    var ctype = info.headers["content-type"];
+    if (!res.ok) {
+      let err;
+      if (/\/json/.test(ctype)) {
+        const d = await res.json();
+        err = Object.create(null, { status: { value: res.status, enumerable: true } });
+        for (const p in d) err[p] = d[p];
+      } else {
+        err = { message: await res.text(), status: res.status };
       }
-      switch (options?.dataType) {
-        case "text":
-          data22 = await res.text();
-          break;
-        case "blob":
-          data22 = await res.blob();
-          break;
-        default:
-          data22 = /\/json/.test(info.headers["content-type"]) ? await res.json() : await res.text();
-      }
-      call(callback, null, data22, info);
-    }).catch((err) => {
-      call(callback, err);
-    });
+      throw err;
+    }
+    switch (options?.data_type) {
+      case "text":
+        data22 = await res.text();
+        break;
+      case "blob":
+        data22 = await res.blob();
+        break;
+      default:
+        data22 = /\/json/.test(ctype) ? await res.json() : /image|video|audio|pdf|zip|binary|octet/.test(ctype) ? await res.blob() : await res.text();
+    }
+    call(callback, null, data22, info);
+    return { ok: true, status: info?.status, data: data22, info };
   } catch (err) {
     call(callback, err);
+    return { ok: false, status: info?.status, err, data: data22, info };
   }
 }
 var Component = class {
-  params = {};
+  params = /* @__PURE__ */ Object.create(null);
   constructor(name, params) {
     this.$name = name;
     Object.assign(this.params, params);
@@ -3832,7 +3943,7 @@ var Component = class {
     off(app.event, this._handleEvent);
     emit("component:delete", { type: this.$type, name: this.$name, component: this, element: this.$el, params: this.params });
     call(this._onDelete?.bind(this));
-    this.params = {};
+    this.params = /* @__PURE__ */ Object.create(null);
     delete this.$root;
   }
 };
@@ -3873,7 +3984,7 @@ function _render(element, options) {
     if (!options) return;
   }
   $empty(element);
-  element._x_params = Object.assign({}, options.params);
+  element._x_params = Object.assign(/* @__PURE__ */ Object.create(null), options.params);
   _Alpine.onElRemoved(element, () => {
     delete element._x_params;
   });
@@ -3934,7 +4045,7 @@ function $template(el, value, modifiers) {
       switch (mod) {
         case "params":
           var scope2 = _Alpine.$data(el);
-          if (!isObject2(scope2[modifiers[i + 1]])) break;
+          if (!isObject3(scope2[modifiers[i + 1]])) break;
           tmpl.params = Object.assign(scope2[modifiers[i + 1]], tmpl.params);
           break;
         case "inline":
@@ -3961,9 +4072,11 @@ function $template(el, value, modifiers) {
   });
 }
 register(_alpine, { render: _render, Component: AlpineComponent, data: data2, init, default: 1 });
+var _dragging_el;
+var _dragging_target;
 function AlpinePlugin(Alpine2) {
   _Alpine = Alpine2;
-  emit("alpine:init");
+  emit("alpine:init", Alpine2);
   Alpine2.magic("app", (el) => app);
   Alpine2.magic("params", (el) => {
     while (el) {
@@ -4013,6 +4126,100 @@ function AlpinePlugin(Alpine2) {
   Alpine2.directive("scope-level", (el, { expression }, { evaluate: evaluate2 }) => {
     const scope2 = Alpine2.closestDataStack(el);
     el._x_dataStack = scope2.slice(0, parseInt(evaluate2(expression || "")) || 0);
+  });
+  Alpine2.directive("file-drop", (el, { expression }, { effect: effect3, cleanup: cleanup2 }) => {
+    var target;
+    const evaluate2 = Alpine2.evaluateLater(el, expression);
+    effect3(() => evaluate2((value) => {
+      if (!value || value === target) return;
+      target = value;
+      $on(el, "click", click);
+      $on(el, "drop", drop);
+      $on(el, "dragdrop", drop);
+      $on(el, "dragenter", dragenter);
+      $on(el, "dragover", dragenter);
+      $on(el, "dragleave", dragleave);
+    }));
+    cleanup2(() => {
+      $off(el, "click", click);
+      $off(el, "drop", drop);
+      $off(el, "dragdrop", drop);
+      $off(el, "dragenter", dragenter);
+      $off(el, "dragover", dragenter);
+      $off(el, "dragleave", dragleave);
+    });
+    function click(event) {
+      $('[type="file"]', el).click();
+    }
+    function drop(event) {
+      event.preventDefault();
+      const file = event.dataTransfer.files?.[0];
+      $event(el, "file:dropped", { file, event });
+      emit(app.event, "file:dropped", { file, event, target, element: el });
+      target._dragover = false;
+    }
+    function dragenter(event) {
+      event.preventDefault();
+      target._dragover = true;
+    }
+    function dragleave(event) {
+      event.preventDefault();
+      target._dragover = false;
+    }
+  });
+  Alpine2.directive("draggable", (el, { expression }, { effect: effect3, cleanup: cleanup2 }) => {
+    var target;
+    const evaluate2 = Alpine2.evaluateLater(el, expression);
+    effect3(() => evaluate2((value) => {
+      if (!value || value === target) return;
+      target = value;
+      $on(el, "drop", drop);
+      $on(el, "dragdrop", drop);
+      $on(el, "dragstart", dragstart);
+      $on(el, "dragend", dragend);
+      $on(el, "dragenter", dragenter);
+      $on(el, "dragover", dragenter);
+      $on(el, "dragleave", dragleave);
+    }));
+    cleanup2(() => {
+      $off(el, "drop", drop);
+      $off(el, "dragdrop", drop);
+      $off(el, "dragstart", dragstart);
+      $off(el, "dragend", dragend);
+      $off(el, "dragenter", dragenter);
+      $off(el, "dragover", dragenter);
+      $off(el, "dragleave", dragleave);
+    });
+    function dragenter(event) {
+      event.preventDefault();
+      if (el === _dragging_el) return;
+      event.dataTransfer.dropEffect = "move";
+      target._dragover = true;
+    }
+    function dragleave(event) {
+      event.preventDefault();
+      if (el === _dragging_el) return;
+      target._dragover = false;
+    }
+    function dragstart(event) {
+      event.dataTransfer.effectAllowed = "move";
+      target._dragging = true;
+      _dragging_el = el;
+      _dragging_target = target;
+    }
+    function dragend() {
+      target._dragging = target._dragover = false;
+      _dragging_el = _dragging_target = void 0;
+    }
+    function drop(event) {
+      event.preventDefault();
+      target._dragover = false;
+      if (!_dragging_el || el === _dragging_el) return;
+      const scope2 = Alpine2.closestDataStack(el);
+      $event(el, "item:dropped", { target, item: _dragging_target, item_element: _dragging_el, scope: scope2 });
+      emit(app.event, "item:dropped", { event, target, element: el, item: _dragging_target, item_element: _dragging_el, scope: scope2 });
+      _dragging_el = _dragging_target = void 0;
+    }
   });
 }
 app.Component = component_default;
