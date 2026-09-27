@@ -6466,7 +6466,7 @@ options for addEventListener are supported.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line389">line 389</a>
+        <a href="bootpopup.js.html">bootpopup.js</a>, <a href="bootpopup.js.html#line395">line 395</a>
     </li></ul></dd>
     
 
@@ -6610,7 +6610,8 @@ described in <a href="https://getbootstrap.com/docs/javascript/#modals-usage">Bo
 </ul>
 <p>Any ad-hoc button will be added in the form <code>btn_Label</code>.</p>
 <p>NOTE: All actions by default close the popup window, a callback must return <code>null</code> in order to keep the popup window
-visible, this is useful when validating the input. Manually closing the popup is done via the <code>close</code> method.</p>
+visible, even in async callbacks, this is useful when validating the input.
+Manually closing the popup is done via the <code>close</code> method.</p>
 <h3>About the <strong>buttons</strong> option:</h3>
 <p>In addition to default buttons <code>ok, close, cancel, yes, no</code> a button can be defined in ad-hoc manner with any label as long as the
 button callback is named the same, for example</p>
@@ -6623,10 +6624,17 @@ button callback is named the same, for example</p>
      }
 </code></pre>
 <p>Clicking on the <code>Order</code> button will call the Order callback.</p>
-<p>Customizing default button labels can be done via <code>text_NAME</code> properties, for example</p>
+<p>Customizing default button labels can be done via several element that follow the naming convention:</p>
+<ul>
+<li><code>class_NAME</code> - custom class modifier in addition to common <code>class_buttons</code></li>
+<li><code>text_NAME</code> - custom button label, may have HTML</li>
+<li><code>badge_NAME</code> - <i> before the label, for icons</li>
+<li><code>icon_NAME</code> - <i> after the label, for icons</li>
+</ul>
 <pre class="prettyprint source lang-javascript"><code>app.bootpopup({
   buttons:[&quot;ok&quot;,&quot;cancel&quot;],
   text_ok: &quot;Submit&quot;,
+  badge_ok: &quot;bi bi-cog&quot;
 })
 </code></pre>
 <p>Now ok will be shown as Submit. With ad-hoc labeling this is not very useful but still can be used for default buttons.</p>
@@ -12204,7 +12212,7 @@ the <strong>path:save</strong> event.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="render.js.html">render.js</a>, <a href="render.js.html#line137">line 137</a>
+        <a href="render.js.html">render.js</a>, <a href="render.js.html#line141">line 141</a>
     </li></ul></dd>
     
 
@@ -12374,6 +12382,13 @@ the <strong>path:save</strong> event.</p>
     
 
 
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>app.$ready(() => {
+    app.render("index")
+})</code></pre>
 
 
 
@@ -15126,7 +15141,7 @@ event with top HTMLElement as parameter. This is for UI frameworks intergation t
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="render.js.html">render.js</a>, <a href="render.js.html#line189">line 189</a>
+        <a href="render.js.html">render.js</a>, <a href="render.js.html#line193">line 193</a>
     </li></ul></dd>
     
 

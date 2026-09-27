@@ -133,6 +133,10 @@ export function resolve(path, dflt)
  * @param {string|object} options
  * @param {string} [dflt]
  * @returns {object|undefined}
+ * @example
+ * app.$ready(() => {
+ *     app.render("index")
+ * })
  */
 export function render(options, dflt)
 {
